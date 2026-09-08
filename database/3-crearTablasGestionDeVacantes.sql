@@ -16,6 +16,16 @@ ALTER TABLE IF EXISTS public.estados
 GRANT ALL ON TABLE public.estados TO postgres;
 GRANT ALL ON SEQUENCE public.estados_id_seq TO postgres;
 
+-- insertar estados
+INSERT INTO public.estados (nombre) 
+VALUES 
+    ('ABIERTA'),
+    ('CERRADA'),
+    ('EVALUADA'),
+    ('PENDIENTE'),
+    ('ACEPTADA'),
+    ('CANCELADA');
+
 -- vacantes
 CREATE TABLE public.vacantes
 (

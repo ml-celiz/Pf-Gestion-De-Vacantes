@@ -9,7 +9,7 @@ CREATE TABLE public.usuarios
     email character varying(50) NOT NULL,
     nombre character varying(50),
     apellido character varying(50),
-    "contraseña" character varying(50) NOT NULL,
+    contrasenea character varying(255) NOT NULL,
     dni integer,
     telefono character varying,
     fecha_alta timestamp with time zone NOT NULL,
