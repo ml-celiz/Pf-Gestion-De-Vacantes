@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../controllers/usuarios_controller.php';
+require_once __DIR__ . '/../controllers/usuario_controller.php';
 
 function handleUsuarioRoutes(string $method, array $uriParts): void {
     $controller = new UsuarioController();
