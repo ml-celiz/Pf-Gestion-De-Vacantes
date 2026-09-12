@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../models/rol_model.php';
+require_once __DIR__ . '/../models/Rol.php';
 
 class RolService {
     private PDO $db;

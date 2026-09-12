@@ -1,0 +1,166 @@
+/* Custom Properties / Tokens */
+:root {
+    --brand-primary: #2563eb;
+    --brand-primary-hover: #1d4ed8;
+    --brand-dark: #0f172a;
+    --sidebar-bg: #f8fafc;
+    --main-bg: #f1f5f9;
+    --border-color: #e2e8f0;
+    --text-muted: #64748b;
+}
+
+app-login {
+    display: block;
+    width: 100%;
+}
+
+/* Base Body Layout */
+.app-viewport {
+    background-color: var(--main-bg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Navbar */
+.app-navbar {
+    height: 72px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.brand-badge {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+.brand-title {
+    font-size: 1.05rem;
+    line-height: 1.2;
+}
+
+.brand-subtitle {
+    font-size: 0.8rem;
+}
+
+.nav-link-custom {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.nav-link-custom.active {
+    color: var(--brand-primary) !important;
+    background-color: rgba(37, 99, 235, 0.08);
+}
+
+/* Sidebar */
+.app-sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+}
+
+.sidebar-label {
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+
+.sidebar-btn {
+    color: #334155 !important;
+    font-weight: 500;
+    font-size: 0.925rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.sidebar-btn:hover,
+.sidebar-btn:focus-visible {
+    background-color: #e2e8f0;
+    color: var(--brand-primary) !important;
+    transform: translateX(3px);
+}
+
+.sidebar-icon {
+    color: var(--brand-primary);
+}
+
+/* Login Card Central */
+.login-card-container {
+    max-width: 440px;
+}
+
+.login-card {
+    background-color: #ffffff;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+}
+
+.fw-extrabold {
+    font-weight: 800;
+}
+
+.form-label {
+    font-size: 0.875rem;
+}
+
+.form-control-custom {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control-custom:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.link-forgot {
+    color: var(--brand-primary);
+}
+
+.link-forgot:hover {
+    text-decoration: underline !important;
+}
+
+.btn-primary-custom {
+    background-color: var(--brand-primary);
+    border: none;
+    color: #ffffff;
+    padding: 0.85rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-primary-custom:hover,
+.btn-primary-custom:focus-visible {
+    background-color: var(--brand-primary-hover);
+    box-shadow: 0 6px 10px -1px rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Footer */
+.app-footer {
+    background-color: var(--brand-dark);
+}
+
+.fs-7 {
+    font-size: 0.8rem;
+}
+
+/* Utility Accesibilidad (SR Only) */
+.visually-hidden-sr {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../controllers/rol_controller.php';
+require_once __DIR__ . '/../utils/helpers.php';
 
 function handleRolRoutes(string $method, array $uriParts): void {
     $controller = new RolController();
@@ -67,9 +68,4 @@ function handleRolRoutes(string $method, array $uriParts): void {
     }
 
     respondMethodNotAllowed();
-}
-
-function respondMethodNotAllowed(): void {
-    http_response_code(405);
-    echo json_encode(["message" => "Método no permitido para esta ruta."]);
 }

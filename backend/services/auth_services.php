@@ -1,7 +1,46 @@
 <?php
 
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/Usuario.php';
 require_once __DIR__ . '/../models/Sesion.php';
 
+/**
+ * Busca un usuario por email en la BD y retorna el objeto UsuarioModel
+ */
+function obtenerUsuarioPorEmail(string $email): ?UsuarioModel {
+    $db = Database::getConnection();
+    
+    $sql = "SELECT id, email, nombre, apellido, contrasena, dni, telefono 
+            FROM public.usuarios 
+            WHERE email = :email AND fecha_baja IS NULL 
+            LIMIT 1";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':email' => $email]);
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $data ? new UsuarioModel($data) : null;
+}
+
+/**
+ * Obtiene los roles asociados a un usuario
+ */
+function obtenerRolesUsuario(int $idUsuario): array {
+    $db = Database::getConnection();
+
+    $sql = "SELECT r.nombre AS rol
+            FROM public.roles_usuarios ru
+            JOIN public.roles r ON ru.id_rol = r.id
+            WHERE ru.id_usuario = :id_usuario";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':id_usuario' => $idUsuario]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+}
+
+/**
+ * Middleware para proteger rutas usando Bearer Token
+ */
 function verificarAutenticacion(): array {
     $headers = function_exists('getallheaders') ? getallheaders() : [];
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? null;

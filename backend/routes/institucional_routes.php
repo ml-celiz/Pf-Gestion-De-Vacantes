@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../controllers/institucional_controller.php';
+require_once __DIR__ . '/../utils/helpers.php';
 
 function handleInstitucionalRoutes(string $method, array $uriParts): void {
     $controller = new InstitucionalController();
@@ -85,9 +86,4 @@ function handleInstitucionalRoutes(string $method, array $uriParts): void {
 
     http_response_code(404);
     echo json_encode(["message" => "Sub-recurso institucional no encontrado."]);
-}
-
-function respondMethodNotAllowed(): void {
-    http_response_code(405);
-    echo json_encode(["message" => "Método no permitido para esta ruta."]);
 }

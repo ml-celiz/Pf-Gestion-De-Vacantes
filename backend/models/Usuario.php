@@ -1,6 +1,6 @@
 <?php
 
-class Usuario {
+class UsuarioModel {
     public ?int $id;
     public string $email;
     public ?string $nombre;

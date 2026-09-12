@@ -6,7 +6,7 @@ require_once __DIR__ . '/modulo_routes.php';
 require_once __DIR__ . '/panel_routes.php';
 require_once __DIR__ . '/rol_routes.php';
 require_once __DIR__ . '/usuario_routes.php';
-// require_once __DIR__ . '/vacantes_routes.php';
+require_once __DIR__ . '/vacantes_routes.php';
 
 function routeRequest(): void {
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -50,6 +50,10 @@ function routeRequest(): void {
         case 'institucional':
                     handleInstitucionalRoutes($method, $routeParams);
                     break;
+    
+        case 'vacantes':
+            handleVacantesRoutes($method, $routeParams);
+            break;
 
         default:
             http_response_code(404);

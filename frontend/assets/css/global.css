@@ -1,0 +1,31 @@
+/* Variables de Color y Tema Global */
+:root {
+    --color-primary: #0d6efd;
+    --color-primary-dark: #0b5ed7;
+    --color-focus-ring: #0056b3;
+    --color-text-main: #212529;
+    --color-bg-body: #f8f9fa;
+}
+
+/* Indicadores de foco visibles por teclado para Accesibilidad (WCAG) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--color-focus-ring) !important;
+    outline-offset: 3px !important;
+}
+
+/* Ocultamiento accesible exclusivo para lectores de pantalla (TAW) */
+.visually-hidden-sr {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
