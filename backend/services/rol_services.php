@@ -26,11 +26,28 @@ class RolService {
 
     public function crear(array $data): bool {
         $rol = new Rol($data);
-        if (empty($rol->nombre)) return false;
+
+        if (empty($rol->nombre)) {
+            return false;
+        }
 
         try {
-            $stmt = $this->db->prepare("INSERT INTO public.roles (nombre) VALUES (:nombre)");
-            return $stmt->execute(['nombre' => $rol->nombre]);
+            $stmt = $this->db->prepare("
+                INSERT INTO public.roles (
+                    nombre,
+                    token_duracion
+                )
+                VALUES (
+                    :nombre,
+                    :token_duracion
+                )
+            ");
+
+            return $stmt->execute([
+                'nombre'         => $rol->nombre,
+                'token_duracion' => $rol->duracionToken
+            ]);
+
         } catch (PDOException $e) {
             error_log("Error PDO: " . $e->getMessage());
             return false;
@@ -39,15 +56,30 @@ class RolService {
 
     public function actualizar(int $id, array $data): bool {
         $rolExistente = $this->obtenerPorId($id);
-        if (!$rolExistente) return false;
+
+        if (!$rolExistente) {
+            return false;
+        }
 
         $rol = new Rol($data);
+
         try {
-            $stmt = $this->db->prepare("UPDATE public.roles SET nombre = :nombre WHERE id = :id");
+            $stmt = $this->db->prepare("
+                UPDATE public.roles
+                SET
+                    nombre = :nombre,
+                    token_duracion = :token_duracion
+                WHERE id = :id
+            ");
+
             return $stmt->execute([
-                'id'     => $id,
-                'nombre' => $rol->nombre ?: $rolExistente['nombre']
+                'id'             => $id,
+                'nombre'         => $rol->nombre ?: $rolExistente['nombre'],
+                'token_duracion' => $rol->duracionToken !== null
+                    ? $rol->duracionToken
+                    : $rolExistente['duracion_token']
             ]);
+
         } catch (PDOException $e) {
             error_log("Error PDO: " . $e->getMessage());
             return false;

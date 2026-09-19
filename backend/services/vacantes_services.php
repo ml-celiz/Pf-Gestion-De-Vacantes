@@ -17,32 +17,122 @@ class VacanteService {
     // ==========================================
 
     public function obtenerVacantes(?int $idUsuario = null): array {
+
         if ($idUsuario !== null) {
-            $sql = "SELECT v.*, e.nombre as estado_nombre 
+
+            $sql = "SELECT
+                        v.id,
+                        v.titulo,
+                        v.descripcion,
+                        v.requisitos,
+                        v.inicio,
+                        v.fin,
+                        v.id_estado,
+                        v.id_catedra,
+                        v.id_usuario,
+
+                        e.nombre AS estado_nombre,
+                        c.nombre AS catedra_nombre
+
                     FROM public.vacantes v
-                    JOIN public.estados e ON v.id_estado = e.id
-                    WHERE v.id_usuario = :id_usuario ORDER BY v.id ASC";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute(['id_usuario' => $idUsuario]);
-        } else {
-            $sql = "SELECT v.*, e.nombre as estado_nombre 
-                    FROM public.vacantes v
-                    JOIN public.estados e ON v.id_estado = e.id
+
+                    JOIN public.estados e
+                        ON v.id_estado = e.id
+
+                    JOIN public.catedras c
+                        ON v.id_catedra = c.id
+
+                    WHERE v.id_usuario = :id_usuario
+
                     ORDER BY v.id ASC";
+
+            $stmt = $this->db->prepare($sql);
+
+            $stmt->execute([
+                'id_usuario' => $idUsuario
+            ]);
+
+        } else {
+
+            $sql = "SELECT
+                        v.id,
+                        v.titulo,
+                        v.descripcion,
+                        v.requisitos,
+                        v.inicio,
+                        v.fin,
+                        v.id_estado,
+                        v.id_catedra,
+                        v.id_usuario,
+
+                        e.nombre AS estado_nombre,
+                        c.nombre AS catedra_nombre
+
+                    FROM public.vacantes v
+
+                    JOIN public.estados e
+                        ON v.id_estado = e.id
+
+                    JOIN public.catedras c
+                        ON v.id_catedra = c.id
+
+                    ORDER BY v.id ASC";
+
             $stmt = $this->db->query($sql);
         }
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+        return array_map(
+            fn($row) =>
+                (new Vacante($row))->toArray(),
+            $rows
+        );
     }
 
     public function obtenerVacantePorId(int $id): ?array {
-        $sql = "SELECT v.*, e.nombre as estado_nombre 
+
+        $sql = "SELECT
+                    v.id,
+                    v.titulo,
+                    v.descripcion,
+                    v.requisitos,
+                    v.inicio,
+                    v.fin,
+                    v.id_estado,
+                    v.id_catedra,
+                    v.id_usuario,
+
+                    e.nombre AS estado_nombre,
+                    c.nombre AS catedra_nombre
+
                 FROM public.vacantes v
-                JOIN public.estados e ON v.id_estado = e.id
+
+                JOIN public.estados e
+                    ON v.id_estado = e.id
+
+                JOIN public.catedras c
+                    ON v.id_catedra = c.id
+
                 WHERE v.id = :id";
+
+
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row ?: null;
+
+        $stmt->execute([
+            'id' => $id
+        ]);
+
+
+        $row =
+            $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+        return $row
+            ? (new Vacante($row))->toArray()
+            : null;
     }
 
     public function crearVacante(array $data): bool {
@@ -117,23 +207,53 @@ class VacanteService {
     // ==========================================
 
     public function obtenerSolicitudes(?int $idUsuario = null): array {
+
+        $sql = "SELECT
+                    s.id,
+                    s.fecha_postulacion,
+                    s.cv,
+                    s.id_estado,
+                    e.nombre AS estado_nombre,
+                    s.id_vacante,
+                    v.titulo AS vacante_titulo,
+                    s.id_usuario
+                FROM public.solicitudes_vacantes s
+                JOIN public.estados e
+                    ON s.id_estado = e.id
+                JOIN public.vacantes v
+                    ON s.id_vacante = v.id";
+
         if ($idUsuario !== null) {
-            $sql = "SELECT s.*, e.nombre as estado_nombre, v.titulo as vacante_titulo
-                    FROM public.solicitudes_vacantes s
-                    JOIN public.estados e ON s.id_estado = e.id
-                    JOIN public.vacantes v ON s.id_vacante = v.id
-                    WHERE s.id_usuario = :id_usuario ORDER BY s.id ASC";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute(['id_usuario' => $idUsuario]);
+            $sql .= "
+                WHERE s.id_usuario = :id_usuario
+            ";
+
+            $sql .= "
+                ORDER BY s.id ASC
+            ";
+
+            $stmt =
+                $this->db->prepare($sql);
+
+            $stmt->execute([
+                'id_usuario' => $idUsuario
+            ]);
         } else {
-            $sql = "SELECT s.*, e.nombre as estado_nombre, v.titulo as vacante_titulo
-                    FROM public.solicitudes_vacantes s
-                    JOIN public.estados e ON s.id_estado = e.id
-                    JOIN public.vacantes v ON s.id_vacante = v.id
-                    ORDER BY s.id ASC";
-            $stmt = $this->db->query($sql);
+            $sql .= "
+                ORDER BY s.id ASC
+            ";
+
+            $stmt =
+                $this->db->query($sql);
         }
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(
+            fn($row) =>
+                (new SolicitudVacante($row))->toArray(),
+            $rows
+        );
     }
 
     public function obtenerSolicitudPorId(int $id): ?array {

@@ -1,0 +1,254 @@
+<div class="app-viewport d-flex flex-column min-vh-100">
+
+    <!-- NAVBAR -->
+    <app-navbar></app-navbar>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="menu-main flex-grow-1">
+
+        <div class="menu-container">
+
+            <!-- LEYENDA Y RUTA (BREADCRUMB) -->
+            <div class="breadcrumb-bar">
+                <span class="breadcrumb-path">
+                    MENÚ PRINCIPAL
+                </span>
+            </div>
+
+            <!-- PANELES -->
+            <section class="menu-section">
+
+                <div class="section-header">
+
+                    <h2>PANELES</h2>
+
+                    <p>
+                        Consultá las vacantes disponibles y gestioná
+                        tus postulaciones.
+                    </p>
+
+                </div>
+
+                <div class="menu-grid">
+
+                    <!-- VACANTES -->
+                    <button
+                        type="button"
+                        class="menu-card"
+                        data-route="vacantes"
+                        data-permission="vacantes.consultar">
+
+                        <div class="menu-card-icon icon-blue">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+
+                        <div class="menu-card-content">
+
+                            <h3>Vacantes</h3>
+
+                            <p>
+                                Consultá las vacantes disponibles y
+                                conocé los detalles de cada convocatoria.
+                            </p>
+
+                        </div>
+
+                        <div class="menu-card-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+
+                    </button>
+
+                    <!-- POSTULACIONES -->
+                    <button
+                        type="button"
+                        class="menu-card"
+                        data-route="postulaciones"
+                        data-permission="postulaciones.consultar">
+
+                        <div class="menu-card-icon icon-green">
+                            <i class="bi bi-file-earmark-check"></i>
+                        </div>
+
+                        <div class="menu-card-content">
+
+                            <h3>Postulaciones</h3>
+
+                            <p>
+                                Consultá tus postulaciones y realizá el
+                                seguimiento de cada una de ellas.
+                            </p>
+
+                        </div>
+
+                        <div class="menu-card-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+            <!-- CONFIGURACIONES -->
+            <section class="menu-section">
+
+                <div class="section-header">
+
+                    <h2>CONFIGURACIONES</h2>
+
+                    <p>
+                        Gestioná la información y configuración
+                        general del sistema.
+                    </p>
+
+                </div>
+
+                <div class="menu-grid">
+
+                    <!-- VACANTES -->
+                    <button
+                        type="button"
+                        class="menu-card"
+                        data-route="gestion-vacantes"
+                        data-permission="vacantes.gestionar">
+
+                        <div class="menu-card-icon icon-orange">
+                            <i class="bi bi-briefcase-fill"></i>
+                        </div>
+
+                        <div class="menu-card-content">
+
+                            <h3>Vacantes</h3>
+
+                            <p>
+                                Gestioná las vacantes y la información
+                                asociada a cada convocatoria.
+                            </p>
+
+                        </div>
+
+                        <div class="menu-card-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+
+                    </button>
+
+                    <!-- INSTITUCIONAL
+                    <button
+                        type="button"
+                        class="menu-card"
+                        data-route="institucional"
+                        data-permission="institucional.gestionar">
+
+                        <div class="menu-card-icon icon-purple">
+                            <i class="bi bi-building"></i>
+                        </div>
+
+                        <div class="menu-card-content">
+
+                            <h3>Institucional</h3>
+
+                            <p>
+                                Gestioná los departamentos y cátedras
+                                que forman parte de la institución.
+                            </p>
+
+                        </div>
+
+                        <div class="menu-card-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+
+                    </button>
+                    -->
+
+                </div>
+
+            </section>
+
+            <!-- USUARIOS -->
+            <section class="menu-section">
+
+                <div class="section-header">
+
+                    <h2>USUARIOS</h2>
+
+                    <p>
+                        Administrá las cuentas de usuario, roles
+                        y permisos de acceso.
+                    </p>
+
+                </div>
+
+                <div class="menu-grid">
+
+                    <!-- ROLES -->
+                    <button
+                        type="button"
+                        class="menu-card"
+                        data-route="roles"
+                        data-permission="roles.gestionar">
+
+                        <div class="menu-card-icon icon-indigo">
+                            <i class="bi bi-people"></i>
+                        </div>
+
+                        <div class="menu-card-content">
+
+                            <h3>Roles</h3>
+
+                            <p>
+                                Gestioná los roles y permisos de acceso
+                                de los usuarios.
+                            </p>
+
+                        </div>
+
+                        <div class="menu-card-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+
+                    </button>
+
+                    <!-- USUARIOS -->
+                    <button
+                        type="button"
+                        class="menu-card"
+                        data-route="usuarios"
+                        data-permission="usuarios.gestionar">
+
+                        <div class="menu-card-icon icon-teal">
+                            <i class="bi bi-person-gear"></i>
+                        </div>
+
+                        <div class="menu-card-content">
+
+                            <h3>Usuarios</h3>
+
+                            <p>
+                                Administrá las cuentas y los accesos
+                                de los usuarios.
+                            </p>
+
+                        </div>
+
+                        <div class="menu-card-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <app-footer></app-footer>
+
+</div>

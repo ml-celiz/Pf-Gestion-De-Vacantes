@@ -1,0 +1,721 @@
+.vacantes-container {
+
+    width: 100%;
+
+    padding: 1.5rem 2.5rem;
+
+}
+
+
+/* =========================================================
+   BREADCRUMB
+   ========================================================= */
+
+.breadcrumb-bar {
+
+    margin-bottom: 0.75rem;
+
+}
+
+.breadcrumb-path {
+
+    font-size: 0.8rem;
+
+    font-weight: 700;
+
+    color: var(--text-muted, #64748b);
+
+    letter-spacing: 0.5px;
+
+}
+
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
+.vacantes-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background: #e2e8f0;
+
+    padding: 0.75rem 1.25rem;
+
+    border-radius: 0.5rem;
+
+    margin-bottom: 0.75rem;
+
+}
+
+.vacantes-header h1 {
+
+    margin: 0;
+
+    font-size: 0.95rem;
+
+    font-weight: 700;
+
+    color: var(--brand-dark, #1e293b);
+
+}
+
+.header-actions {
+
+    display: flex;
+
+    gap: 0.75rem;
+
+}
+
+
+/* =========================================================
+   BOTÓN SUPERIOR
+   ========================================================= */
+
+.btn-icon {
+
+    background: transparent;
+
+    border: none;
+
+    cursor: pointer;
+
+    color: var(--brand-dark, #1e293b);
+
+    font-size: 1.1rem;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    transition:
+        transform 0.15s ease,
+        color 0.15s ease;
+
+}
+
+.btn-icon:hover {
+
+    transform: scale(1.1);
+
+    color: var(--brand-primary, #0056b3);
+
+}
+
+
+/* =========================================================
+   FILTRO
+   ========================================================= */
+
+.filter-bar {
+
+    height: 34px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 0.35rem;
+
+    margin-bottom: 1.25rem;
+
+    display: flex;
+
+    align-items: center;
+
+    background: #ffffff;
+
+}
+
+.filter-input {
+
+    width: 100%;
+
+    height: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    padding: 0 0.75rem;
+
+    font-size: 0.85rem;
+
+    color: var(--brand-dark, #1e293b);
+
+}
+
+.filter-input::placeholder {
+
+    color: #64748b;
+
+}
+
+
+/* =========================================================
+   CARD PRINCIPAL
+   ========================================================= */
+
+.card-table {
+
+    background: #ffffff;
+
+    border: 1px solid rgba(226, 232, 240, 0.9);
+
+    border-radius: 0.75rem;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.03);
+
+    overflow: hidden;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+.main-vacantes-card {
+
+    min-width: 0;
+
+}
+
+
+/* =========================================================
+   TABLA
+   ========================================================= */
+
+.main-vacantes-card .table-responsive {
+
+    overflow-x: auto;
+
+}
+
+.custom-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 0.875rem;
+
+}
+
+.custom-table th {
+
+    background: #e2e8f0;
+
+    color: var(--brand-dark, #1e293b);
+
+    font-weight: 600;
+
+    padding: 0.85rem 1rem;
+
+    text-align: left;
+
+    white-space: nowrap;
+
+}
+
+.custom-table td {
+
+    padding: 0.85rem 1rem;
+
+    border-bottom: 1px solid #f1f5f9;
+
+    color: var(--brand-dark, #1e293b);
+
+}
+
+.custom-table tbody tr:hover {
+
+    background: #f8fafc;
+
+}
+
+
+/* =========================================================
+   DESCRIPCIÓN
+   ========================================================= */
+
+.descripcion-cell {
+
+    max-width: 260px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+/* =========================================================
+   REQUISITOS
+   ========================================================= */
+
+.btn-requisitos {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 0.35rem;
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--brand-primary, #0056b3);
+
+    font-size: 0.8rem;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    padding: 0.25rem 0.4rem;
+
+}
+
+.btn-requisitos:hover {
+
+    color: #003f80;
+
+    text-decoration: underline;
+
+}
+
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+
+.estado-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 0.25rem 0.55rem;
+
+    border-radius: 999px;
+
+    font-size: 0.72rem;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   ACCIONES
+   ========================================================= */
+
+.action-btn-group {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 0.65rem;
+
+}
+
+.btn-action {
+
+    background: none;
+
+    border: none;
+
+    cursor: pointer;
+
+    font-size: 0.95rem;
+
+    padding: 0.25rem;
+
+    transition:
+        transform 0.15s ease,
+        color 0.15s ease;
+
+}
+
+.btn-action:hover {
+
+    transform: scale(1.12);
+
+}
+
+
+/* Publicar resultados */
+
+.btn-action.publicar {
+    color: #334155;
+}
+
+.btn-action.view {
+    color: #16a34a;
+}
+
+
+/* Ver postulados */
+
+.btn-action.postulados {
+
+    color: #2563eb;
+
+}
+
+
+/* Resultados generales */
+
+.btn-action.resultados {
+
+    color: #16a34a;
+
+}
+
+
+/* =========================================================
+   FOOTER / PAGINACIÓN
+   ========================================================= */
+
+.table-footer {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 0.75rem 1rem;
+
+    gap: 1rem;
+
+    font-size: 0.8rem;
+
+    color: var(--text-muted, #64748b);
+
+    margin-top: auto;
+
+}
+
+.pagination-buttons {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.5rem;
+
+}
+
+.pagination-btn {
+
+    width: 28px;
+
+    height: 28px;
+
+    border: 1px solid #cbd5e1;
+
+    background: #ffffff;
+
+    border-radius: 0.35rem;
+
+    cursor: pointer;
+
+    color: #334155;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+
+}
+
+.pagination-btn:hover:not(:disabled) {
+
+    background: #e2e8f0;
+
+}
+
+.pagination-btn:disabled {
+
+    opacity: 0.4;
+
+    cursor: not-allowed;
+
+}
+
+#vacantes-page-number {
+
+    min-width: 65px;
+
+    text-align: center;
+
+}
+
+
+/* =========================================================
+   DIALOG DE REQUISITOS
+   ========================================================= */
+
+.requisitos-dialog-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    background: rgba(15, 23, 42, 0.45);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 1rem;
+
+}
+
+
+/* =========================================================
+   DIALOG
+   ========================================================= */
+
+.requisitos-dialog {
+
+    width: min(650px, 100%);
+
+    max-height: 85vh;
+
+    background: #ffffff;
+
+    border-radius: 0.75rem;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.18);
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   CABECERA DIALOG
+   ========================================================= */
+
+.requisitos-dialog-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    background: #e2e8f0;
+
+    padding: 0.9rem 1.25rem;
+
+}
+
+.requisitos-dialog-header h2 {
+
+    margin: 0;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    color: var(--brand-dark, #1e293b);
+
+}
+
+
+/* =========================================================
+   CERRAR DIALOG
+   ========================================================= */
+
+.btn-close-dialog {
+
+    border: none;
+
+    background: transparent;
+
+    color: #475569;
+
+    font-size: 1rem;
+
+    cursor: pointer;
+
+    padding: 0.25rem;
+
+}
+
+.btn-close-dialog:hover {
+
+    color: #1e293b;
+
+    transform: scale(1.1);
+
+}
+
+
+/* =========================================================
+   CUERPO DIALOG
+   ========================================================= */
+
+.requisitos-dialog-body {
+
+    padding: 1.25rem;
+
+    overflow-y: auto;
+
+}
+
+
+/* =========================================================
+   REQUISITOS
+   ========================================================= */
+
+.requisito-group {
+
+    margin-bottom: 1.25rem;
+
+}
+
+.requisito-group:last-child {
+
+    margin-bottom: 0;
+
+}
+
+.requisito-group h3 {
+
+    margin: 0 0 0.45rem;
+
+    font-size: 0.85rem;
+
+    font-weight: 700;
+
+    color: var(--brand-dark, #1e293b);
+
+}
+
+.requisito-text {
+
+    margin: 0;
+
+    font-size: 0.85rem;
+
+    line-height: 1.5;
+
+    color: #475569;
+
+}
+
+.requisitos-list {
+
+    margin: 0;
+
+    padding-left: 1.25rem;
+
+    color: #475569;
+
+}
+
+.requisitos-list li {
+
+    font-size: 0.85rem;
+
+    line-height: 1.5;
+
+    margin-bottom: 0.3rem;
+
+}
+
+.requisitos-list li:last-child {
+
+    margin-bottom: 0;
+
+}
+
+.requisitos-empty {
+
+    margin: 0;
+
+    text-align: center;
+
+    color: var(--text-muted, #64748b);
+
+    font-size: 0.85rem;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 992px) {
+
+    .vacantes-container {
+
+        padding: 1.25rem;
+
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .vacantes-container {
+
+        padding: 1rem;
+
+    }
+
+    .custom-table {
+
+        font-size: 0.8rem;
+
+    }
+
+    .custom-table th,
+    .custom-table td {
+
+        padding: 0.65rem 0.5rem;
+
+    }
+
+    .table-footer {
+
+        flex-wrap: wrap;
+
+    }
+
+}

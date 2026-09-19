@@ -1,0 +1,271 @@
+.roles-container {
+    width: 100%;
+    padding: 1.5rem 2.5rem;
+}
+
+/* LEYENDA DE RUTA */
+.breadcrumb-bar {
+    margin-bottom: 0.75rem;
+}
+
+.breadcrumb-path {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted, #64748b);
+    letter-spacing: 0.5px;
+}
+
+/* ENCABEZADO */
+.roles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.roles-header h1 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brand-dark, #1e293b);
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-icon,
+.btn-icon-sm {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--brand-dark, #1e293b);
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.btn-icon:hover,
+.btn-icon-sm:hover {
+    transform: scale(1.1);
+    color: var(--brand-primary, #0056b3);
+}
+
+/* GRID PRINCIPAL */
+.roles-grid {
+    display: grid;
+    grid-template-columns: 1fr 500px;
+    gap: 1.25rem;
+}
+
+.side-tables-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* CARDS DE TABLA */
+.card-table {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ESTILOS DE TABLAS */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.custom-table th {
+    background: #e2e8f0;
+    color: var(--brand-dark, #1e293b);
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    text-align: left;
+}
+
+.custom-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--brand-dark, #1e293b);
+}
+
+.custom-table tbody tr.active-row {
+    background-color: #f0f9ff;
+}
+
+.custom-table.compact td {
+    padding: 0.6rem 1rem;
+}
+
+/* CABECERA TABLAS SECUNDARIAS */
+.side-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #e2e8f0;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.side-title-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* CONTENEDOR CON SCROLL PARA MÓDULOS Y PANELES */
+.side-table-body {
+    height: 170px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* SCROLL */
+.side-table-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.side-table-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.side-table-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.side-table-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* BOTONES DE ACCIÓN EN TABLA */
+.action-btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.btn-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0.2rem;
+}
+
+.btn-action.view {
+    color: #16a34a;
+}
+
+.btn-action.edit {
+    color: #2563eb;
+}
+
+.btn-action.delete {
+    color: #ef4444;
+}
+
+/* PIE DE TABLA Y PAGINACIÓN */
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted, #64748b);
+    margin-top: auto;
+}
+
+.table-footer.compact {
+    justify-content: space-between;
+    padding: 0.6rem 0.75rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border-radius: 0.35rem;
+    cursor: pointer;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+#roles-page-number,
+#modulos-page-number,
+#paneles-page-number {
+    min-width: 65px;
+    text-align: center;
+}
+
+/* TABLA PRINCIPAL */
+.main-roles-card {
+    min-width: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+
+    .roles-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .roles-container {
+        padding: 1rem;
+    }
+
+    .roles-grid {
+        gap: 1rem;
+    }
+
+    .custom-table {
+        font-size: 0.8rem;
+    }
+
+    .custom-table th,
+    .custom-table td {
+        padding: 0.65rem 0.5rem;
+    }
+
+    .table-footer {
+        flex-wrap: wrap;
+    }
+
+}

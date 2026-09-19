@@ -38,6 +38,10 @@ ALTER TABLE IF EXISTS public.roles
 GRANT ALL ON TABLE public.roles TO postgres;
 GRANT ALL ON SEQUENCE public.roles_id_seq TO postgres;
 
+-- se añade token_duracion
+ALTER TABLE public.roles
+ADD COLUMN token_duracion INTEGER NOT NULL DEFAULT 60;
+
 -- paneles
 CREATE TABLE public.paneles
 (
@@ -88,6 +92,10 @@ ALTER TABLE IF EXISTS public.sesiones
 
 GRANT ALL ON TABLE public.sesiones TO postgres;
 GRANT ALL ON SEQUENCE public.sesiones_id_seq TO postgres;
+
+-- se añade fecha_expiracion para saber cuando vence la sesion
+ALTER TABLE public.sesiones
+ADD COLUMN fecha_expiracion timestamp with time zone;
 
 -- roles_paneles
 CREATE TABLE public.roles_paneles

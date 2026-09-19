@@ -21,15 +21,25 @@ class AuthController {
             return;
         }
 
-        // 3. Generar token y registrar sesión
+        // 3. Generar token
         $token = bin2hex(random_bytes(32));
-        $sesionModel = new SesionModel();
-        $sesionModel->crearSesion($usuario->id, $token);
 
-        // 4. Obtener roles desde el servicio
+        // 4. Obtener roles del usuario
         $roles = obtenerRolesUsuario($usuario->id);
 
-        // 5. Responder
+        // 5. Obtener duración del token según el rol
+        $tokenDuracion = obtenerDuracionTokenUsuario($usuario->id);
+
+        // 6. Registrar sesión con su duración
+        $sesionModel = new SesionModel();
+
+        $sesionModel->crearSesion(
+            $usuario->id,
+            $token,
+            $tokenDuracion
+        );
+
+        // 7. Responder
         http_response_code(200);
         echo json_encode([
             "message" => "Login exitoso",

@@ -64,27 +64,86 @@ class InstitucionalService {
     // --- CÁTEDRAS ---
 
     public function obtenerTodasCatedras(): array {
-        $sql = "SELECT c.id, c.nombre, c.id_departamento, c.id_usuario, 
-                       d.nombre as departamento_nombre, u.usuario as usuario_nombre
+
+        $sql = "SELECT
+                    c.id,
+                    c.nombre,
+                    c.id_departamento,
+                    c.id_usuario,
+
+                    d.nombre AS departamento_nombre,
+
+                    CONCAT_WS(
+                        ' ',
+                        u.nombre,
+                        u.apellido
+                    ) AS usuario_nombre
+
                 FROM public.catedras c
-                JOIN public.departamentos d ON c.id_departamento = d.id
-                JOIN public.usuarios u ON c.id_usuario = u.id
+
+                JOIN public.departamentos d
+                    ON c.id_departamento = d.id
+
+                JOIN public.usuarios u
+                    ON c.id_usuario = u.id
+
                 ORDER BY c.id ASC";
-        $stmt = $this->db->query($sql);
-        return array_map(fn($row) => (new Catedra($row))->toArray(), $stmt->fetchAll());
+
+
+        $stmt =
+            $this->db->query($sql);
+
+
+        return array_map(
+            fn($row) =>
+                (new Catedra($row))->toArray(),
+            $stmt->fetchAll(PDO::FETCH_ASSOC)
+        );
     }
 
     public function obtenerCatedraPorId(int $id): ?array {
-        $sql = "SELECT c.id, c.nombre, c.id_departamento, c.id_usuario, 
-                       d.nombre as departamento_nombre, u.usuario as usuario_nombre
+
+        $sql = "SELECT
+                    c.id,
+                    c.nombre,
+                    c.id_departamento,
+                    c.id_usuario,
+
+                    d.nombre AS departamento_nombre,
+
+                    CONCAT_WS(
+                        ' ',
+                        u.nombre,
+                        u.apellido
+                    ) AS usuario_nombre
+
                 FROM public.catedras c
-                JOIN public.departamentos d ON c.id_departamento = d.id
-                JOIN public.usuarios u ON c.id_usuario = u.id
+
+                JOIN public.departamentos d
+                    ON c.id_departamento = d.id
+
+                JOIN public.usuarios u
+                    ON c.id_usuario = u.id
+
                 WHERE c.id = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch();
-        return $row ? (new Catedra($row))->toArray() : null;
+
+
+        $stmt =
+            $this->db->prepare($sql);
+
+
+        $stmt->execute([
+            'id' => $id
+        ]);
+
+
+        $row =
+            $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+        return $row
+            ? (new Catedra($row))->toArray()
+            : null;
     }
 
     public function crearCatedra(array $data): bool {

@@ -3,16 +3,25 @@
 class Rol {
     public ?int $id;
     public string $nombre;
+    public ?int $duracionToken;
 
     public function __construct(array $data = []) {
-        $this->id     = isset($data['id']) ? (int)$data['id'] : null;
+        $this->id = isset($data['id'])
+            ? (int)$data['id']
+            : null;
+
         $this->nombre = $data['nombre'] ?? '';
+
+        $this->duracionToken = isset($data['token_duracion'])
+            ? (int)$data['token_duracion']
+            : null;
     }
 
     public function toArray(): array {
         return [
-            'id'     => $this->id,
-            'nombre' => $this->nombre
+            'id'             => $this->id,
+            'nombre'         => $this->nombre,
+            'duracion_token' => $this->duracionToken
         ];
     }
 }

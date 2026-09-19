@@ -1,0 +1,85 @@
+<!-- NAVBAR -->
+<app-navbar></app-navbar>
+
+<div class="vacantes-container postulaciones-container">
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb-bar">
+        <span class="breadcrumb-path">
+            MENÚ PRINCIPAL / PANELES / POSTULACIONES
+        </span>
+    </div>
+
+    <!-- ENCABEZADO -->
+    <header class="vacantes-header postulaciones-header">
+
+        <h1>Mis postulaciones</h1>
+
+        <div class="header-actions">
+            <button
+                id="btn-refresh-postulaciones"
+                class="btn-icon"
+                title="Recargar"
+                type="button">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+        </div>
+
+    </header>
+
+    <!-- TABLA PRINCIPAL -->
+    <section class="card-table main-vacantes-card main-postulaciones-card">
+
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Vacante</th>
+                        <th>Fecha de postulación</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tb-postulaciones">
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            Cargando postulaciones...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="table-footer">
+            <div class="pagination-info" id="postulaciones-page-info">
+                0 - 0 de 0
+            </div>
+
+            <div class="pagination-buttons">
+                <button
+                    id="postulaciones-prev"
+                    class="pagination-btn"
+                    type="button"
+                    disabled>
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <span id="postulaciones-page-number">Página 1</span>
+
+                <button
+                    id="postulaciones-next"
+                    class="pagination-btn"
+                    type="button"
+                    disabled>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+    </section>
+
+</div>
+
+<!-- FOOTER -->
+<app-footer></app-footer>

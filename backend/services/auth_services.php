@@ -4,9 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Usuario.php';
 require_once __DIR__ . '/../models/Sesion.php';
 
-/**
- * Busca un usuario por email en la BD y retorna el objeto UsuarioModel
- */
+/* Busca un usuario por email en la BD y retorna el objeto UsuarioModel */
 function obtenerUsuarioPorEmail(string $email): ?UsuarioModel {
     $db = Database::getConnection();
     
@@ -22,9 +20,7 @@ function obtenerUsuarioPorEmail(string $email): ?UsuarioModel {
     return $data ? new UsuarioModel($data) : null;
 }
 
-/**
- * Obtiene los roles asociados a un usuario
- */
+/* Obtiene los roles asociados a un usuario */
 function obtenerRolesUsuario(int $idUsuario): array {
     $db = Database::getConnection();
 
@@ -38,9 +34,7 @@ function obtenerRolesUsuario(int $idUsuario): array {
     return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 }
 
-/**
- * Middleware para proteger rutas usando Bearer Token
- */
+/* Middleware para proteger rutas usando Bearer Token */
 function verificarAutenticacion(): array {
     $headers = function_exists('getallheaders') ? getallheaders() : [];
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? null;
@@ -63,4 +57,29 @@ function verificarAutenticacion(): array {
     }
 
     return $sesion;
+}
+
+function obtenerDuracionTokenUsuario(int $idUsuario): int {
+
+    $db = Database::getConnection();
+
+    $sql = "SELECT MAX(r.token_duracion)
+            FROM public.roles_usuarios ru
+            JOIN public.roles r
+                ON ru.id_rol = r.id
+            WHERE ru.id_usuario = :id_usuario";
+
+    $stmt = $db->prepare($sql);
+
+    $stmt->execute([
+        ':id_usuario' => $idUsuario
+    ]);
+
+    $duracion = $stmt->fetchColumn();
+
+    // Si por alguna razón el usuario no tiene rol,
+    // se utiliza 60 minutos como valor por defecto.
+    return $duracion !== false
+        ? (int)$duracion
+        : 60;
 }

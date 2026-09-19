@@ -1,0 +1,263 @@
+/* CONTENEDOR PRINCIPAL */
+.app-viewport {
+    background-color: #f8fafc;
+    background-image:
+        radial-gradient(
+            at 0% 0%,
+            hsla(210, 100%, 93%, 1) 0px,
+            transparent 50%
+        ),
+        radial-gradient(
+            at 100% 100%,
+            hsla(204, 100%, 86%, 0.5) 0px,
+            transparent 50%
+        );
+    background-attachment: fixed;
+}
+
+/* LEYENDA DE RUTA */
+
+.breadcrumb-bar {
+    margin-bottom: 0.75rem;
+}
+
+.breadcrumb-path {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted, #64748b);
+    letter-spacing: 0.5px;
+}
+
+/* MAIN */
+.menu-main {
+    width: 100%;
+    padding: 2rem 2.5rem 1rem;
+}
+
+/* CONTENEDOR */
+.menu-container {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+}
+
+/* ENCABEZADO */
+.menu-header {
+    width: 100%;
+    margin-bottom: 1.0rem;
+}
+
+.menu-header h1 {
+    margin: 0 0 0.4rem;
+    color: var(--brand-dark, #1e293b);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.menu-header p {
+    margin: 0;
+    color: var(--text-muted, #64748b);
+    font-size: 0.95rem;
+}
+
+/* SECCIONES */
+.menu-section {
+    width: 100%;
+    margin-bottom: 2.75rem;
+}
+
+/* CABECERA DE SECCIÓN */
+.section-header {
+    width: 100%;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.section-header h2 {
+    margin: 0 0 0.25rem;
+    color: var(--brand-dark, #1e293b);
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.section-header p {
+    margin: 0;
+    color: var(--text-muted, #64748b);
+    font-size: 0.85rem;
+}
+
+
+/* GRID DE TARJETAS */
+.menu-grid {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+/* TARJETAS */
+.menu-card {
+    position: relative;
+    width: 400px;
+    min-width: 400px;
+    height: 170px;
+    display: flex;
+    align-items: flex-start;
+    padding: 1.5rem;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 1.1rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+/* HOVER */
+.menu-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(14, 165, 233, 0.35);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* FOCUS */
+.menu-card:focus-visible {
+    outline: none;
+    border-color: var(--brand-accent, #0ea5e9);
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+}
+
+/* ICONOS */
+.menu-card-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    border-radius: 0.8rem;
+    font-size: 1.25rem;
+}
+
+/* COLORES DE ICONOS */
+.icon-blue {
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.icon-green {
+    color: #16a34a;
+    background-color: #f0fdf4;
+}
+
+.icon-orange {
+    color: #ea580c;
+    background-color: #fff7ed;
+}
+
+.icon-purple {
+    color: #9333ea;
+    background-color: #faf5ff;
+}
+
+.icon-indigo {
+    color: #4f46e5;
+    background-color: #eef2ff;
+}
+
+.icon-teal {
+    color: #0f766e;
+    background-color: #f0fdfa;
+}
+
+/* CONTENIDO */
+.menu-card-content {
+    padding-right: 2rem;
+}
+
+.menu-card-content h3 {
+    margin: 0 0 0.45rem;
+    color: var(--brand-dark, #1e293b);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.menu-card-content p {
+    margin: 0;
+    color: var(--text-muted, #64748b);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* FLECHA */
+.menu-card-arrow {
+    position: absolute;
+    right: 1.25rem;
+    bottom: 1.15rem;
+    color: #2563eb;
+    font-size: 1.2rem;
+    transition: transform 0.2s ease;
+}
+
+.menu-card:hover .menu-card-arrow {
+    transform: translateX(4px);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .menu-main {
+        padding: 1.75rem 1.5rem 2.5rem;
+    }
+
+    .menu-card {
+        width: 380px;
+        min-width: 380px;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+    .menu-main {
+        padding: 1.5rem 1rem 2rem;
+    }
+
+    .menu-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .menu-card {
+        width: 100%;
+        min-width: 0;
+        height: 160px;
+    }
+
+}
+
+@media (max-width: 400px) {
+    .menu-card {
+        height: auto;
+        min-height: 155px;
+
+        padding: 1.25rem;
+    }
+
+    .menu-card-icon {
+        width: 42px;
+        height: 42px;
+
+        margin-right: 0.8rem;
+
+        font-size: 1.1rem;
+    }
+}

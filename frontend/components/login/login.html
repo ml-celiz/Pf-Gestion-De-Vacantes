@@ -1,103 +1,160 @@
 <div class="app-viewport d-flex flex-column min-vh-100">
-    
-    <!-- Top Header / Bar -->
-    <header class="app-navbar border-bottom bg-white sticky-top">
-        <div class="container-fluid px-3 px-md-4 d-flex align-items-center justify-content-between">
-            
-            <!-- Brand Info -->
-            <div class="brand-group d-flex align-items-center gap-3">
-                <div class="brand-badge d-flex align-items-center justify-content-center text-white fw-bold rounded-3" aria-hidden="true">
-                    UTN
-                </div>
-                <div class="brand-text">
-                    <span class="brand-title fw-bold text-dark d-block">Facultad Regional Rosario</span>
-                    <span class="brand-subtitle text-muted d-none d-sm-block">Universidad Tecnológica Nacional</span>
-                </div>
-            </div>
 
-        </div>
-    </header>
+    <!-- NAVBAR -->
+    <app-navbar data-public="true"></app-navbar>
 
-    <!-- Main Content Area -->
     <div class="app-workspace d-flex flex-grow-1">
 
-        <!-- Formulario Central -->
         <main class="app-main-content flex-grow-1 d-flex align-items-center justify-content-center p-3 p-md-5">
-            <div class="login-card-container w-100">
-                
+
+            <div class="login-card-container">
+
                 <header class="text-center mb-4">
-                    <h1 class="h3 fw-extrabold text-dark tracking-tight mb-2">Iniciar Sesión</h1>
-                    <p class="text-muted fs-6">Ingrese sus credenciales para acceder al portal</p>
+                    <h1 class="h3 fw-extrabold tracking-tight mb-2">
+                        ¡Bienvenido!
+                    </h1>
+
+                    <p class="text-muted fs-6">
+                        Ingresa tus credenciales para acceder
+                    </p>
                 </header>
 
-                <section class="card login-card border-0 rounded-4">
+                <section class="card login-card border-0">
+
                     <div class="card-body p-4 p-sm-5">
-                        
-                        <!-- Notificaciones dinámicas accesibles -->
-                        <div id="alert-container" aria-live="polite" aria-atomic="true"></div>
+
+                        <div
+                            id="alert-container"
+                            aria-live="polite"
+                            aria-atomic="true">
+                        </div>
 
                         <form id="login-form" novalidate>
-                            
-                            <!-- Campo Correo / Usuario -->
+
+                            <!-- Correo / Usuario -->
                             <div class="form-group mb-4">
-                                <label for="email" class="form-label fw-semibold text-dark">Correo Electrónico / Usuario</label>
-                                <input 
-                                    type="email" 
-                                    class="form-control form-control-custom" 
-                                    id="email" 
-                                    name="email" 
-                                    autocomplete="email"
-                                    placeholder="usuario@utn.edu.ar"
-                                    required
-                                    aria-describedby="email-help"
-                                >
-                                <div id="email-help" class="form-text visually-hidden-sr">Ingrese su usuario o correo institucional.</div>
-                                <div id="email-error" class="invalid-feedback">Por favor, ingrese un correo válido.</div>
-                            </div>
 
-                            <!-- Campo Contraseña -->
-                            <div class="form-group mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <label for="contrasenea" class="form-label fw-semibold text-dark mb-0">Contraseña</label>
-                                    <a href="#recuperar" class="link-forgot text-decoration-none fw-medium fs-7">¿Olvidó su contraseña?</a>
+                                <label
+                                    for="email"
+                                    class="form-label fw-semibold mb-2">
+                                    Correo Electrónico o Usuario
+                                </label>
+
+                                <div class="input-group-custom">
+
+                                    <i
+                                        class="bi bi-person input-icon"
+                                        aria-hidden="true">
+                                    </i>
+
+                                    <input
+                                        type="email"
+                                        class="form-control form-control-custom"
+                                        id="email"
+                                        name="email"
+                                        autocomplete="email"
+                                        placeholder="usuario@utn.edu.ar"
+                                        required
+                                        aria-describedby="email-help"
+                                    >
+
                                 </div>
-                                <input 
-                                    type="password" 
-                                    class="form-control form-control-custom" 
-                                    id="contrasenea" 
-                                    name="contrasenea"
-                                    autocomplete="current-password"
-                                    placeholder="••••••••"
-                                    required
-                                    aria-describedby="password-error"
-                                >
-                                <div id="password-error" class="invalid-feedback">La contraseña es obligatoria.</div>
+
+                                <div
+                                    id="email-help"
+                                    class="form-text visually-hidden-sr">
+                                    Ingrese su usuario o correo institucional.
+                                </div>
+
+                                <div
+                                    id="email-error"
+                                    class="invalid-feedback">
+                                    Por favor, ingrese un correo válido.
+                                </div>
+
                             </div>
 
-                            <!-- Botón Iniciar Sesión -->
-                            <button type="submit" id="btn-submit" class="btn btn-primary-custom w-100 fw-bold text-uppercase tracking-wider mt-3">
-                                <span id="btn-text">Iniciar Sesión</span>
-                                <span id="btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                            <!-- Contraseña -->
+                            <div class="form-group mb-4">
+
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                                    <label
+                                        for="contrasenea"
+                                        class="form-label fw-semibold mb-0">
+                                        Contraseña
+                                    </label>
+
+                                    <!-- 
+                                    <a
+                                        href="#recuperar"
+                                        class="link-forgot text-decoration-none fw-medium fs-7">
+                                        ¿Olvidaste tu contraseña?
+                                    </a>
+                                    -->
+
+                                </div>
+
+                                <div class="input-group-custom">
+
+                                    <i
+                                        class="bi bi-lock input-icon"
+                                        aria-hidden="true">
+                                    </i>
+
+                                    <input
+                                        type="password"
+                                        class="form-control form-control-custom"
+                                        id="contrasenea"
+                                        name="contrasenea"
+                                        autocomplete="current-password"
+                                        placeholder="••••••••"
+                                        required
+                                        aria-describedby="password-error"
+                                    >
+
+                                </div>
+
+                                <div
+                                    id="password-error"
+                                    class="invalid-feedback">
+                                    La contraseña es obligatoria.
+                                </div>
+
+                            </div>
+
+                            <!-- Botón -->
+                            <button
+                                type="submit"
+                                id="btn-submit"
+                                class="btn btn-primary-custom w-100 fw-bold text-uppercase mt-2">
+
+                                <span id="btn-text">
+                                    Iniciar Sesión
+                                </span>
+
+                                <span
+                                    id="btn-spinner"
+                                    class="spinner-border spinner-border-sm ms-2 d-none"
+                                    role="status"
+                                    aria-hidden="true">
+                                </span>
+
                             </button>
 
                         </form>
 
                     </div>
+
                 </section>
 
             </div>
+
         </main>
 
     </div>
 
-    <!-- Footer Inferior -->
-    <footer class="app-footer text-white py-3 px-3 border-top">
-        <div class="container text-center">
-            <p class="fw-bold mb-1 fs-6">FACULTAD REGIONAL ROSARIO &mdash; UNIVERSIDAD TECNOLÓGICA NACIONAL</p>
-            <p class="mb-0 fs-7 opacity-75">
-                Contactos: Zeballos 1341 - S2000BQA - Rosario | Tel: 0341 - 4481871
-            </p>
-        </div>
-    </footer>
+    <!--FOOTER -->
+    <app-footer></app-footer>
 
 </div>

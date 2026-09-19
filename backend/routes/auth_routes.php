@@ -20,8 +20,19 @@ function handleAuthRoutes(string $method, array $routeParams): void {
 
     if ($method === 'GET' && $action === 'me') {
         $sesionActual = verificarAutenticacion();
+        
+        // Asumiendo que $sesionActual contiene 'id_usuario' o 'id'
+        $userId = $sesionActual['id_usuario'] ?? $sesionActual['id'] ?? null;
+
         http_response_code(200);
-        echo json_encode(["usuario" => $sesionActual]);
+        echo json_encode([
+            "usuario" => [
+                "id" => $userId,
+                "email" => $sesionActual['email'] ?? null,
+                "nombre" => $sesionActual['nombre'] ?? null,
+                "roles" => obtenerRolesUsuario((int)$userId)
+            ]
+        ]);
         return;
     }
 

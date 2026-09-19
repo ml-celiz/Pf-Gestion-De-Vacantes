@@ -1,0 +1,170 @@
+<!-- NAVBAR -->
+<app-navbar></app-navbar>
+
+<div class="usuarios-container">
+
+    <!-- LEYENDA Y RUTA -->
+    <div class="breadcrumb-bar">
+
+        <span class="breadcrumb-path">
+            MENÚ PRINCIPAL / USUARIOS / USUARIOS
+        </span>
+
+    </div>
+
+
+    <!-- ENCABEZADO -->
+    <header class="usuarios-header">
+
+        <h1>
+            Gestión de usuarios
+        </h1>
+
+        <div class="header-actions">
+
+            <button
+                id="btn-refresh"
+                class="btn-icon"
+                title="Recargar"
+                type="button">
+
+                <i class="bi bi-arrow-counterclockwise"></i>
+
+            </button>
+
+            <button
+                id="btn-add-usuario"
+                class="btn-icon btn-add"
+                title="Añadir Usuario"
+                type="button">
+
+                <i class="bi bi-plus-circle-fill"></i>
+
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- TABLA -->
+    <section class="card-table usuarios-card">
+
+        <div class="table-responsive">
+
+            <table class="custom-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Nombre
+                        </th>
+
+                        <th>
+                            Apellido
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Rol
+                        </th>
+
+                        <th>
+                            Sesiones
+                        </th>
+
+                        <th>
+                            Registro
+                        </th>
+
+                        <th>
+                            Fecha de baja
+                        </th>
+
+                        <th class="text-center">
+                            Acciones
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="tb-usuarios">
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="text-center">
+
+                            Cargando usuarios...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- PAGINACIÓN -->
+        <div class="table-footer">
+
+            <div
+                class="pagination-info"
+                id="usuarios-page-info">
+
+                0 - 0 de 0
+
+            </div>
+
+
+            <div class="pagination-buttons">
+
+                <button
+                    id="usuarios-prev"
+                    class="pagination-btn"
+                    type="button"
+                    disabled>
+
+                    <i class="bi bi-chevron-left"></i>
+
+                </button>
+
+
+                <span id="usuarios-page-number">
+
+                    Página 1
+
+                </span>
+
+
+                <button
+                    id="usuarios-next"
+                    class="pagination-btn"
+                    type="button"
+                    disabled>
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- FOOTER -->
+<app-footer></app-footer>

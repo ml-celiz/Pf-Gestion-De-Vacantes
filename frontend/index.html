@@ -1,27 +1,506 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Vacantes - Iniciar Sesión</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxntzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <!-- Estilos Globales -->
+
+    <title>Sistema de Gestión de Vacantes - UTN FRRO</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    >
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- CSS global -->
     <link rel="stylesheet" href="assets/css/global.css">
 </head>
-<body class="bg-light">
 
-    <!-- Punto de montaje / Componente inicial -->
-    <div id="app-root">
+<body>
+
+    <!-- LOGIN -->
+    <div id="login-view">
         <app-login></app-login>
     </div>
 
-    <!-- Scripts de Bootstrap y Servicios Base -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- MENU -->
+    <div id="menu-view" style="display: none;">
+        <app-menu></app-menu>
+    </div>
+
+    <!-- LISTADO DE VACANTES -->
+    <div id="vacantes-view" style="display: none;">
+        <app-vacantes></app-vacantes>
+    </div>
+
+    <!-- POSTULACIONES -->
+    <div id="postulaciones-view" style="display: none;">
+        <app-postulaciones></app-postulaciones>
+    </div>
+
+    <!-- GESTIÓN DE VACANTES -->
+    <div id="gestion-vacantes-view" style="display: none;">
+        <app-gestion-vacantes></app-gestion-vacantes>
+    </div>
+
+    <!-- ROLES -->
+    <div id="roles-view" style="display: none;">
+        <app-roles></app-roles>
+    </div>
+
+    <!-- USUARIOS -->
+    <div id="usuarios-view" style="display: none;">
+        <app-usuarios></app-usuarios>
+    </div>
+
+
+    <!-- Bootstrap JS -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+
+    <!-- Servicios -->
     <script src="services/api.js"></script>
     <script src="services/auth.service.js"></script>
-    
-    <!-- Carga del Web Component Login -->
-    <script src="components/login/login.js" type="module"></script>
+
+
+    <!-- Componentes -->
+    <script type="module" src="components/navbar/navbar.js"></script>
+    <script type="module" src="components/login/login.js"></script>
+    <script type="module" src="components/menu/menu.js"></script>
+    <script type="module" src="components/footer/footer.js"></script>
+    <script type="module" src="components/usuarios/roles/roles.js"></script>
+    <script type="module" src="components/usuarios/usuarios/usuarios.js"></script>
+    <script type="module" src="components/configuraciones/gestion-vacantes/gestion-vacantes.js"></script>
+    <script type="module" src="components/paneles/vacantes/vacantes.js"></script>
+    <script type="module" src="components/paneles/postulaciones/postulaciones.js"></script>
+
+
+    <!-- NAVEGACIÓN ENTRE VISTAS -->
+    <script>
+
+        // ==========================================
+        // OBTENER RUTA DESDE LA URL
+        // ==========================================
+
+        function getRouteFromUrl() {
+
+            const hash = window.location.hash;
+
+            const routes = {
+
+                '#/paneles/vacantes':
+                    'vacantes',
+
+                '#/paneles/postulaciones':
+                    'postulaciones',
+
+                '#/configuraciones/gestion-vacantes':
+                    'gestion-vacantes',
+
+                '#/usuarios/roles':
+                    'roles',
+
+                '#/usuarios/usuarios':
+                    'usuarios'
+
+            };
+
+            return routes[hash] || 'menu';
+        }
+
+
+        // ==========================================
+        // NAVEGACIÓN
+        // ==========================================
+
+        document.addEventListener(
+            'navigate',
+            (event) => {
+
+                const route =
+                    event.detail.route;
+
+                console.log(
+                    'Ruta recibida:',
+                    route
+                );
+
+
+                // ==========================================
+                // ACTUALIZAR URL
+                // ==========================================
+
+                const routes = {
+
+                    menu:
+                        '',
+
+                    vacantes:
+                        '#/paneles/vacantes',
+
+                    postulaciones:
+                        '#/paneles/postulaciones',
+
+                    'gestion-vacantes':
+                        '#/configuraciones/gestion-vacantes',
+
+                    roles:
+                        '#/usuarios/roles',
+
+                    usuarios:
+                        '#/usuarios/usuarios'
+
+                };
+
+
+                const newHash =
+                    routes[route];
+
+
+                if (
+                    newHash !== undefined &&
+                    window.location.hash !== newHash
+                ) {
+
+                    window.history.pushState(
+                        {
+                            route: route
+                        },
+                        '',
+                        newHash ||
+                        window.location.pathname
+                    );
+
+                }
+
+
+                const loginView =
+                    document.getElementById(
+                        'login-view'
+                    );
+
+                const menuView =
+                    document.getElementById(
+                        'menu-view'
+                    );
+
+                const vacantesView =
+                    document.getElementById(
+                        'vacantes-view'
+                    );
+
+                const postulacionesView =
+                    document.getElementById(
+                        'postulaciones-view'
+                    );
+
+                const gestionVacantesView =
+                    document.getElementById(
+                        'gestion-vacantes-view'
+                    );
+
+                const rolesView =
+                    document.getElementById(
+                        'roles-view'
+                    );
+
+                const usuariosView =
+                    document.getElementById(
+                        'usuarios-view'
+                    );
+
+
+                // ==========================================
+                // OCULTAR TODAS LAS VISTAS
+                // ==========================================
+
+                if (loginView) {
+                    loginView.style.display = 'none';
+                }
+
+                if (menuView) {
+                    menuView.style.display = 'none';
+                }
+
+                if (vacantesView) {
+                    vacantesView.style.display = 'none';
+                }
+
+                if (postulacionesView) {
+                    postulacionesView.style.display = 'none';
+                }
+
+                if (gestionVacantesView) {
+                    gestionVacantesView.style.display = 'none';
+                }
+
+                if (rolesView) {
+                    rolesView.style.display = 'none';
+                }
+
+                if (usuariosView) {
+                    usuariosView.style.display = 'none';
+                }
+
+
+                // ==========================================
+                // MOSTRAR LA VISTA CORRESPONDIENTE
+                // ==========================================
+
+                switch (route) {
+
+                    case 'menu':
+
+                        if (menuView) {
+                            menuView.style.display = 'block';
+                        }
+
+                        break;
+
+
+                    case 'vacantes':
+
+                        if (vacantesView) {
+                            vacantesView.style.display = 'block';
+                        }
+
+                        break;
+
+
+                    case 'postulaciones':
+
+                        if (postulacionesView) {
+                            postulacionesView.style.display = 'block';
+                        }
+
+                        break;
+
+
+                    case 'gestion-vacantes':
+
+                        if (gestionVacantesView) {
+                            gestionVacantesView.style.display = 'block';
+                        }
+
+                        break;
+
+
+                    case 'roles':
+
+                        if (rolesView) {
+                            rolesView.style.display = 'block';
+                        }
+
+                        break;
+
+
+                    case 'usuarios':
+
+                        if (usuariosView) {
+                            usuariosView.style.display = 'block';
+                        }
+
+                        break;
+
+
+                    default:
+
+                        console.warn(
+                            'Ruta no implementada:',
+                            route
+                        );
+
+                }
+
+            }
+        );
+
+
+        // ==========================================
+        // BOTÓN ATRÁS / ADELANTE DEL NAVEGADOR
+        // ==========================================
+
+        window.addEventListener(
+            'popstate',
+            () => {
+
+                const route =
+                    getRouteFromUrl();
+
+                document.dispatchEvent(
+                    new CustomEvent(
+                        'navigate',
+                        {
+                            detail: {
+                                route: route
+                            }
+                        }
+                    )
+                );
+
+            }
+        );
+
+
+    </script>
+
+
+    <!-- RESTAURAR SESIÓN -->
+    <script>
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            async () => {
+
+                console.log(
+                    'Verificando sesión...'
+                );
+
+
+                const tieneSesion =
+                    await AuthService.restoreSession();
+
+
+                if (tieneSesion) {
+
+                    const route =
+                        getRouteFromUrl();
+
+
+                    console.log(
+                        'Sesión válida. Ruta:',
+                        route
+                    );
+
+
+                    document.dispatchEvent(
+                        new CustomEvent(
+                            'navigate',
+                            {
+                                detail: {
+                                    route: route
+                                }
+                            }
+                        )
+                    );
+
+                }
+
+            }
+        );
+
+
+        // ==========================================
+        // SESIÓN EXPIRADA
+        // ==========================================
+
+        document.addEventListener(
+            'auth-expired',
+            () => {
+
+                console.log(
+                    'La sesión ha expirado.'
+                );
+
+
+                const loginView =
+                    document.getElementById(
+                        'login-view'
+                    );
+
+                const menuView =
+                    document.getElementById(
+                        'menu-view'
+                    );
+
+                const vacantesView =
+                    document.getElementById(
+                        'vacantes-view'
+                    );
+
+                const postulacionesView =
+                    document.getElementById(
+                        'postulaciones-view'
+                    );
+
+                const gestionVacantesView =
+                    document.getElementById(
+                        'gestion-vacantes-view'
+                    );
+
+                const rolesView =
+                    document.getElementById(
+                        'roles-view'
+                    );
+
+                const usuariosView =
+                    document.getElementById(
+                        'usuarios-view'
+                    );
+
+
+                // Ocultar vistas autenticadas
+
+                if (menuView) {
+                    menuView.style.display = 'none';
+                }
+
+                if (vacantesView) {
+                    vacantesView.style.display = 'none';
+                }
+
+                if (postulacionesView) {
+                    postulacionesView.style.display = 'none';
+                }
+
+                if (gestionVacantesView) {
+                    gestionVacantesView.style.display = 'none';
+                }
+
+                if (rolesView) {
+                    rolesView.style.display = 'none';
+                }
+
+                if (usuariosView) {
+                    usuariosView.style.display = 'none';
+                }
+
+
+                // Mostrar login
+
+                if (loginView) {
+                    loginView.style.display = 'block';
+                }
+
+
+                // Volver a la URL principal
+
+                window.history.pushState(
+                    {},
+                    '',
+                    window.location.pathname
+                );
+
+            }
+        );
+
+    </script>
+
 </body>
+
 </html>

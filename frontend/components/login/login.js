@@ -43,16 +43,43 @@ class AppLogin extends HTMLElement {
             this.setLoading(btnSubmit, btnSpinner, btnText, true);
 
             try {
+                // LLAMADA A TU SERVICIO (Esto debe estar funcionando)
                 const result = await AuthService.login(
                     emailInput.value.trim(),
                     passwordInput.value
                 );
 
-                this.showAlert(alertContainer, 'success', '¡Autenticación exitosa! Redireccionando...');
+                this.showAlert(
+                    alertContainer,
+                    'success',
+                    '¡Autenticación exitosa! Redireccionando...'
+                );
 
                 setTimeout(() => {
-                    // Evento o redirección a otros componentes al autenticarse
-                    console.log('Usuario autenticado con éxito:', result.usuario);
+
+                    console.log(
+                        'Usuario autenticado con éxito:',
+                        result.usuario
+                    );
+
+                    const loginView = document.getElementById('login-view');
+                    const menuView = document.getElementById('menu-view');
+
+                    if (loginView && menuView) {
+
+                        // Limpiar mensaje de autenticación
+                        this.clearAlert();
+
+                        loginView.style.display = 'none';
+                        menuView.style.display = 'block';
+
+                    } else {
+
+                        console.error(
+                            "ERROR: No se encontraron las vistas."
+                        );
+                    }
+
                 }, 1200);
 
             } catch (error) {
@@ -96,6 +123,17 @@ class AppLogin extends HTMLElement {
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar notificación"></button>
         `;
         container.appendChild(alertDiv);
+    }
+
+    clearAlert() {
+
+        const alertContainer =
+            this.querySelector('#alert-container');
+
+        if (alertContainer) {
+            alertContainer.innerHTML = '';
+        }
+
     }
 
     setLoading(btnSubmit, btnSpinner, btnText, isLoading) {

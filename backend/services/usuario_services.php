@@ -11,11 +11,69 @@ class UsuarioService {
     }
 
     public function obtenerTodos(): array {
-        $sql = "SELECT * FROM public.usuarios WHERE fecha_baja IS NULL";
+
+        $sql = "
+            SELECT
+                u.id,
+                u.email,
+                u.nombre,
+                u.apellido,
+                u.dni,
+                u.telefono,
+                u.fecha_alta,
+                u.fecha_actualizacion,
+                u.fecha_baja,
+
+                -- Roles del usuario
+                COALESCE(
+                    STRING_AGG(
+                        DISTINCT r.nombre,
+                        ', '
+                        ORDER BY r.nombre
+                    ),
+                    'Sin rol'
+                ) AS rol,
+
+                -- Cantidad total de sesiones
+                COUNT(DISTINCT s.id) AS cantidad_sesiones
+
+            FROM public.usuarios u
+
+            LEFT JOIN public.roles_usuarios ru
+                ON ru.id_usuario = u.id
+
+            LEFT JOIN public.roles r
+                ON r.id = ru.id_rol
+
+            LEFT JOIN public.sesiones s
+                ON s.id_usuario = u.id
+
+            WHERE u.fecha_baja IS NULL
+
+            GROUP BY
+                u.id,
+                u.email,
+                u.nombre,
+                u.apellido,
+                u.dni,
+                u.telefono,
+                u.fecha_alta,
+                u.fecha_actualizacion,
+                u.fecha_baja
+
+            ORDER BY
+                u.apellido,
+                u.nombre
+        ";
+
         $stmt = $this->db->query($sql);
+
         $rows = $stmt->fetchAll();
 
-        return array_map(fn($row) => (new Usuario($row))->toArray(), $rows);
+        return array_map(
+            fn($row) => (new UsuarioModel($row))->toArray(),
+            $rows
+        );
     }
 
     public function obtenerPorId(int $id): ?array {
