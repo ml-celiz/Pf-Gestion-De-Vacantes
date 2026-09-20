@@ -66,27 +66,21 @@ class ApiClient {
 
             // OTROS ERRORES
             if (!response.ok) {
-
                 throw new Error(
                     data.message ||
                     `Error ${response.status}: Transacción no procesada.`
                 );
             }
-
-
             return data;
 
         } catch (error) {
-
             console.error(
                 'API Error:',
                 error.message
             );
-
             throw error;
         }
     }
-
 
     static get(endpoint) {
 
@@ -98,9 +92,7 @@ class ApiClient {
         );
     }
 
-
     static post(endpoint, body) {
-
         return this.request(
             endpoint,
             {
@@ -109,4 +101,24 @@ class ApiClient {
             }
         );
     }
-}
+
+    static put(endpoint, body) {
+        return this.request(
+            endpoint,
+            {
+                method: 'PUT',
+                body: JSON.stringify(body)
+            }
+        );
+    }
+
+
+    static delete(endpoint) {
+        return this.request(
+            endpoint,
+            {
+                method: 'DELETE'
+            }
+        );
+    }
+    }

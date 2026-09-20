@@ -58,111 +58,103 @@ class RolesComponent extends HTMLElement {
     initEvents() {
 
         // REFRESCAR
-        const btnRefresh =
-            this.querySelector('#btn-refresh');
+        const btnRefresh = this.querySelector('#btn-refresh');
 
         if (btnRefresh) {
-
             btnRefresh.addEventListener(
                 'click',
                 () => this.recargarTodo()
             );
+        }
 
+        // AGREGAR MÓDULO
+        const btnAddModulo = this.querySelector('#btn-add-modulo');
+
+        if (btnAddModulo) {
+            btnAddModulo.addEventListener(
+                'click',
+                () => this.abrirDialogoCrear('modulo')
+            );
+        }
+
+        // AGREGAR PANEL
+        const btnAddPanel = this.querySelector('#btn-add-panel');
+
+        if (btnAddPanel) {
+            btnAddPanel.addEventListener(
+                'click',
+                () => this.abrirDialogoCrear('panel')
+            );
         }
 
         // PAGINACIÓN ROLES
         const rolesPrev = this.querySelector('#roles-prev');
-
         const rolesNext = this.querySelector('#roles-next');
 
         if (rolesPrev) {
-
             rolesPrev.addEventListener(
                 'click',
                 () => {
-
                     if (this.rolesCurrentPage > 1) {
                         this.rolesCurrentPage--;
                         this.renderRoles();
                     }
-
                 }
             );
-
         }
 
         if (rolesNext) {
-
             rolesNext.addEventListener(
                 'click',
                 () => {
-
                     const totalPages =
                         Math.ceil(
                             this.roles.length /
                             this.rolesPerPage
                         );
-
                     if (
                         this.rolesCurrentPage <
                         totalPages
                     ) {
-
                         this.rolesCurrentPage++;
-
                         this.renderRoles();
-
                     }
-
                 }
             );
-
         }
 
         // PAGINACIÓN MÓDULOS
         const modulosPrev = this.querySelector('#modulos-prev');
-
         const modulosNext = this.querySelector('#modulos-next');
 
         if (modulosPrev) {
-
             modulosPrev.addEventListener(
                 'click',
                 () => {
-
                     if (this.modulosCurrentPage > 1) {
                         this.modulosCurrentPage--;
                         this.renderModulos();
                     }
-
                 }
             );
-
         }
 
         if (modulosNext) {
-
             modulosNext.addEventListener(
                 'click',
                 () => {
-
                     const totalPages =
                         Math.ceil(
                             this.modulos.length /
                             this.modulosPerPage
                         );
-
                     if (
                         this.modulosCurrentPage <
                         totalPages
                     ) {
-
                         this.modulosCurrentPage++;
-
                         this.renderModulos();
-
                     }
-
                 }
             );
 
@@ -170,64 +162,48 @@ class RolesComponent extends HTMLElement {
 
         // PAGINACIÓN PANELES
         const panelesPrev = this.querySelector('#paneles-prev');
-
         const panelesNext = this.querySelector('#paneles-next');
 
         if (panelesPrev) {
-
             panelesPrev.addEventListener(
                 'click',
                 () => {
-
                     if (this.panelesCurrentPage > 1) {
                         this.panelesCurrentPage--;
                         this.renderPaneles();
                     }
-
                 }
             );
-
         }
 
         if (panelesNext) {
-
             panelesNext.addEventListener(
                 'click',
                 () => {
-
                     const totalPages =
                         Math.ceil(
                             this.paneles.length /
                             this.panelesPerPage
                         );
-
                     if (
                         this.panelesCurrentPage <
                         totalPages
                     ) {
-
                         this.panelesCurrentPage++;
-
                         this.renderPaneles();
-
                     }
-
                 }
             );
-
         }
 
     }
 
     // RECARGAR TODO
     async recargarTodo() {
-
         this.rolesCurrentPage = 1;
         this.modulosCurrentPage = 1;
         this.panelesCurrentPage = 1;
-
         await this.cargarRoles();
-
     }
 
     // ROLES
@@ -682,30 +658,49 @@ class RolesComponent extends HTMLElement {
 
         modulosPagina.forEach(mod => {
 
-            const tr =
-                document.createElement('tr');
+            const tr = document.createElement('tr');
+
+            tr.dataset.id = mod.id;
 
             tr.innerHTML = `
-                <td>
-                    ${mod.nombre || mod.modulo || '-'}
-                </td>
+                <td>${mod.nombre || mod.modulo || '-'}</td>
 
                 <td class="text-center">
+                    <div class="action-btn-group">
+                        <button
+                            class="btn-action edit"
+                            title="Editar"
+                            type="button">
+                            <i class="bi bi-pencil"></i>
+                        </button>
 
-                    <button
-                        class="btn-action delete"
-                        title="Desasignar"
-                        type="button">
-
-                        <i class="bi bi-trash"></i>
-
-                    </button>
-
+                        <button
+                            class="btn-action delete"
+                            title="Eliminar"
+                            type="button">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </td>
             `;
 
-            tbody.appendChild(tr);
+            // EDITAR
+            const btnEdit = tr.querySelector('.btn-action.edit');
 
+            btnEdit.addEventListener(
+                'click',
+                () => this.abrirDialogoEditar('modulo', mod)
+            );
+
+            // ELIMINAR
+            const btnDelete = tr.querySelector('.btn-action.delete');
+
+            btnDelete.addEventListener(
+                'click',
+                () => this.abrirDialogoEliminar('modulo', mod)
+            );
+
+            tbody.appendChild(tr);
         });
 
         this.actualizarPaginacionModulos();
@@ -855,7 +850,6 @@ class RolesComponent extends HTMLElement {
     // =====================================================
     // RENDER PANELES
     // =====================================================
-
     renderPaneles() {
 
         const tbody =
@@ -904,6 +898,8 @@ class RolesComponent extends HTMLElement {
             const tr =
                 document.createElement('tr');
 
+            tr.dataset.id = panel.id;
+
             tr.innerHTML = `
                 <td>
                     ${panel.nombre || panel.panel || '-'}
@@ -911,17 +907,58 @@ class RolesComponent extends HTMLElement {
 
                 <td class="text-center">
 
-                    <button
-                        class="btn-action delete"
-                        title="Desasignar"
-                        type="button">
+                    <div class="action-btn-group">
 
-                        <i class="bi bi-trash"></i>
+                        <button
+                            class="btn-action edit"
+                            title="Editar"
+                            type="button">
 
-                    </button>
+                            <i class="bi bi-pencil"></i>
+
+                        </button>
+
+                        <button
+                            class="btn-action delete"
+                            title="Eliminar"
+                            type="button">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </div>
 
                 </td>
             `;
+
+            // EDITAR
+            const btnEdit =
+                tr.querySelector(
+                    '.btn-action.edit'
+                );
+
+            btnEdit.addEventListener(
+                'click',
+                () => this.abrirDialogoEditar(
+                    'panel',
+                    panel
+                )
+            );
+
+            // ELIMINAR
+            const btnDelete =
+                tr.querySelector(
+                    '.btn-action.delete'
+                );
+
+            btnDelete.addEventListener(
+                'click',
+                () => this.abrirDialogoEliminar(
+                    'panel',
+                    panel
+                )
+            );
 
             tbody.appendChild(tr);
 
@@ -934,7 +971,6 @@ class RolesComponent extends HTMLElement {
     // =====================================================
     // PAGINACIÓN PANELES
     // =====================================================
-
     actualizarPaginacionPaneles() {
 
         const total =
@@ -1014,12 +1050,328 @@ class RolesComponent extends HTMLElement {
 
     }
 
+    // =========================================================
+    // CREAR MÓDULO / PANEL
+    // =========================================================
+    abrirDialogoCrear(tipo) {
+
+        const esModulo = tipo === 'modulo';
+        const titulo = esModulo ? 'Agregar módulo' : 'Agregar panel';
+        const dialog = this.crearDialogoBase();
+
+        dialog.innerHTML = `
+
+            <div class="dialog-header">
+                <h2>${titulo}</h2>
+            </div>
+
+            <form class="dialog-form">
+                <div class="form-group">
+                    <label for="dialog-nombre">Nombre</label>
+                    <input
+                        id="dialog-nombre"
+                        type="text"
+                        class="form-control"
+                        maxlength="50"
+                        autocomplete="off"
+                        required>
+                </div>
+
+                <div class="dialog-actions">
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel">
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        `;
+
+        const form = dialog.querySelector('.dialog-form');
+        const input = dialog.querySelector('#dialog-nombre');
+        const btnCancel = dialog.querySelector('.dialog-cancel');
+
+        btnCancel.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+        form.addEventListener(
+            'submit',
+            async (event) => {
+
+                event.preventDefault();
+
+                const nombre = input.value.trim();
+
+                if (!nombre) {
+                    input.focus();
+                    return;
+                }
+
+                try {
+                    const endpoint = esModulo ? '/modulos' : '/paneles';
+
+                    await ApiClient.post(
+                        endpoint,
+                        {
+                            nombre: nombre
+                        }
+                    );
+
+                    dialog.close();
+
+                    if (esModulo) {
+                        await this.cargarModulosRol();
+                    } else {
+                        await this.cargarPanelesRol();
+                    }
+
+                } catch (error) {
+                    console.error(
+                        `Error creando ${tipo}:`,
+                        error
+                    );
+                    alert(
+                        `No se pudo crear el ${esModulo ? 'módulo' : 'panel'}.`
+                    );
+                }
+            }
+        );
+
+        document.body.appendChild(dialog);
+        dialog.showModal();
+        input.focus();
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+    }
+
+    // =========================================================
+    // EDITAR MÓDULO / PANEL
+    // =========================================================
+    abrirDialogoEditar(tipo, elemento) {
+
+        const esModulo = tipo === 'modulo';
+        const titulo = esModulo ? 'Editar módulo' : 'Editar panel';
+        const dialog = this.crearDialogoBase();
+
+        dialog.innerHTML = `
+
+            <div class="dialog-header">
+                <h2>${titulo}</h2>
+            </div>
+
+            <form class="dialog-form">
+                <div class="form-group">
+                    <label for="dialog-nombre">Nombre</label>
+                    <input
+                        id="dialog-nombre"
+                        type="text"
+                        class="form-control"
+                        maxlength="50"
+                        autocomplete="off"
+                        value="${this.escapeHtml(elemento.nombre || '')}"
+                        required>
+                </div>
+
+                <div class="dialog-actions">
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel">
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        `;
+
+        const form = dialog.querySelector('.dialog-form');
+        const input = dialog.querySelector('#dialog-nombre');
+        const btnCancel = dialog.querySelector('.dialog-cancel');
+
+        btnCancel.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+        form.addEventListener(
+            'submit',
+            async (event) => {
+
+                event.preventDefault();
+
+                const nombre = input.value.trim();
+
+                if (!nombre) {
+                    input.focus();
+                    return;
+                }
+
+                try {
+                    const endpoint = esModulo ? `/modulos/${elemento.id}` : `/paneles/${elemento.id}`;
+
+                    await ApiClient.put(
+                        endpoint,
+                        {
+                            nombre: nombre
+                        }
+                    );
+
+                    dialog.close();
+
+                    if (esModulo) {
+                        await this.cargarModulosRol();
+                    } else {
+                        await this.cargarPanelesRol();
+                    }
+
+                } catch (error) {
+                    console.error(
+                        `Error editando ${tipo}:`,
+                        error
+                    );
+                    alert(
+                        `No se pudo editar el ${esModulo ? 'módulo' : 'panel'}.`
+                    );
+                }
+            }
+        );
+
+
+        document.body.appendChild(dialog);
+        dialog.showModal();
+        input.focus();
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+    }
+
+    // =========================================================
+    // ELIMINAR MÓDULO / PANEL
+    // =========================================================
+    abrirDialogoEliminar(tipo, elemento) {
+
+        const esModulo = tipo === 'modulo';
+        const nombreTipo = esModulo ? 'módulo' : 'panel';
+        const dialog = this.crearDialogoBase();
+
+        dialog.innerHTML = `
+
+            <div class="dialog-header">
+                <h2>Eliminar ${nombreTipo}</h2>
+            </div>
+
+            <div class="dialog-content">
+                <p>
+                    ¿Desea eliminar el ${nombreTipo}
+                    <strong>${this.escapeHtml(elemento.nombre)}</strong>?
+                </p>
+            </div>
+
+            <div class="dialog-actions">
+                <button
+                    type="button"
+                    class="btn btn-secondary dialog-cancel">
+                    Cancelar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-danger dialog-confirm-delete">
+                    Eliminar
+                </button>
+            </div>
+        `;
+
+        const btnCancel = dialog.querySelector('.dialog-cancel');
+        const btnDelete = dialog.querySelector('.dialog-confirm-delete');
+
+        btnCancel.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+        btnDelete.addEventListener(
+            'click',
+            async () => {
+                try {
+                    const endpoint =
+                        esModulo ? `/modulos/${elemento.id}` : `/paneles/${elemento.id}`;
+                    await ApiClient.delete(endpoint);
+
+                    dialog.close();
+
+                    if (esModulo) {
+                        await this.cargarModulosRol();
+                    } else {
+                        await this.cargarPanelesRol();
+                    }
+
+                } catch (error) {
+                    console.error(
+                        `Error eliminando ${tipo}:`,
+                        error
+                    );
+                    alert(
+                        `No se pudo eliminar el ${nombreTipo}.`
+                    );
+                }
+            }
+        );
+
+        document.body.appendChild(dialog);
+        dialog.showModal();
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+    }
+
+
+    // =========================================================
+    // CREAR DIALOG BASE
+    // =========================================================
+    crearDialogoBase() {
+        const dialog = document.createElement('dialog');
+        dialog.classList.add('custom-dialog');
+        return dialog;
+    }
+
+
+    // =========================================================
+    // ESCAPAR HTML
+    // =========================================================
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
 }
 
 // =========================================================
 // REGISTRAR COMPONENTE
 // =========================================================
-
 customElements.define(
     'app-roles',
     RolesComponent
