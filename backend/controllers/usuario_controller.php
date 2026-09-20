@@ -25,16 +25,28 @@ class UsuarioController {
         }
     }
 
-    public function crear(): void {
+    public function crear(): void
+    {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        $exito = $this->usuarioService->crear($input);
 
-        if ($exito) {
+        $id = $this->usuarioService->crear($input);
+
+        if ($id !== false) {
+
             http_response_code(201);
-            echo json_encode(["message" => "Usuario creado exitosamente."]);
+
+            echo json_encode([
+                "message" => "Usuario creado exitosamente.",
+                "id" => $id
+            ]);
+
         } else {
+
             http_response_code(400);
-            echo json_encode(["message" => "No se pudo crear el usuario. Verifique los datos enviados."]);
+
+            echo json_encode([
+                "message" => "No se pudo crear el usuario. Verifique los datos enviados."
+            ]);
         }
     }
 

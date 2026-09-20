@@ -209,9 +209,6 @@ class RolesComponent extends HTMLElement {
 
     // RECARGAR TODO
     async recargarTodo() {
-        this.rolesCurrentPage = 1;
-        this.modulosCurrentPage = 1;
-        this.panelesCurrentPage = 1;
         await this.cargarRoles();
     }
 
@@ -223,13 +220,10 @@ class RolesComponent extends HTMLElement {
             this.querySelector('#tb-roles');
 
         if (!tbody) {
-
             console.error(
                 'No se encontró #tb-roles'
             );
-
             return;
-
         }
 
         tbody.innerHTML = `
@@ -244,8 +238,7 @@ class RolesComponent extends HTMLElement {
 
         try {
 
-            const roles =
-                await ApiClient.get('/roles');
+            const roles = await ApiClient.get('/roles');
 
             this.roles = roles || [];
 
@@ -273,7 +266,6 @@ class RolesComponent extends HTMLElement {
                 `;
 
                 this.actualizarPaginacionRoles();
-
                 this.renderModulos();
                 this.renderPaneles();
 
@@ -283,21 +275,27 @@ class RolesComponent extends HTMLElement {
             // Renderizar roles
             this.renderRoles();
 
-            // Seleccionar automáticamente
-            // el primer rol
+            // Mantener seleccionado el rol actual
+            let rolSeleccionado = this.roles.find(
+                rol => Number(rol.id) === Number(this.selectedRolId)
+            );
 
-            const firstRow =
-                this.querySelector(
-                    '#tb-roles tr'
+            if (!rolSeleccionado) {
+                rolSeleccionado = this.roles[0];
+                this.selectedRolId = rolSeleccionado?.id ?? null;
+            }
+
+            if (rolSeleccionado) {
+                const selectedRow = this.querySelector(
+                    `#tb-roles tr[data-id="${rolSeleccionado.id}"]`
                 );
 
-            if (firstRow) {
-
-                this.seleccionarRol(
-                    this.roles[0].id,
-                    firstRow
-                );
-
+                if (selectedRow) {
+                    this.seleccionarRol(
+                        rolSeleccionado.id,
+                        selectedRow
+                    );
+                }
             }
 
         } catch (error) {
@@ -583,13 +581,9 @@ class RolesComponent extends HTMLElement {
     // MÓDULOS
     // GET /api/modulos
     // =====================================================
-
     async cargarModulosRol() {
 
-        const tbody =
-            this.querySelector(
-                '#tb-modulos'
-            );
+        const tbody = this.querySelector('#tb-modulos');
 
         if (!tbody) return;
 
@@ -605,13 +599,21 @@ class RolesComponent extends HTMLElement {
 
         try {
 
-            const modulos =
-                await ApiClient.get('/modulos');
+            const modulos = await ApiClient.get('/modulos');
 
-            this.modulos =
-                modulos || [];
+            this.modulos = modulos || [];
 
-            this.modulosCurrentPage = 1;
+            const totalPages = Math.max(
+                1,
+                Math.ceil(
+                    this.modulos.length /
+                    this.modulosPerPage
+                )
+            );
+
+            if (this.modulosCurrentPage > totalPages) {
+                this.modulosCurrentPage = totalPages;
+            }
 
             this.renderModulos();
 
@@ -821,13 +823,9 @@ class RolesComponent extends HTMLElement {
     // PANELES
     // GET /api/paneles
     // =====================================================
-
     async cargarPanelesRol() {
 
-        const tbody =
-            this.querySelector(
-                '#tb-paneles'
-            );
+        const tbody = this.querySelector('#tb-paneles');
 
         if (!tbody) return;
 
@@ -843,13 +841,21 @@ class RolesComponent extends HTMLElement {
 
         try {
 
-            const paneles =
-                await ApiClient.get('/paneles');
+            const paneles = await ApiClient.get('/paneles');
 
-            this.paneles =
-                paneles || [];
+            this.paneles = paneles || [];
 
-            this.panelesCurrentPage = 1;
+            const totalPages = Math.max(
+                1,
+                Math.ceil(
+                    this.paneles.length /
+                    this.panelesPerPage
+                )
+            );
+
+            if (this.panelesCurrentPage > totalPages) {
+                this.panelesCurrentPage = totalPages;
+            }
 
             this.renderPaneles();
 
@@ -1159,13 +1165,19 @@ class RolesComponent extends HTMLElement {
                         await this.cargarPanelesRol();
                     }
 
+                    this.mostrarSnackbar(
+                        `${esModulo ? 'Módulo' : 'Panel'} creado correctamente.`
+                    );
+
                 } catch (error) {
                     console.error(
                         `Error creando ${tipo}:`,
                         error
                     );
-                    alert(
-                        `No se pudo crear el ${esModulo ? 'módulo' : 'panel'}.`
+
+                    this.mostrarSnackbar(
+                        `No se pudo crear el ${esModulo ? 'módulo' : 'panel'}.`,
+                        'error'
                     );
                 }
             }
@@ -1266,13 +1278,19 @@ class RolesComponent extends HTMLElement {
                         await this.cargarPanelesRol();
                     }
 
+                    this.mostrarSnackbar(
+                        `${esModulo ? 'Módulo' : 'Panel'} actualizado correctamente.`
+                    );
+
                 } catch (error) {
                     console.error(
                         `Error editando ${tipo}:`,
                         error
                     );
-                    alert(
-                        `No se pudo editar el ${esModulo ? 'módulo' : 'panel'}.`
+
+                    this.mostrarSnackbar(
+                        `No se pudo editar el ${esModulo ? 'módulo' : 'panel'}.`,
+                        'error'
                     );
                 }
             }
@@ -1351,13 +1369,19 @@ class RolesComponent extends HTMLElement {
                         await this.cargarPanelesRol();
                     }
 
+                    this.mostrarSnackbar(
+                        `${esModulo ? 'Módulo' : 'Panel'} eliminado correctamente.`
+                    );
+
                 } catch (error) {
                     console.error(
                         `Error eliminando ${tipo}:`,
                         error
                     );
-                    alert(
-                        `No se pudo eliminar el ${nombreTipo}.`
+
+                    this.mostrarSnackbar(
+                        `No se pudo eliminar el ${nombreTipo}.`,
+                        'error'
                     );
                 }
             }
@@ -1781,7 +1805,6 @@ class RolesComponent extends HTMLElement {
             // ==========================================
             // 1. CREAR / ACTUALIZAR ROL
             // ==========================================
-
             if (!esEdicion) {
 
                 const respuesta = await ApiClient.post(
@@ -1817,7 +1840,6 @@ class RolesComponent extends HTMLElement {
             // ==========================================
             // 2. OBTENER PERMISOS SELECCIONADOS
             // ==========================================
-
             const filasModulos =
                 [...dialog.querySelectorAll(
                     'tr[data-modulo-id]'
@@ -1832,7 +1854,6 @@ class RolesComponent extends HTMLElement {
             // ==========================================
             // 3. MÓDULOS
             // ==========================================
-
             let modulosActuales = [];
 
             if (esEdicion) {
@@ -1878,8 +1899,7 @@ class RolesComponent extends HTMLElement {
                         '[data-permiso="editar"]'
                     ).checked;
 
-                const existente =
-                    modulosActualesMap.get(idModulo);
+                const existente = modulosActualesMap.get(idModulo);
 
 
                 if (existente) {
@@ -1915,7 +1935,6 @@ class RolesComponent extends HTMLElement {
             // ==========================================
             // 4. PANELES
             // ==========================================
-
             let panelesActuales = [];
 
             if (esEdicion) {
@@ -1974,12 +1993,11 @@ class RolesComponent extends HTMLElement {
             // ==========================================
             // 5. FINALIZAR
             // ==========================================
-
             dialog.close();
 
             await this.recargarTodo();
 
-            alert(
+            this.mostrarSnackbar(
                 esEdicion
                     ? 'Rol actualizado correctamente.'
                     : 'Rol creado correctamente.'
@@ -1992,9 +2010,9 @@ class RolesComponent extends HTMLElement {
                 error
             );
 
-            alert(
-                'No se pudo guardar el rol. ' +
-                'Verificá los datos e intentá nuevamente.'
+            this.mostrarSnackbar(
+                'No se pudo guardar el rol. Verificá los datos e intentá nuevamente.',
+                'error'
             );
         }
     }
@@ -2077,6 +2095,10 @@ class RolesComponent extends HTMLElement {
 
                     await this.recargarTodo();
 
+                    this.mostrarSnackbar(
+                        'Rol eliminado correctamente.'
+                    );
+
                 } catch (error) {
 
                     console.error(
@@ -2084,8 +2106,9 @@ class RolesComponent extends HTMLElement {
                         error
                     );
 
-                    alert(
-                        'No se pudo eliminar el rol.'
+                    this.mostrarSnackbar(
+                        'No se pudo eliminar el rol.',
+                        'error'
                     );
                 }
             }
@@ -2119,6 +2142,49 @@ class RolesComponent extends HTMLElement {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // =========================================================
+    // SNACKBAR
+    // =========================================================
+    mostrarSnackbar(mensaje, tipo = 'success') {
+
+        const anterior = document.querySelector('.app-snackbar');
+
+        if (anterior) {
+            anterior.remove();
+        }
+
+        const snackbar = document.createElement('div');
+
+        snackbar.className =
+            `app-snackbar app-snackbar-${tipo}`;
+
+        snackbar.innerHTML = `
+            <i class="bi ${
+                tipo === 'success'
+                    ? 'bi-check-circle-fill'
+                    : 'bi-exclamation-circle-fill'
+            }"></i>
+
+            <span>${this.escapeHtml(mensaje)}</span>
+        `;
+
+        document.body.appendChild(snackbar);
+
+        requestAnimationFrame(() => {
+            snackbar.classList.add('show');
+        });
+
+        setTimeout(() => {
+
+            snackbar.classList.remove('show');
+
+            setTimeout(() => {
+                snackbar.remove();
+            }, 300);
+
+        }, 3000);
     }
 
 }

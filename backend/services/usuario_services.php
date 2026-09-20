@@ -3,15 +3,22 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Usuario.php';
 
-class UsuarioService {
+class UsuarioService
+{
     private PDO $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = Database::getConnection();
     }
 
-    public function obtenerTodos(): array {
 
+    // =====================================================
+    // OBTENER TODOS
+    // =====================================================
+
+    public function obtenerTodos(): array
+    {
         $sql = "
             SELECT
                 u.id,
@@ -24,7 +31,6 @@ class UsuarioService {
                 u.fecha_actualizacion,
                 u.fecha_baja,
 
-                -- Roles del usuario
                 COALESCE(
                     STRING_AGG(
                         DISTINCT r.nombre,
@@ -34,7 +40,6 @@ class UsuarioService {
                     'Sin rol'
                 ) AS rol,
 
-                -- Cantidad total de sesiones
                 COUNT(DISTINCT s.id) AS cantidad_sesiones
 
             FROM public.usuarios u
@@ -76,32 +81,89 @@ class UsuarioService {
         );
     }
 
-    public function obtenerPorId(int $id): ?array {
-        $sql = "SELECT * FROM public.usuarios WHERE id = :id AND fecha_baja IS NULL";
+
+    // =====================================================
+    // OBTENER POR ID
+    // =====================================================
+
+    public function obtenerPorId(int $id): ?array
+    {
+        $sql = "
+            SELECT *
+            FROM public.usuarios
+            WHERE id = :id
+                AND fecha_baja IS NULL
+        ";
+
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
+
+        $stmt->execute([
+            'id' => $id
+        ]);
+
         $row = $stmt->fetch();
 
-        return $row ? (new Usuario($row))->toArray() : null;
+        return $row
+            ? (new UsuarioModel($row))->toArray()
+            : null;
     }
 
-    public function crear(array $data): bool {
-        $rawPassword = $data['contrasena'] ?? $data['contraseña'] ?? null;
-        $email = $data['email'] ?? null;
+
+    // =====================================================
+    // CREAR
+    // =====================================================
+
+    public function crear(array $data): int|false
+    {
+        $rawPassword =
+            $data['contrasena']
+            ?? $data['contraseña']
+            ?? null;
+
+        $email =
+            $data['email']
+            ?? null;
 
         if (empty($email) || empty($rawPassword)) {
             return false;
         }
 
-        $usuario = new Usuario($data);
-        $hash = password_hash($rawPassword, PASSWORD_BCRYPT);
+        $usuario = new UsuarioModel($data);
+
+        $hash = password_hash(
+            $rawPassword,
+            PASSWORD_BCRYPT
+        );
 
         try {
-            $sql = "INSERT INTO public.usuarios (email, nombre, apellido, contrasena, dni, telefono, fecha_alta) 
-                    VALUES (:email, :nombre, :apellido, :contrasena, :dni, :telefono, NOW())";
-            
+
+            $sql = "
+                INSERT INTO public.usuarios
+                    (
+                        email,
+                        nombre,
+                        apellido,
+                        contrasena,
+                        dni,
+                        telefono,
+                        fecha_alta
+                    )
+                VALUES
+                    (
+                        :email,
+                        :nombre,
+                        :apellido,
+                        :contrasena,
+                        :dni,
+                        :telefono,
+                        NOW()
+                    )
+                RETURNING id
+            ";
+
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
+
+            $stmt->execute([
                 'email'      => $usuario->email,
                 'nombre'     => $usuario->nombre,
                 'apellido'   => $usuario->apellido,
@@ -109,63 +171,176 @@ class UsuarioService {
                 'dni'        => $usuario->dni,
                 'telefono'   => $usuario->telefono
             ]);
+
+            $id = $stmt->fetchColumn();
+
+            return $id !== false
+                ? (int)$id
+                : false;
+
         } catch (PDOException $e) {
-            error_log("Error PDO al crear usuario: " . $e->getMessage());
+
+            error_log(
+                "Error PDO al crear usuario: "
+                . $e->getMessage()
+            );
+
             return false;
         }
     }
 
-    public function actualizar(int $id, array $data): bool {
-        $usuarioExistente = $this->obtenerPorId($id);
+
+    // =====================================================
+    // ACTUALIZAR
+    // =====================================================
+
+    public function actualizar(
+        int $id,
+        array $data
+    ): bool {
+
+        // ---------------------------------------------
+        // Verificar que exista
+        // ---------------------------------------------
+
+        $usuarioExistente =
+            $this->obtenerPorId($id);
+
         if (!$usuarioExistente) {
             return false;
         }
 
-        $usuario = new Usuario($data);
-        $rawPassword = $data['contrasena'] ?? $data['contraseña'] ?? null;
 
-        // Si envían contraseña nueva, se le hace hash; si no, se mantiene la actual
+        // ---------------------------------------------
+        // Crear modelo con los datos recibidos
+        // ---------------------------------------------
+
+        $usuario =
+            new UsuarioModel($data);
+
+
+        // ---------------------------------------------
+        // CONTRASEÑA
+        // ---------------------------------------------
+
+        $rawPassword =
+            $data['contrasena']
+            ?? $data['contraseña']
+            ?? null;
+
+
         if (!empty($rawPassword)) {
-            $hash = password_hash($rawPassword, PASSWORD_BCRYPT);
+
+            // Se cambió la contraseña
+            $hash = password_hash(
+                $rawPassword,
+                PASSWORD_BCRYPT
+            );
+
         } else {
-            $sqlPass = "SELECT contrasena FROM public.usuarios WHERE id = :id";
-            $stmtPass = $this->db->prepare($sqlPass);
-            $stmtPass->execute(['id' => $id]);
-            $hash = $stmtPass->fetchColumn();
+
+            // Mantener contraseña actual
+            $sqlPass = "
+                SELECT contrasena
+                FROM public.usuarios
+                WHERE id = :id
+            ";
+
+            $stmtPass =
+                $this->db->prepare($sqlPass);
+
+            $stmtPass->execute([
+                'id' => $id
+            ]);
+
+            $hash =
+                $stmtPass->fetchColumn();
         }
 
-        try {
-            $sql = "UPDATE public.usuarios 
-                    SET email = :email,
-                        nombre = :nombre,
-                        apellido = :apellido,
-                        contrasena = :contrasena,
-                        dni = :dni,
-                        telefono = :telefono,
-                        fecha_actualizacion = NOW()
-                    WHERE id = :id AND fecha_baja IS NULL";
 
-            $stmt = $this->db->prepare($sql);
+        // ---------------------------------------------
+        // ACTUALIZAR
+        // ---------------------------------------------
+
+        try {
+
+            $sql = "
+                UPDATE public.usuarios
+
+                SET
+                    email = :email,
+                    nombre = :nombre,
+                    apellido = :apellido,
+                    contrasena = :contrasena,
+                    dni = :dni,
+                    telefono = :telefono,
+                    fecha_actualizacion = NOW()
+
+                WHERE id = :id
+                    AND fecha_baja IS NULL
+            ";
+
+            $stmt =
+                $this->db->prepare($sql);
+
             return $stmt->execute([
-                'id'         => $id,
-                'email'      => $usuario->email ?: $usuarioExistente['email'],
-                'nombre'     => $usuario->nombre,
-                'apellido'   => $usuario->apellido,
-                'contrasena' => $hash,
-                'dni'        => $usuario->dni,
-                'telefono'   => $usuario->telefono
+
+                'id' =>
+                    $id,
+
+                'email' =>
+                    $usuario->email
+                    ?: $usuarioExistente['email'],
+
+                'nombre' =>
+                    $usuario->nombre,
+
+                'apellido' =>
+                    $usuario->apellido,
+
+                'contrasena' =>
+                    $hash,
+
+                'dni' =>
+                    $usuario->dni,
+
+                'telefono' =>
+                    $usuario->telefono
             ]);
+
         } catch (PDOException $e) {
-            error_log("Error PDO al actualizar usuario: " . $e->getMessage());
+
+            error_log(
+                "Error PDO al actualizar usuario: "
+                . $e->getMessage()
+            );
+
             return false;
         }
     }
 
-    public function eliminar(int $id): bool {
-        // Se actualiza la fecha_baja
-        $sql = "UPDATE public.usuarios SET fecha_baja = NOW() WHERE id = :id AND fecha_baja IS NULL";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
+
+    // =====================================================
+    // ELIMINAR
+    // =====================================================
+
+    public function eliminar(int $id): bool
+    {
+        $sql = "
+            UPDATE public.usuarios
+
+            SET fecha_baja = NOW()
+
+            WHERE id = :id
+                AND fecha_baja IS NULL
+        ";
+
+        $stmt =
+            $this->db->prepare($sql);
+
+        $stmt->execute([
+            'id' => $id
+        ]);
 
         return $stmt->rowCount() > 0;
     }

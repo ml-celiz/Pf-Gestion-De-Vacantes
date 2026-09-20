@@ -1,10 +1,15 @@
+/* =========================================================
+   ROLES - CONTENEDOR
+   ========================================================= */
+
 .roles-container {
     width: 100%;
     padding: 1.5rem 2.5rem;
 }
 
+
 /* =========================================================
-   LEYENDA DE RUTA
+   BREADCRUMB / LEYENDA DE RUTA
    ========================================================= */
 
 .breadcrumb-bar {
@@ -12,11 +17,12 @@
 }
 
 .breadcrumb-path {
+    color: var(--text-muted, #64748b);
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--text-muted, #64748b);
     letter-spacing: 0.5px;
 }
+
 
 /* =========================================================
    ENCABEZADO
@@ -24,19 +30,22 @@
 
 .roles-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: #e2e8f0;
-    padding: 0.75rem 1.25rem;
-    border-radius: 0.5rem;
+    justify-content: space-between;
+
     margin-bottom: 1.25rem;
+    padding: 0.75rem 1.25rem;
+
+    background: #e2e8f0;
+    border-radius: 0.5rem;
 }
 
 .roles-header h1 {
     margin: 0;
+
+    color: var(--brand-dark, #1e293b);
     font-size: 0.95rem;
     font-weight: 700;
-    color: var(--brand-dark, #1e293b);
 }
 
 .header-actions {
@@ -44,23 +53,37 @@
     gap: 0.75rem;
 }
 
+
+/* =========================================================
+   BOTONES DE ICONO
+   ========================================================= */
+
 .btn-icon,
 .btn-icon-sm {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--brand-dark, #1e293b);
-    font-size: 1.1rem;
     display: inline-flex;
     align-items: center;
-    transition: transform 0.15s ease, color 0.15s ease;
+    justify-content: center;
+
+    padding: 0;
+    border: none;
+    background: transparent;
+
+    color: var(--brand-dark, #1e293b);
+    font-size: 1.1rem;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        color 0.15s ease;
 }
 
 .btn-icon:hover,
 .btn-icon-sm:hover {
-    transform: scale(1.1);
     color: var(--brand-primary, #0056b3);
+    transform: scale(1.1);
 }
+
 
 /* =========================================================
    GRID PRINCIPAL
@@ -68,8 +91,12 @@
 
 .roles-grid {
     display: grid;
-    grid-template-columns: 1fr 500px;
+    grid-template-columns: minmax(0, 1fr) 500px;
     gap: 1.25rem;
+}
+
+.main-roles-card {
+    min-width: 0;
 }
 
 .side-tables-container {
@@ -78,41 +105,52 @@
     gap: 1.25rem;
 }
 
+
 /* =========================================================
-   CARDS DE TABLA
+   CARDS DE TABLAS
    ========================================================= */
 
 .card-table {
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
     background: #ffffff;
     border: 1px solid rgba(226, 232, 240, 0.9);
     border-radius: 0.75rem;
+
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
 }
 
+
 /* =========================================================
-   ESTILOS DE TABLAS
+   TABLAS GENERALES
    ========================================================= */
 
 .custom-table {
     width: 100%;
+
     border-collapse: collapse;
+
     font-size: 0.875rem;
 }
 
 .custom-table th {
+    padding: 0.85rem 1rem;
+
     background: #e2e8f0;
     color: var(--brand-dark, #1e293b);
+
     font-weight: 600;
-    padding: 0.85rem 1rem;
     text-align: left;
 }
 
 .custom-table td {
     padding: 0.85rem 1rem;
+
     border-bottom: 1px solid #f1f5f9;
+
     color: var(--brand-dark, #1e293b);
 }
 
@@ -124,18 +162,22 @@
     padding: 0.6rem 1rem;
 }
 
+
 /* =========================================================
-   CABECERA TABLAS SECUNDARIAS
+   CABECERA DE TABLAS SECUNDARIAS
    ========================================================= */
 
 .side-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: #e2e8f0;
+    justify-content: space-between;
+
     padding: 0.75rem 1rem;
-    font-weight: 600;
+
+    background: #e2e8f0;
+
     font-size: 0.875rem;
+    font-weight: 600;
 }
 
 .side-title-actions {
@@ -144,54 +186,69 @@
     gap: 0.5rem;
 }
 
+
 /* =========================================================
-   CONTENEDOR CON SCROLL
+   CUERPO SCROLLEABLE DE TABLAS SECUNDARIAS
    ========================================================= */
 
 .side-table-body {
     height: 170px;
-    overflow-y: auto;
+
     overflow-x: hidden;
+    overflow-y: auto;
 }
 
+
 /* =========================================================
-   SCROLL
+   SCROLLBARS
    ========================================================= */
 
-.side-table-body::-webkit-scrollbar {
+.side-table-body::-webkit-scrollbar,
+.role-dialog-scroll::-webkit-scrollbar {
     width: 6px;
 }
 
-.side-table-body::-webkit-scrollbar-track {
-    background: #f1f5f9;
+.side-table-body::-webkit-scrollbar-track,
+.role-dialog-scroll::-webkit-scrollbar-track {
+    background: #f8fafc;
 }
 
-.side-table-body::-webkit-scrollbar-thumb {
+.side-table-body::-webkit-scrollbar-thumb,
+.role-dialog-scroll::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 10px;
 }
 
-.side-table-body::-webkit-scrollbar-thumb:hover {
+.side-table-body::-webkit-scrollbar-thumb:hover,
+.role-dialog-scroll::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
 
+
 /* =========================================================
-   BOTONES DE ACCIÓN EN TABLA
+   BOTONES DE ACCIÓN DE TABLA
    ========================================================= */
 
 .action-btn-group {
     display: flex;
+    align-items: center;
     justify-content: center;
     gap: 0.6rem;
 }
 
 .btn-action {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.95rem;
     padding: 0.2rem;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+
+    border: none;
+    background: none;
+
+    font-size: 0.95rem;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease;
 }
 
 .btn-action:hover {
@@ -210,25 +267,32 @@
     color: #ef4444;
 }
 
+
 /* =========================================================
-   PIE DE TABLA Y PAGINACIÓN
+   PIE DE TABLA
    ========================================================= */
 
 .table-footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem;
+    justify-content: space-between;
+
     gap: 1rem;
-    font-size: 0.8rem;
-    color: var(--text-muted, #64748b);
     margin-top: auto;
+    padding: 0.75rem 1rem;
+
+    color: var(--text-muted, #64748b);
+    font-size: 0.8rem;
 }
 
 .table-footer.compact {
-    justify-content: space-between;
     padding: 0.6rem 0.75rem;
 }
+
+
+/* =========================================================
+   PAGINACIÓN
+   ========================================================= */
 
 .pagination-buttons {
     display: flex;
@@ -237,17 +301,24 @@
 }
 
 .pagination-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    border-radius: 0.35rem;
-    cursor: pointer;
-    color: #334155;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.15s ease, color 0.15s ease;
+
+    width: 28px;
+    height: 28px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 0.35rem;
+
+    background: #ffffff;
+    color: #334155;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -266,77 +337,98 @@
     text-align: center;
 }
 
-/* =========================================================
-   TABLA PRINCIPAL
-   ========================================================= */
-
-.main-roles-card {
-    min-width: 0;
-}
 
 /* =========================================================
-   DIALOGS
+   DIALOGS - BASE
    ========================================================= */
 
 .custom-dialog {
     width: 460px;
     max-width: calc(100% - 40px);
+
     padding: 0;
+
+    overflow: hidden;
+
     background: #ffffff;
     border: 1px solid rgba(226, 232, 240, 0.95);
     border-radius: 1.1rem;
+
     box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
-    overflow: hidden;
+
     color: var(--brand-dark);
+
     animation: dialogFadeIn 0.18s ease-out;
 }
 
-/* Línea superior */
+
+/* Línea superior del dialog */
 
 .custom-dialog::before {
-    content: '';
+    content: "";
+
     display: block;
+
     width: 100%;
     height: 3px;
+
     background: var(--brand-primary);
 }
 
-/* Fondo detrás del diálogo */
+
+/* Fondo detrás del dialog */
 
 .custom-dialog::backdrop {
     background: rgba(15, 23, 42, 0.32);
 }
 
+
 /* =========================================================
-   ENCABEZADO DEL DIALOG
+   DIALOG - ENCABEZADO
    ========================================================= */
 
 .dialog-header {
     display: flex;
     align-items: center;
+
     padding: 18px 20px;
+
     background: #f1f5f9;
     border-bottom: 1px solid #e2e8f0;
 }
 
 .dialog-header h2 {
     margin: 0;
+
     color: var(--brand-dark);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: -0.2px;
 }
 
+
 /* =========================================================
-   FORMULARIO DEL DIALOG
+   DIALOG - FORMULARIO
    ========================================================= */
 
 .dialog-form {
     display: flex;
     flex-direction: column;
+
     min-height: 190px;
+
     padding: 22px 20px 20px;
 }
+
+.role-dialog-form {
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* =========================================================
+   CAMPOS DEL FORMULARIO
+   ========================================================= */
 
 .form-group {
     display: flex;
@@ -346,23 +438,30 @@
 
 .form-group label {
     margin-bottom: 0.25rem;
+
     color: var(--brand-dark);
+
     font-size: 0.875rem;
     font-weight: 600;
 }
 
+
 /* =========================================================
-   INPUTS
+   INPUTS DEL DIALOG
    ========================================================= */
 
 .dialog-form .form-control {
     width: 100%;
+
     padding: 0.75rem 1rem;
-    color: var(--brand-dark);
+
     background-color: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: 0.75rem;
+
+    color: var(--brand-dark);
     font-size: 0.9rem;
+
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -374,20 +473,26 @@
 }
 
 .dialog-form .form-control:focus {
-    border-color: var(--brand-accent);
-    box-shadow: none !important;
     outline: none !important;
+
+    border-color: var(--brand-accent);
+
+    box-shadow: none !important;
 }
 
+
 /* =========================================================
-   CAMPOS DESHABILITADOS - MODO VISUALIZAR
+   INPUTS DESHABILITADOS - MODO VISUALIZAR
    ========================================================= */
 
 .role-dialog .form-control:disabled {
-    background-color: #f8fafc;
-    color: #64748b;
-    border-color: #e2e8f0;
     opacity: 1;
+
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+
+    color: #64748b;
+
     cursor: default;
 }
 
@@ -395,12 +500,14 @@
     border-color: #e2e8f0;
 }
 
+
 /* =========================================================
-   CONTENIDO DEL DIALOG DE ELIMINAR
+   DIALOG - CONTENIDO
    ========================================================= */
 
 .dialog-content {
     padding: 1.5rem;
+
     color: #334155;
     font-size: 0.9rem;
     line-height: 1.6;
@@ -419,32 +526,45 @@
     font-weight: 600;
 }
 
+
 /* =========================================================
-   BOTONES DEL DIALOG
+   DIALOG - BOTONES
    ========================================================= */
 
 .dialog-actions {
     display: flex;
-    justify-content: flex-end;
     align-items: center;
+    justify-content: flex-end;
+
     gap: 10px;
     margin-top: auto;
     padding: 18px 20px 20px;
-    border-top: 1px solid #f1f5f9;
+
     background: #ffffff;
+    border-top: 1px solid #f1f5f9;
 }
 
-/* BOTÓN CANCELAR / CERRAR */
+.role-dialog .dialog-actions {
+    flex-shrink: 0;
+}
+
+
+/* Botón cancelar */
 
 .dialog-actions .dialog-cancel {
     padding: 0.65rem 1.1rem;
-    color: #475569;
+
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 0.7rem;
+
+    color: #475569;
+
     font-size: 0.85rem;
     font-weight: 600;
+
     cursor: pointer;
+
     transition:
         background-color 0.2s ease,
         border-color 0.2s ease,
@@ -452,23 +572,30 @@
 }
 
 .dialog-actions .dialog-cancel:hover {
-    color: var(--brand-dark);
     background: #f1f5f9;
     border-color: #cbd5e1;
+    color: var(--brand-dark);
 }
 
-/* BOTÓN GUARDAR */
+
+/* Botón guardar */
 
 .dialog-actions .btn-primary {
     padding: 0.65rem 1.15rem;
-    color: #ffffff !important;
+
     background: var(--brand-primary);
     border: none;
     border-radius: 0.7rem;
+
+    color: #ffffff !important;
+
     font-size: 0.85rem;
     font-weight: 700;
+
     cursor: pointer;
+
     box-shadow: 0 3px 8px rgba(0, 86, 179, 0.14);
+
     transition:
         background-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -476,23 +603,31 @@
 }
 
 .dialog-actions .btn-primary:hover {
-    color: #ffffff !important;
     background: var(--brand-primary-hover);
+    color: #ffffff !important;
+
     box-shadow: 0 5px 12px rgba(0, 86, 179, 0.18);
+
     transform: translateY(-1px);
 }
 
-/* BOTÓN ELIMINAR */
+
+/* Botón eliminar */
 
 .dialog-actions .dialog-confirm-delete {
     padding: 0.65rem 1.15rem;
-    color: #ffffff !important;
+
     background: #dc3545;
     border: none;
     border-radius: 0.7rem;
+
+    color: #ffffff !important;
+
     font-size: 0.85rem;
     font-weight: 700;
+
     cursor: pointer;
+
     transition:
         background-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -500,14 +635,131 @@
 }
 
 .dialog-actions .dialog-confirm-delete:hover {
-    color: #ffffff !important;
     background: #c82333;
+    color: #ffffff !important;
+
     box-shadow: 0 4px 10px rgba(220, 53, 69, 0.18);
+
     transform: translateY(-1px);
 }
 
+
 /* =========================================================
-   ANIMACIÓN
+   DIALOG DE ROLES
+   ========================================================= */
+
+.custom-dialog.role-dialog {
+    width: 760px;
+    max-width: calc(100% - 32px);
+    max-height: 90vh;
+
+    padding: 0;
+}
+
+
+/* Contenido scrolleable */
+
+.role-dialog-scroll {
+    max-height: 62vh;
+
+    padding: 1.5rem;
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   SECCIONES DE PERMISOS
+   ========================================================= */
+
+.permissions-section {
+    margin-top: 1.5rem;
+}
+
+.permissions-section h3 {
+    margin: 0 0 0.75rem;
+
+    color: #334155;
+
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   TABLA DE PERMISOS
+   ========================================================= */
+
+.permissions-table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+}
+
+.permissions-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    background: #ffffff;
+}
+
+.permissions-table th {
+    padding: 0.7rem 0.8rem;
+
+    background: #f1f5f9;
+
+    color: #475569;
+
+    font-size: 0.72rem;
+    font-weight: 700;
+
+    text-align: left;
+    white-space: nowrap;
+}
+
+.permissions-table td {
+    padding: 0.7rem 0.8rem;
+
+    border-top: 1px solid #e2e8f0;
+
+    color: #334155;
+
+    font-size: 0.85rem;
+}
+
+.permissions-table th:not(:first-child),
+.permissions-table td:not(:first-child) {
+    text-align: center;
+}
+
+
+/* =========================================================
+   CHECKBOXES DE PERMISOS
+   ========================================================= */
+
+.permissions-table input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+
+    margin: 0;
+
+    accent-color: var(--brand-primary);
+
+    cursor: pointer;
+}
+
+.permissions-table input[type="checkbox"]:disabled {
+    opacity: 0.85;
+    cursor: default;
+}
+
+
+/* =========================================================
+   ANIMACIÓN DE DIALOG
    ========================================================= */
 
 @keyframes dialogFadeIn {
@@ -522,132 +774,68 @@
     }
 }
 
-/* =========================================================
-   DIALOG DE ROLES
-   ========================================================= */
-
-.custom-dialog.role-dialog {
-    width: 760px;
-    max-width: calc(100% - 32px);
-    max-height: 90vh;
-    padding: 0;
-}
-
-/* Contenido scrolleable */
-
-.role-dialog-scroll {
-    padding: 1.5rem;
-    max-height: 62vh;
-    overflow-y: auto;
-}
-
-/* Scroll del dialog */
-
-.role-dialog-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-
-.role-dialog-scroll::-webkit-scrollbar-track {
-    background: #f8fafc;
-}
-
-.role-dialog-scroll::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-
-.role-dialog-scroll::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
 
 /* =========================================================
-   SECCIONES DE PERMISOS
+   SNACKBAR
    ========================================================= */
 
-.permissions-section {
-    margin-top: 1.5rem;
-}
+.app-snackbar {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
 
-.permissions-section h3 {
-    margin: 0 0 0.75rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #334155;
-}
+    z-index: 9999;
 
-/* =========================================================
-   TABLA DE PERMISOS
-   ========================================================= */
+    display: flex;
+    align-items: center;
 
-.permissions-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
-}
+    min-width: 280px;
+    max-width: 450px;
 
-.permissions-table {
-    width: 100%;
-    border-collapse: collapse;
+    padding: 13px 18px;
+
+    gap: 10px;
+
     background: #ffffff;
+    border: 1px solid #e2e5e8;
+    border-radius: 8px;
+
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
+
+    color: #495057;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    opacity: 0;
+
+    transform: translate(-50%, 20px);
+
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
 }
 
-.permissions-table th {
-    padding: 0.7rem 0.8rem;
-    background: #f1f5f9;
-    color: #475569;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-align: left;
-    white-space: nowrap;
+.app-snackbar.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
 }
 
-.permissions-table td {
-    padding: 0.7rem 0.8rem;
-    border-top: 1px solid #e2e8f0;
-    color: #334155;
-    font-size: 0.85rem;
+.app-snackbar i {
+    font-size: 18px;
 }
 
-.permissions-table th:not(:first-child),
-.permissions-table td:not(:first-child) {
-    text-align: center;
+.app-snackbar-success i {
+    color: #6c9f7d;
 }
+
+.app-snackbar-error i {
+    color: #c97979;
+}
+
 
 /* =========================================================
-   CHECKBOXES
-   ========================================================= */
-
-.permissions-table input[type="checkbox"] {
-    width: 17px;
-    height: 17px;
-    margin: 0;
-    accent-color: var(--brand-primary);
-    cursor: pointer;
-}
-
-.permissions-table input[type="checkbox"]:disabled {
-    cursor: default;
-    opacity: 0.85;
-}
-
-/* =========================================================
-   FORMULARIO ESPECÍFICO DE ROLES
-   ========================================================= */
-
-.role-dialog-form {
-    padding: 0 !important;
-    min-height: 0 !important;
-}
-
-/* Acciones siempre abajo */
-
-.role-dialog .dialog-actions {
-    flex-shrink: 0;
-}
-
-/* =========================================================
-   RESPONSIVE GENERAL
+   RESPONSIVE - TABLET
    ========================================================= */
 
 @media (max-width: 992px) {
@@ -656,14 +844,19 @@
     }
 }
 
+
+/* =========================================================
+   RESPONSIVE - MOBILE GRANDE
+   ========================================================= */
+
 @media (max-width: 700px) {
     .custom-dialog.role-dialog {
         width: calc(100% - 20px);
     }
 
     .role-dialog-scroll {
-        padding: 1rem;
         max-height: 60vh;
+        padding: 1rem;
     }
 
     .permissions-table th,
@@ -671,6 +864,11 @@
         padding: 0.6rem;
     }
 }
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
 
 @media (max-width: 576px) {
     .roles-container {
@@ -694,6 +892,11 @@
         flex-wrap: wrap;
     }
 }
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE PEQUEÑO
+   ========================================================= */
 
 @media (max-width: 480px) {
     .custom-dialog {

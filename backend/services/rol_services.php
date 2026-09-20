@@ -199,14 +199,32 @@ class RolService {
     // --- ROLES_USUARIOS ---
 
     public function obtenerUsuariosPorRol(int $idRol): array {
-        $sql = "SELECT ru.id, ru.id_rol, ru.id_usuario, u.usuario, u.email 
-                FROM public.roles_usuarios ru
-                JOIN public.usuarios u ON ru.id_usuario = u.id
-                WHERE ru.id_rol = :id_rol";
+        $sql = "
+            SELECT
+                ru.id,
+                ru.id_rol,
+                ru.id_usuario,
+                u.email,
+                u.nombre,
+                u.apellido
+            FROM public.roles_usuarios ru
+            JOIN public.usuarios u
+                ON ru.id_usuario = u.id
+            WHERE ru.id_rol = :id_rol
+        ";
+
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id_rol' => $idRol]);
+
+        $stmt->execute([
+            'id_rol' => $idRol
+        ]);
+
         $rows = $stmt->fetchAll();
-        return array_map(fn($row) => (new RolUsuario($row))->toArray(), $rows);
+
+        return array_map(
+            fn($row) => (new RolUsuario($row))->toArray(),
+            $rows
+        );
     }
 
     public function asignarUsuario(int $idRol, int $idUsuario): bool {

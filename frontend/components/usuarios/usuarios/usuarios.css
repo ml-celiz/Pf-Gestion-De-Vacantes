@@ -197,3 +197,492 @@
     }
 
 }
+
+/* =========================================================
+   DIALOGS DE USUARIOS
+   ========================================================= */
+
+.custom-dialog {
+    width: 520px;
+    max-width: calc(100% - 40px);
+
+    padding: 0;
+
+    overflow: hidden;
+
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    border-radius: 1.1rem;
+
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+
+    color: var(--brand-dark);
+
+    animation: dialogFadeIn 0.18s ease-out;
+}
+
+
+/* Línea superior */
+
+.custom-dialog::before {
+    content: "";
+
+    display: block;
+
+    width: 100%;
+    height: 3px;
+
+    background: var(--brand-primary);
+}
+
+
+/* Fondo */
+
+.custom-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.32);
+}
+
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+
+    padding: 18px 20px;
+
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dialog-header h2 {
+    margin: 0;
+
+    color: var(--brand-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+
+/* =========================================================
+   FORMULARIO
+   ========================================================= */
+
+.usuario-dialog-form {
+    min-height: 0;
+
+    padding: 22px 20px 20px;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.usuario-dialog-fields {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 16px 18px;
+}
+
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+.form-group label {
+    margin-bottom: 0.25rem;
+
+    color: var(--brand-dark);
+
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.usuario-dialog-form .form-control {
+    width: 100%;
+
+    padding: 0.75rem 1rem;
+
+    background-color: #ffffff;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 0.75rem;
+
+    color: var(--brand-dark);
+
+    font-size: 0.9rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+
+.usuario-dialog-form .form-control:hover {
+    border-color: #cbd5e1;
+}
+
+
+.usuario-dialog-form .form-control:focus {
+    outline: none !important;
+
+    border-color: var(--brand-accent);
+
+    box-shadow: none !important;
+}
+
+
+/* =========================================================
+   SELECT
+   ========================================================= */
+
+.usuario-dialog-form select.form-control {
+    cursor: pointer;
+}
+
+
+.usuario-dialog-form select.form-control:focus {
+    outline: none !important;
+
+    box-shadow: none !important;
+}
+
+
+/* =========================================================
+   AYUDA DE CONTRASEÑA
+   ========================================================= */
+
+.usuario-field-help {
+    margin-top: -2px;
+
+    color: #64748b;
+
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.usuario-dialog-form .dialog-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 20px;
+
+    padding: 18px 0 0;
+
+    background: #ffffff;
+
+    border-top: 1px solid #f1f5f9;
+}
+
+
+.usuario-dialog-form .dialog-cancel {
+    padding: 0.65rem 1.1rem;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 0.7rem;
+
+    color: #475569;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+
+.usuario-dialog-form .dialog-cancel:hover {
+    background: #f1f5f9;
+
+    border-color: #cbd5e1;
+
+    color: var(--brand-dark);
+}
+
+
+.usuario-dialog-form .btn-primary {
+    padding: 0.65rem 1.15rem;
+
+    background: var(--brand-primary);
+
+    border: none;
+
+    border-radius: 0.7rem;
+
+    color: #ffffff !important;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 8px rgba(0, 86, 179, 0.14);
+
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.usuario-dialog-form .btn-primary:hover {
+    background: var(--brand-primary-hover);
+
+    color: #ffffff !important;
+
+    box-shadow:
+        0 5px 12px rgba(0, 86, 179, 0.18);
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   DIALOG ELIMINAR
+   ========================================================= */
+
+.custom-dialog .dialog-content {
+    padding: 1.5rem;
+
+    color: #334155;
+
+    font-size: 0.9rem;
+
+    line-height: 1.6;
+}
+
+
+.custom-dialog .dialog-content p {
+    margin: 0;
+}
+
+
+.custom-dialog .dialog-content strong {
+    color: var(--brand-dark);
+
+    font-weight: 600;
+}
+
+
+.custom-dialog .dialog-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 18px 20px 20px;
+
+    background: #ffffff;
+
+    border-top: 1px solid #f1f5f9;
+}
+
+
+.custom-dialog .dialog-confirm-delete {
+    padding: 0.65rem 1.15rem;
+
+    background: #dc3545;
+
+    border: none;
+
+    border-radius: 0.7rem;
+
+    color: #ffffff !important;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.custom-dialog .dialog-confirm-delete:hover {
+    background: #c82333;
+
+    color: #ffffff !important;
+
+    box-shadow:
+        0 4px 10px rgba(220, 53, 69, 0.18);
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ANIMACIÓN
+   ========================================================= */
+
+@keyframes dialogFadeIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(8px)
+            scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   SNACKBAR
+   ========================================================= */
+
+.app-snackbar {
+    position: fixed;
+
+    left: 50%;
+    bottom: 28px;
+
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+
+    min-width: 280px;
+    max-width: 450px;
+
+    padding: 13px 18px;
+
+    gap: 10px;
+
+    background: #ffffff;
+
+    border: 1px solid #e2e5e8;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.12);
+
+    color: #495057;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    opacity: 0;
+
+    transform:
+        translate(-50%, 20px);
+
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+}
+
+
+.app-snackbar.show {
+    opacity: 1;
+
+    transform:
+        translate(-50%, 0);
+}
+
+
+.app-snackbar i {
+    font-size: 18px;
+}
+
+
+.app-snackbar-success i {
+    color: #6c9f7d;
+}
+
+
+.app-snackbar-error i {
+    color: #c97979;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .custom-dialog {
+        width: calc(100% - 24px);
+        max-width: none;
+    }
+
+
+    .usuario-dialog-fields {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .dialog-header {
+        padding: 16px;
+    }
+
+
+    .usuario-dialog-form {
+        padding: 18px 16px 16px;
+    }
+
+
+    .custom-dialog .dialog-content {
+        padding: 18px 16px;
+    }
+
+
+    .usuario-dialog-form .dialog-actions,
+    .custom-dialog .dialog-actions {
+        padding: 16px;
+    }
+
+}
