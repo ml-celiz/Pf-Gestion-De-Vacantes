@@ -27,12 +27,23 @@ class RolController {
 
     public function crear(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        if ($this->rolService->crear($input)) {
+
+        $id = $this->rolService->crear($input);
+
+        if ($id !== false) {
             http_response_code(201);
-            echo json_encode(["message" => "Rol creado exitosamente."]);
+
+            echo json_encode([
+                "message" => "Rol creado exitosamente.",
+                "id" => $id
+            ]);
+
         } else {
             http_response_code(400);
-            echo json_encode(["message" => "No se pudo crear el rol."]);
+
+            echo json_encode([
+                "message" => "No se pudo crear el rol."
+            ]);
         }
     }
 

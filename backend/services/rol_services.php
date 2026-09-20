@@ -24,7 +24,8 @@ class RolService {
         return $row ? (new Rol($row))->toArray() : null;
     }
 
-    public function crear(array $data): bool {
+    public function crear(array $data): int|false {
+
         $rol = new Rol($data);
 
         if (empty($rol->nombre)) {
@@ -32,6 +33,7 @@ class RolService {
         }
 
         try {
+
             $stmt = $this->db->prepare("
                 INSERT INTO public.roles (
                     nombre,
@@ -41,12 +43,19 @@ class RolService {
                     :nombre,
                     :token_duracion
                 )
+                RETURNING id
             ");
 
-            return $stmt->execute([
+            $stmt->execute([
                 'nombre'         => $rol->nombre,
                 'token_duracion' => $rol->duracionToken
             ]);
+
+            $id = $stmt->fetchColumn();
+
+            return $id !== false
+                ? (int)$id
+                : false;
 
         } catch (PDOException $e) {
             error_log("Error PDO: " . $e->getMessage());

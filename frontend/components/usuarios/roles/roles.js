@@ -6,7 +6,7 @@ class RolesComponent extends HTMLElement {
         this.selectedRolId = null;
 
         // Cantidad máxima de elementos por página
-        this.rolesPerPage = 5;
+        this.rolesPerPage = 10;
         this.modulosPerPage = 3;
         this.panelesPerPage = 3;
 
@@ -65,6 +65,15 @@ class RolesComponent extends HTMLElement {
                 'click',
                 () => this.recargarTodo()
             );
+        }
+
+        // AGREGAR ROL
+        const btnAddRol = this.querySelector('#btn-add-rol');
+
+        if (btnAddRol) {
+            btnAddRol.addEventListener('click', () => {
+                this.abrirDialogoCrearRol();
+            });
         }
 
         // AGREGAR MÓDULO
@@ -315,8 +324,7 @@ class RolesComponent extends HTMLElement {
     // RENDER ROLES
     renderRoles() {
 
-        const tbody =
-            this.querySelector('#tb-roles');
+        const tbody = this.querySelector('#tb-roles');
 
         if (!tbody) return;
 
@@ -360,27 +368,21 @@ class RolesComponent extends HTMLElement {
                             class="btn-action view"
                             title="Ver detalles"
                             type="button">
-
                             <i class="bi bi-eye"></i>
-
                         </button>
 
                         <button
                             class="btn-action edit"
                             title="Editar"
                             type="button">
-
                             <i class="bi bi-pencil"></i>
-
                         </button>
 
                         <button
                             class="btn-action delete"
                             title="Eliminar"
                             type="button">
-
                             <i class="bi bi-trash"></i>
-
                         </button>
 
                     </div>
@@ -407,6 +409,31 @@ class RolesComponent extends HTMLElement {
 
                 }
             );
+
+            const btnEdit = tr.querySelector('.btn-action.edit');
+            const btnDelete = tr.querySelector('.btn-action.delete');
+            const btnView = tr.querySelector('.btn-action.view');
+
+            if (btnEdit) {
+                btnEdit.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.abrirDialogoEditarRol(rol);
+                });
+            }
+
+            if (btnDelete) {
+                btnDelete.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.abrirDialogoEliminarRol(rol);
+                });
+            }
+
+            if (btnView) {
+                btnView.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.abrirDialogoVerRol(rol);
+                });
+            }
 
             tbody.appendChild(tr);
 
@@ -1347,6 +1374,733 @@ class RolesComponent extends HTMLElement {
 
     }
 
+    // CREAR/ EDITAR ROL
+    async abrirDialogoCrearRol() {
+        await this.abrirDialogoRol();
+    }
+
+    async abrirDialogoEditarRol(rol) {
+        await this.abrirDialogoRol(rol);
+    }
+
+    async abrirDialogoVerRol(rol) {
+        await this.abrirDialogoRol(rol, true);
+    }  
+
+    // DIALOG PRINCIPAL DE ROL
+    async abrirDialogoRol(
+        rol = null,
+        soloLectura = false
+    ) {
+
+        const esEdicion = rol !== null;
+
+        let modulos = [];
+        let paneles = [];
+        let modulosAsignados = [];
+        let panelesAsignados = [];
+
+        try {
+
+            // Obtener todos los módulos y paneles disponibles
+            const [respuestaModulos, respuestaPaneles] = await Promise.all([
+                ApiClient.get('/modulos'),
+                ApiClient.get('/paneles')
+            ]);
+
+            modulos = respuestaModulos || [];
+            paneles = respuestaPaneles || [];
+
+            // Si estamos editando, obtener las asociaciones actuales
+            if (esEdicion) {
+
+                const [
+                    respuestaModulosAsignados,
+                    respuestaPanelesAsignados
+                ] = await Promise.all([
+                    ApiClient.get(`/roles/${rol.id}/modulos`),
+                    ApiClient.get(`/roles/${rol.id}/paneles`)
+                ]);
+
+                modulosAsignados = respuestaModulosAsignados || [];
+                panelesAsignados = respuestaPanelesAsignados || [];
+            }
+
+        } catch (error) {
+
+            console.error('Error cargando datos del rol:', error);
+
+            alert('No se pudieron cargar los módulos y paneles.');
+
+            return;
+        }
+
+        const dialog = this.crearDialogoBase();
+
+        dialog.classList.add('role-dialog');
+
+        const titulo = soloLectura
+            ? 'Ver rol'
+            : esEdicion
+                ? 'Editar rol'
+                : 'Agregar rol';
+
+        const nombreInicial = esEdicion
+            ? (rol.nombre || '')
+            : '';
+
+        const duracionInicial = esEdicion
+            ? (rol.duracion_token ?? '')
+            : '';
+
+        // Mapa de módulos ya asignados
+        const modulosMap = new Map();
+
+        modulosAsignados.forEach(modulo => {
+
+            modulosMap.set(
+                Number(modulo.id_modulo),
+                modulo
+            );
+
+        });
+
+        // IDs de paneles asignados
+        const panelesAsignadosSet = new Set(
+            panelesAsignados.map(panel =>
+                Number(panel.id_panel)
+            )
+        );
+
+        const filasModulos = modulos.map(modulo => {
+
+            const idModulo = Number(modulo.id);
+
+            const asignado = modulosMap.get(idModulo);
+
+            const leer = asignado?.leer === true;
+            const escribir = asignado?.escribir === true;
+            const editar = asignado?.editar === true;
+
+            return `
+                <tr data-modulo-id="${idModulo}">
+
+                    <td>
+                        ${this.escapeHtml(
+                            modulo.nombre ||
+                            modulo.modulo ||
+                            '-'
+                        )}
+                    </td>
+
+                    <td class="text-center">
+                        <input 
+                            type="checkbox" 
+                            data-permiso="leer" 
+                            ${leer ? 'checked' : ''} 
+                            ${soloLectura ? 'disabled' : ''}
+                        >
+                    </td>
+
+                    <td class="text-center">
+                        <input 
+                            type="checkbox" 
+                            data-permiso="escribir" 
+                            ${escribir ? 'checked' : ''} 
+                            ${soloLectura ? 'disabled' : ''}
+                        >
+                    </td>
+
+                    <td class="text-center">
+                        <input 
+                            type="checkbox" 
+                            data-permiso="editar" 
+                            ${editar ? 'checked' : ''} 
+                            ${soloLectura ? 'disabled' : ''}
+                        >
+                    </td>
+
+                </tr>
+            `;
+        }).join('');
+
+        const filasPaneles = paneles.map(panel => {
+
+            const idPanel = Number(panel.id);
+
+            const seleccionado =
+                panelesAsignadosSet.has(idPanel);
+
+            return `
+                <tr data-panel-id="${idPanel}">
+
+                    <td>
+                        ${this.escapeHtml(
+                            panel.nombre ||
+                            panel.panel ||
+                            '-'
+                        )}
+                    </td>
+
+                    <td class="text-center">
+                        <input 
+                            type="checkbox" 
+                            data-permiso="ver" 
+                            ${seleccionado ? 'checked' : ''} 
+                            ${soloLectura ? 'disabled' : ''}
+                        >
+                    </td>
+
+                </tr>
+            `;
+        }).join('');
+
+        dialog.innerHTML = `
+
+            <div class="dialog-header">
+
+                <h2>${titulo}</h2>
+
+            </div>
+
+            <form class="dialog-form role-dialog-form">
+
+                <div class="role-dialog-scroll">
+
+                    <!-- DATOS DEL ROL -->
+
+                    <div class="form-group">
+
+                        <label for="rol-nombre">
+                            Nombre del rol
+                        </label>
+
+                        <input 
+                            type="text" 
+                            id="rol-nombre" 
+                            class="form-control" 
+                            value="${this.escapeHtml(nombreInicial)}" 
+                            maxlength="100" 
+                            ${soloLectura ? 'disabled' : 'required'}
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="rol-token">
+                            Duración del token
+                        </label>
+
+                        <input 
+                            type="number" 
+                            id="rol-token" 
+                            class="form-control" 
+                            value="${duracionInicial}" 
+                            min="1" 
+                            ${soloLectura ? 'disabled' : 'required'}
+                        >
+
+                    </div>
+
+
+                    <!-- PERMISOS POR MÓDULO -->
+                    <div class="permissions-section">
+
+                        <h3>
+                            Permisos por Módulo
+                        </h3>
+
+                        <div class="permissions-table-wrapper">
+
+                            <table class="permissions-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>MÓDULO</th>
+                                        <th>LEER</th>
+                                        <th>ESCRIBIR</th>
+                                        <th>EDITAR</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    ${
+                                        filasModulos ||
+                                        `
+                                        <tr>
+                                            <td colspan="4"
+                                                class="text-center text-muted">
+                                                No hay módulos disponibles.
+                                            </td>
+                                        </tr>
+                                        `
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PERMISOS POR PANEL -->
+
+                    <div class="permissions-section">
+
+                        <h3>
+                            Permisos por panel
+                        </h3>
+
+                        <div class="permissions-table-wrapper">
+
+                            <table class="permissions-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>PANEL</th>
+                                        <th>VER</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    ${
+                                        filasPaneles ||
+                                        `
+                                        <tr>
+                                            <td colspan="2"
+                                                class="text-center text-muted">
+                                                No hay paneles disponibles.
+                                            </td>
+                                        </tr>
+                                        `
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BOTONES -->
+                <div class="dialog-actions">
+
+                    <button 
+                        type="button" 
+                        class="btn btn-secondary dialog-cancel" 
+                        id="btn-cancelar-rol">
+                        ${soloLectura ? 'Cerrar' : 'Cancelar'}
+                    </button>
+
+                    ${
+                        soloLectura
+                            ? ''
+                            : `
+                                <button 
+                                    type="submit" 
+                                    class="btn btn-primary">
+                                    ${esEdicion ? 'Guardar cambios' : 'Guardar'}
+                                </button>
+                            `
+                    }
+
+                </div>
+
+            </form>
+        `;
+
+        document.body.appendChild(dialog);
+
+        const form = dialog.querySelector('.role-dialog-form');
+
+        const btnCancelar =
+            dialog.querySelector('#btn-cancelar-rol');
+
+        btnCancelar.addEventListener('click', () => {
+            dialog.close();
+        });
+
+        form.addEventListener('submit', async (event) => {
+
+            event.preventDefault();
+
+            await this.guardarRol(
+                dialog,
+                rol
+            );
+
+        });
+
+        dialog.addEventListener('close', () => {
+            dialog.remove();
+        });
+
+        dialog.showModal();
+    }
+
+    // GUARDAR ROL
+    async guardarRol(dialog, rol) {
+
+        const nombre =
+            dialog.querySelector('#rol-nombre').value.trim();
+
+        const duracionToken =
+            Number(
+                dialog.querySelector('#rol-token').value
+            );
+
+        if (!nombre) {
+            alert('Debe ingresar el nombre del rol.');
+            return;
+        }
+
+        if (!duracionToken || duracionToken <= 0) {
+            alert('Debe ingresar una duración de token válida.');
+            return;
+        }
+
+        const esEdicion = rol !== null;
+
+        try {
+
+            let idRol;
+
+            // ==========================================
+            // 1. CREAR / ACTUALIZAR ROL
+            // ==========================================
+
+            if (!esEdicion) {
+
+                const respuesta = await ApiClient.post(
+                    '/roles',
+                    {
+                        nombre: nombre,
+                        token_duracion: duracionToken
+                    }
+                );
+
+                idRol = respuesta.id;
+
+                if (!idRol) {
+                    throw new Error(
+                        'La API no devolvió el ID del rol creado.'
+                    );
+                }
+
+            } else {
+
+                idRol = rol.id;
+
+                await ApiClient.put(
+                    `/roles/${idRol}`,
+                    {
+                        nombre: nombre,
+                        token_duracion: duracionToken
+                    }
+                );
+            }
+
+
+            // ==========================================
+            // 2. OBTENER PERMISOS SELECCIONADOS
+            // ==========================================
+
+            const filasModulos =
+                [...dialog.querySelectorAll(
+                    'tr[data-modulo-id]'
+                )];
+
+            const filasPaneles =
+                [...dialog.querySelectorAll(
+                    'tr[data-panel-id]'
+                )];
+
+
+            // ==========================================
+            // 3. MÓDULOS
+            // ==========================================
+
+            let modulosActuales = [];
+
+            if (esEdicion) {
+
+                modulosActuales =
+                    await ApiClient.get(
+                        `/roles/${idRol}/modulos`
+                    );
+
+            }
+
+            const modulosActualesMap = new Map();
+
+            modulosActuales.forEach(modulo => {
+
+                modulosActualesMap.set(
+                    Number(modulo.id_modulo),
+                    modulo
+                );
+
+            });
+
+
+            for (const fila of filasModulos) {
+
+                const idModulo =
+                    Number(
+                        fila.dataset.moduloId
+                    );
+
+                const leer =
+                    fila.querySelector(
+                        '[data-permiso="leer"]'
+                    ).checked;
+
+                const escribir =
+                    fila.querySelector(
+                        '[data-permiso="escribir"]'
+                    ).checked;
+
+                const editar =
+                    fila.querySelector(
+                        '[data-permiso="editar"]'
+                    ).checked;
+
+                const existente =
+                    modulosActualesMap.get(idModulo);
+
+
+                if (existente) {
+
+                    // Ya existe → actualizar permisos
+
+                    await ApiClient.put(
+                        `/roles/${idRol}/modulos/${idModulo}`,
+                        {
+                            leer: leer,
+                            escribir: escribir,
+                            editar: editar
+                        }
+                    );
+
+                } else {
+
+                    // No existe → crear asociación
+
+                    await ApiClient.post(
+                        `/roles/${idRol}/modulos`,
+                        {
+                            id_modulo: idModulo,
+                            leer: leer,
+                            escribir: escribir,
+                            editar: editar
+                        }
+                    );
+                }
+            }
+
+
+            // ==========================================
+            // 4. PANELES
+            // ==========================================
+
+            let panelesActuales = [];
+
+            if (esEdicion) {
+
+                panelesActuales =
+                    await ApiClient.get(
+                        `/roles/${idRol}/paneles`
+                    );
+
+            }
+
+            const panelesActualesSet =
+                new Set(
+                    panelesActuales.map(panel =>
+                        Number(panel.id_panel)
+                    )
+                );
+
+
+            for (const fila of filasPaneles) {
+
+                const idPanel =
+                    Number(
+                        fila.dataset.panelId
+                    );
+
+                const seleccionado =
+                    fila.querySelector(
+                        '[data-permiso="ver"]'
+                    ).checked;
+
+                const estabaAsignado =
+                    panelesActualesSet.has(idPanel);
+
+
+                if (seleccionado && !estabaAsignado) {
+
+                    // Marcar VER
+                    await ApiClient.post(
+                        `/roles/${idRol}/paneles`,
+                        {
+                            id_panel: idPanel
+                        }
+                    );
+
+                } else if (!seleccionado && estabaAsignado) {
+
+                    // Quitar VER
+                    await ApiClient.delete(
+                        `/roles/${idRol}/paneles/${idPanel}`
+                    );
+                }
+            }
+
+
+            // ==========================================
+            // 5. FINALIZAR
+            // ==========================================
+
+            dialog.close();
+
+            await this.recargarTodo();
+
+            alert(
+                esEdicion
+                    ? 'Rol actualizado correctamente.'
+                    : 'Rol creado correctamente.'
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Error guardando rol:',
+                error
+            );
+
+            alert(
+                'No se pudo guardar el rol. ' +
+                'Verificá los datos e intentá nuevamente.'
+            );
+        }
+    }
+
+    // =========================================================
+    // ELIMINAR ROL
+    // =========================================================
+    async abrirDialogoEliminarRol(rol) {
+
+        const dialog = this.crearDialogoBase();
+
+        dialog.innerHTML = `
+
+            <div class="dialog-header">
+                <h2>Eliminar rol</h2>
+            </div>
+
+            <div class="dialog-content">
+
+                <p>
+                    ¿Desea eliminar el rol
+                    <strong>${this.escapeHtml(rol.nombre)}</strong>?
+                </p>
+
+            </div>
+
+            <div class="dialog-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary dialog-cancel"
+                    id="btn-cancelar-eliminar-rol">
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-danger dialog-confirm-delete"
+                    id="btn-confirmar-eliminar-rol">
+                    Eliminar
+                </button>
+
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        // CANCELAR
+        const btnCancelar =
+            dialog.querySelector(
+                '#btn-cancelar-eliminar-rol'
+            );
+
+        btnCancelar.addEventListener(
+            'click',
+            () => {
+                dialog.close();
+            }
+        );
+
+        // CONFIRMAR ELIMINACIÓN
+        const btnConfirmar =
+            dialog.querySelector(
+                '#btn-confirmar-eliminar-rol'
+            );
+
+        btnConfirmar.addEventListener(
+            'click',
+            async () => {
+
+                try {
+
+                    await ApiClient.delete(
+                        `/roles/${rol.id}`
+                    );
+
+                    dialog.close();
+
+                    this.selectedRolId = null;
+
+                    await this.recargarTodo();
+
+                } catch (error) {
+
+                    console.error(
+                        'Error eliminando rol:',
+                        error
+                    );
+
+                    alert(
+                        'No se pudo eliminar el rol.'
+                    );
+                }
+            }
+        );
+
+        dialog.addEventListener(
+            'close',
+            () => {
+                dialog.remove();
+            },
+            { once: true }
+        );
+
+        dialog.showModal();
+    }
 
     // =========================================================
     // CREAR DIALOG BASE

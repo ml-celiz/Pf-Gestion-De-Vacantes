@@ -3,7 +3,10 @@
     padding: 1.5rem 2.5rem;
 }
 
-/* LEYENDA DE RUTA */
+/* =========================================================
+   LEYENDA DE RUTA
+   ========================================================= */
+
 .breadcrumb-bar {
     margin-bottom: 0.75rem;
 }
@@ -15,7 +18,10 @@
     letter-spacing: 0.5px;
 }
 
-/* ENCABEZADO */
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
 .roles-header {
     display: flex;
     justify-content: space-between;
@@ -56,7 +62,10 @@
     color: var(--brand-primary, #0056b3);
 }
 
-/* GRID PRINCIPAL */
+/* =========================================================
+   GRID PRINCIPAL
+   ========================================================= */
+
 .roles-grid {
     display: grid;
     grid-template-columns: 1fr 500px;
@@ -69,7 +78,10 @@
     gap: 1.25rem;
 }
 
-/* CARDS DE TABLA */
+/* =========================================================
+   CARDS DE TABLA
+   ========================================================= */
+
 .card-table {
     background: #ffffff;
     border: 1px solid rgba(226, 232, 240, 0.9);
@@ -80,7 +92,10 @@
     flex-direction: column;
 }
 
-/* ESTILOS DE TABLAS */
+/* =========================================================
+   ESTILOS DE TABLAS
+   ========================================================= */
+
 .custom-table {
     width: 100%;
     border-collapse: collapse;
@@ -109,7 +124,10 @@
     padding: 0.6rem 1rem;
 }
 
-/* CABECERA TABLAS SECUNDARIAS */
+/* =========================================================
+   CABECERA TABLAS SECUNDARIAS
+   ========================================================= */
+
 .side-header {
     display: flex;
     justify-content: space-between;
@@ -126,14 +144,20 @@
     gap: 0.5rem;
 }
 
-/* CONTENEDOR CON SCROLL PARA MÓDULOS Y PANELES */
+/* =========================================================
+   CONTENEDOR CON SCROLL
+   ========================================================= */
+
 .side-table-body {
     height: 170px;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-/* SCROLL */
+/* =========================================================
+   SCROLL
+   ========================================================= */
+
 .side-table-body::-webkit-scrollbar {
     width: 6px;
 }
@@ -151,7 +175,10 @@
     background: #94a3b8;
 }
 
-/* BOTONES DE ACCIÓN EN TABLA */
+/* =========================================================
+   BOTONES DE ACCIÓN EN TABLA
+   ========================================================= */
+
 .action-btn-group {
     display: flex;
     justify-content: center;
@@ -164,6 +191,11 @@
     cursor: pointer;
     font-size: 0.95rem;
     padding: 0.2rem;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-action:hover {
+    transform: scale(1.1);
 }
 
 .btn-action.view {
@@ -178,7 +210,10 @@
     color: #ef4444;
 }
 
-/* PIE DE TABLA Y PAGINACIÓN */
+/* =========================================================
+   PIE DE TABLA Y PAGINACIÓN
+   ========================================================= */
+
 .table-footer {
     display: flex;
     justify-content: space-between;
@@ -212,7 +247,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -231,22 +266,413 @@
     text-align: center;
 }
 
-/* TABLA PRINCIPAL */
+/* =========================================================
+   TABLA PRINCIPAL
+   ========================================================= */
+
 .main-roles-card {
     min-width: 0;
 }
 
-/* RESPONSIVE */
-@media (max-width: 992px) {
+/* =========================================================
+   DIALOGS
+   ========================================================= */
 
+.custom-dialog {
+    width: 460px;
+    max-width: calc(100% - 40px);
+    padding: 0;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    border-radius: 1.1rem;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
+    color: var(--brand-dark);
+    animation: dialogFadeIn 0.18s ease-out;
+}
+
+/* Línea superior */
+
+.custom-dialog::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 3px;
+    background: var(--brand-primary);
+}
+
+/* Fondo detrás del diálogo */
+
+.custom-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.32);
+}
+
+/* =========================================================
+   ENCABEZADO DEL DIALOG
+   ========================================================= */
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dialog-header h2 {
+    margin: 0;
+    color: var(--brand-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+/* =========================================================
+   FORMULARIO DEL DIALOG
+   ========================================================= */
+
+.dialog-form {
+    display: flex;
+    flex-direction: column;
+    min-height: 190px;
+    padding: 22px 20px 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group label {
+    margin-bottom: 0.25rem;
+    color: var(--brand-dark);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.dialog-form .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    color: var(--brand-dark);
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.dialog-form .form-control:hover {
+    border-color: #cbd5e1;
+}
+
+.dialog-form .form-control:focus {
+    border-color: var(--brand-accent);
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* =========================================================
+   CAMPOS DESHABILITADOS - MODO VISUALIZAR
+   ========================================================= */
+
+.role-dialog .form-control:disabled {
+    background-color: #f8fafc;
+    color: #64748b;
+    border-color: #e2e8f0;
+    opacity: 1;
+    cursor: default;
+}
+
+.role-dialog .form-control:disabled:hover {
+    border-color: #e2e8f0;
+}
+
+/* =========================================================
+   CONTENIDO DEL DIALOG DE ELIMINAR
+   ========================================================= */
+
+.dialog-content {
+    padding: 1.5rem;
+    color: #334155;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.dialog-content p {
+    margin: 0 0 0.6rem;
+}
+
+.dialog-content p:last-child {
+    margin-bottom: 0;
+}
+
+.dialog-content strong {
+    color: var(--brand-dark);
+    font-weight: 600;
+}
+
+/* =========================================================
+   BOTONES DEL DIALOG
+   ========================================================= */
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+    padding: 18px 20px 20px;
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
+}
+
+/* BOTÓN CANCELAR / CERRAR */
+
+.dialog-actions .dialog-cancel {
+    padding: 0.65rem 1.1rem;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.dialog-actions .dialog-cancel:hover {
+    color: var(--brand-dark);
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* BOTÓN GUARDAR */
+
+.dialog-actions .btn-primary {
+    padding: 0.65rem 1.15rem;
+    color: #ffffff !important;
+    background: var(--brand-primary);
+    border: none;
+    border-radius: 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0, 86, 179, 0.14);
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.dialog-actions .btn-primary:hover {
+    color: #ffffff !important;
+    background: var(--brand-primary-hover);
+    box-shadow: 0 5px 12px rgba(0, 86, 179, 0.18);
+    transform: translateY(-1px);
+}
+
+/* BOTÓN ELIMINAR */
+
+.dialog-actions .dialog-confirm-delete {
+    padding: 0.65rem 1.15rem;
+    color: #ffffff !important;
+    background: #dc3545;
+    border: none;
+    border-radius: 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.dialog-actions .dialog-confirm-delete:hover {
+    color: #ffffff !important;
+    background: #c82333;
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.18);
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   ANIMACIÓN
+   ========================================================= */
+
+@keyframes dialogFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================================================
+   DIALOG DE ROLES
+   ========================================================= */
+
+.custom-dialog.role-dialog {
+    width: 760px;
+    max-width: calc(100% - 32px);
+    max-height: 90vh;
+    padding: 0;
+}
+
+/* Contenido scrolleable */
+
+.role-dialog-scroll {
+    padding: 1.5rem;
+    max-height: 62vh;
+    overflow-y: auto;
+}
+
+/* Scroll del dialog */
+
+.role-dialog-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.role-dialog-scroll::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.role-dialog-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.role-dialog-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* =========================================================
+   SECCIONES DE PERMISOS
+   ========================================================= */
+
+.permissions-section {
+    margin-top: 1.5rem;
+}
+
+.permissions-section h3 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+/* =========================================================
+   TABLA DE PERMISOS
+   ========================================================= */
+
+.permissions-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+}
+
+.permissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.permissions-table th {
+    padding: 0.7rem 0.8rem;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.permissions-table td {
+    padding: 0.7rem 0.8rem;
+    border-top: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 0.85rem;
+}
+
+.permissions-table th:not(:first-child),
+.permissions-table td:not(:first-child) {
+    text-align: center;
+}
+
+/* =========================================================
+   CHECKBOXES
+   ========================================================= */
+
+.permissions-table input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--brand-primary);
+    cursor: pointer;
+}
+
+.permissions-table input[type="checkbox"]:disabled {
+    cursor: default;
+    opacity: 0.85;
+}
+
+/* =========================================================
+   FORMULARIO ESPECÍFICO DE ROLES
+   ========================================================= */
+
+.role-dialog-form {
+    padding: 0 !important;
+    min-height: 0 !important;
+}
+
+/* Acciones siempre abajo */
+
+.role-dialog .dialog-actions {
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   RESPONSIVE GENERAL
+   ========================================================= */
+
+@media (max-width: 992px) {
     .roles-grid {
         grid-template-columns: 1fr;
     }
+}
 
+@media (max-width: 700px) {
+    .custom-dialog.role-dialog {
+        width: calc(100% - 20px);
+    }
+
+    .role-dialog-scroll {
+        padding: 1rem;
+        max-height: 60vh;
+    }
+
+    .permissions-table th,
+    .permissions-table td {
+        padding: 0.6rem;
+    }
 }
 
 @media (max-width: 576px) {
-
     .roles-container {
         padding: 1rem;
     }
@@ -267,306 +693,9 @@
     .table-footer {
         flex-wrap: wrap;
     }
-
 }
-
-/* =====================================================
-   DIALOGS
-   ===================================================== */
-
-.custom-dialog {
-    width: 460px;
-    max-width: calc(100% - 40px);
-
-    padding: 0;
-
-    background: #ffffff;
-
-    border: 1px solid rgba(226, 232, 240, 0.95);
-    border-radius: 1.1rem;
-
-    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
-
-    overflow: hidden;
-
-    color: var(--brand-dark);
-
-    animation: dialogFadeIn 0.18s ease-out;
-}
-
-/* Línea superior igual a la estética del login */
-
-.custom-dialog::before {
-    content: '';
-
-    display: block;
-
-    width: 100%;
-    height: 3px;
-
-    background: var(--brand-primary);
-}
-
-/* Fondo detrás del diálogo */
-
-.custom-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.32);
-}
-
-/* =====================================================
-   ENCABEZADO
-   ===================================================== */
-
-.dialog-header {
-    display: flex;
-    align-items: center;
-
-    padding: 18px 20px;
-
-    background: #f1f5f9;
-
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.dialog-header h2 {
-    margin: 0;
-
-    color: var(--brand-dark);
-
-    font-size: 1.05rem;
-    font-weight: 700;
-
-    letter-spacing: -0.2px;
-}
-
-/* =====================================================
-   FORMULARIO
-   ===================================================== */
-
-.dialog-form {
-    display: flex;
-    flex-direction: column;
-
-    min-height: 190px;
-
-    padding: 22px 20px 20px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-
-    gap: 7px;
-}
-
-.form-group label {
-    margin-bottom: 0.25rem;
-
-    color: var(--brand-dark);
-
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-/* =====================================================
-   INPUT
-   ===================================================== */
-
-.dialog-form .form-control {
-    width: 100%;
-
-    padding: 0.75rem 1rem;
-
-    color: var(--brand-dark);
-
-    background-color: #ffffff;
-
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-
-    font-size: 0.9rem;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background-color 0.2s ease;
-}
-
-.dialog-form .form-control:hover {
-    border-color: #cbd5e1;
-}
-
-.dialog-form .form-control:focus {
-    border-color: var(--brand-accent);
-
-    box-shadow: none !important;
-
-    outline: none !important;
-}
-
-/* =====================================================
-   CONTENIDO DEL DIÁLOGO DE ELIMINAR
-   ===================================================== */
-
-.dialog-content {
-    padding: 22px 20px 8px;
-
-    color: var(--text-muted);
-
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-
-.dialog-content p {
-    margin: 0;
-}
-
-.dialog-content strong {
-    color: var(--brand-dark);
-    font-weight: 600;
-}
-
-/* =====================================================
-   BOTONES
-   ===================================================== */
-
-.dialog-actions {
-    display: flex;
-
-    justify-content: flex-end;
-    align-items: center;
-
-    gap: 10px;
-
-    margin-top: auto;
-
-    padding: 18px 20px 20px;
-
-    border-top: 1px solid #f1f5f9;
-
-    background: #ffffff;
-}
-
-/* BOTÓN CANCELAR */
-
-.dialog-actions .dialog-cancel {
-    padding: 0.65rem 1.1rem;
-
-    color: #475569;
-
-    background: #f8fafc;
-
-    border: 1px solid #e2e8f0;
-
-    border-radius: 0.7rem;
-
-    font-size: 0.85rem;
-    font-weight: 600;
-
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
-}
-
-.dialog-actions .dialog-cancel:hover {
-    color: var(--brand-dark);
-
-    background: #f1f5f9;
-
-    border-color: #cbd5e1;
-}
-
-/* BOTÓN GUARDAR */
-
-.dialog-actions .btn-primary {
-    padding: 0.65rem 1.15rem;
-
-    color: #ffffff !important;
-
-    background: var(--brand-primary);
-
-    border: none;
-
-    border-radius: 0.7rem;
-
-    font-size: 0.85rem;
-    font-weight: 700;
-
-    box-shadow: 0 3px 8px rgba(0, 86, 179, 0.14);
-
-    transition:
-        background-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
-}
-
-.dialog-actions .btn-primary:hover {
-    color: #ffffff !important;
-
-    background: var(--brand-primary-hover);
-
-    box-shadow: 0 5px 12px rgba(0, 86, 179, 0.18);
-
-    transform: translateY(-1px);
-}
-
-/* BOTÓN ELIMINAR */
-
-.dialog-actions .dialog-confirm-delete {
-    padding: 0.65rem 1.15rem;
-
-    color: #ffffff !important;
-
-    background: #dc3545;
-
-    border: none;
-
-    border-radius: 0.7rem;
-
-    font-size: 0.85rem;
-    font-weight: 700;
-
-    transition:
-        background-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
-}
-
-.dialog-actions .dialog-confirm-delete:hover {
-    color: #ffffff !important;
-
-    background: #c82333;
-
-    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.18);
-
-    transform: translateY(-1px);
-}
-
-/* =====================================================
-   ANIMACIÓN
-   ===================================================== */
-
-@keyframes dialogFadeIn {
-
-    from {
-        opacity: 0;
-        transform: translateY(8px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-}
-
-/* =====================================================
-   RESPONSIVE
-   ===================================================== */
 
 @media (max-width: 480px) {
-
     .custom-dialog {
         width: calc(100% - 24px);
         max-width: none;
@@ -587,5 +716,4 @@
     .dialog-actions {
         padding: 16px;
     }
-
 }
