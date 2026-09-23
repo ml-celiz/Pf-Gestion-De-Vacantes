@@ -36,6 +36,9 @@ class AppMenu extends HTMLElement {
             // 3. Inicializar eventos
             this.initEvents();
 
+            // 4. Mostrar solo lo que corresponde al rol del usuario
+            this.aplicarPermisos();
+
         } catch (error) {
 
             console.error(
@@ -69,6 +72,28 @@ class AppMenu extends HTMLElement {
 
                 }
             );
+
+        });
+
+    }
+
+    // PERMISOS SEGÚN EL ROL
+    // Oculta las tarjetas a las que el usuario no puede entrar y las
+    // secciones que quedan vacías. Hay que volver a llamarlo cada vez
+    // que se muestra el menú, porque el elemento se crea antes del login.
+    aplicarPermisos() {
+
+        this.querySelectorAll('.menu-card').forEach(card => {
+
+            card.hidden =
+                !AuthService.puedeAcceder(card.dataset.route);
+
+        });
+
+        this.querySelectorAll('.menu-section').forEach(section => {
+
+            section.hidden =
+                !section.querySelector('.menu-card:not([hidden])');
 
         });
 

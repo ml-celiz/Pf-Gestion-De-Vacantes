@@ -417,7 +417,7 @@ class VacantesComponent extends HTMLElement {
                             title="Ver requisitos"
                             type="button"
                             data-action="requisitos">
-                            <i class="bi bi-eye"></i>
+                            <i class="bi bi-eye-fill"></i>
                         </button>
                     </td>
 
@@ -477,7 +477,7 @@ class VacantesComponent extends HTMLElement {
                                     type="button"
                                     title="Postularse"
                                     data-action="postularse">
-                                    <i class="bi bi-check2-square"></i>
+                                    <i class="bi bi-check-square-fill"></i>
                                 </button>
                             ` : ''}
 
@@ -1501,7 +1501,7 @@ class VacantesComponent extends HTMLElement {
                                                             data-action="ver-cv"
                                                         >
 
-                                                            <i class="bi bi-file-earmark-person"></i>
+                                                            <i class="bi bi-file-earmark-person-fill"></i>
 
                                                         </button>
 
@@ -1524,7 +1524,7 @@ class VacantesComponent extends HTMLElement {
                                                             }
                                                         >
 
-                                                            <i class="bi bi-plus-lg"></i>
+                                                            <i class="bi bi-plus-circle-fill"></i>
 
                                                         </button>
 

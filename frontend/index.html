@@ -122,8 +122,20 @@
             'navigate',
             async (event) => {
 
-                const route =
+                let route =
                     event.detail.route;
+
+                // Sin permiso para esa pantalla (por ejemplo, una URL
+                // escrita a mano): volver al menú
+                if (!AuthService.puedeAcceder(route)) {
+
+                    console.warn(
+                        'Sin permiso para la ruta:',
+                        route
+                    );
+
+                    route = 'menu';
+                }
 
                 console.log(
                     'Ruta recibida:',
@@ -258,6 +270,12 @@
 
                         if (menuView) {
                             menuView.style.display = 'block';
+
+                            const menu = menuView.querySelector('app-menu');
+
+                            if (menu && menu.aplicarPermisos) {
+                                menu.aplicarPermisos();
+                            }
                         }
 
                         break;

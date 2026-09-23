@@ -67,6 +67,12 @@
     margin-bottom: 2.75rem;
 }
 
+/* Ocultas por permisos del rol (display: flex de .menu-card pisa a [hidden]) */
+.menu-card[hidden],
+.menu-section[hidden] {
+    display: none !important;
+}
+
 /* CABECERA DE SECCIÓN */
 .section-header {
     width: 100%;

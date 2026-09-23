@@ -73,6 +73,14 @@ class AppLogin extends HTMLElement {
                         loginView.style.display = 'none';
                         menuView.style.display = 'block';
 
+                        // El menú se creó antes del login: ahora que hay
+                        // usuario, mostrar solo lo que le corresponde
+                        const menu = menuView.querySelector('app-menu');
+
+                        if (menu && menu.aplicarPermisos) {
+                            menu.aplicarPermisos();
+                        }
+
                     } else {
 
                         console.error(

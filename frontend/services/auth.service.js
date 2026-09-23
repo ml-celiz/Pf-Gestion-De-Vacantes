@@ -98,6 +98,55 @@ class AuthService {
         );
     }
     
+    // PANTALLAS PERMITIDAS POR ROL
+    // Clave = ruta del menú. Un usuario con varios roles
+    // accede a la unión de las pantallas de cada uno.
+    //   admin -> todo
+    //   ra    -> configuraciones + vacantes
+    //   pos   -> vacantes + postulaciones
+    //   jfc   -> vacantes
+    //   inv   -> vacantes
+    static PERMISOS_RUTAS = {
+        'vacantes':         ['admin', 'ra', 'jfc', 'pos', 'inv'],
+        'postulaciones':    ['admin', 'pos'],
+        'gestion-vacantes': ['admin', 'ra'],
+        'roles':            ['admin'],
+        'usuarios':         ['admin']
+    };
+
+    // NOMBRES DE ROL DEL USUARIO (en minúsculas)
+    static getRoles() {
+
+        const usuario = this.getUser();
+
+        if (!usuario || !Array.isArray(usuario.roles)) {
+            return [];
+        }
+
+        return usuario.roles.map(item =>
+            String(item.rol ?? '').trim().toLowerCase()
+        );
+    }
+
+    // ¿EL USUARIO PUEDE ENTRAR A ESA PANTALLA?
+    static puedeAcceder(ruta) {
+
+        if (ruta === 'menu') {
+            return true;
+        }
+
+        const rolesPermitidos =
+            this.PERMISOS_RUTAS[ruta];
+
+        if (!rolesPermitidos) {
+            return false;
+        }
+
+        return this.getRoles().some(rol =>
+            rolesPermitidos.includes(rol)
+        );
+    }
+
     // OBTENER USUARIO
     static getUser() {
         const userStr = localStorage.getItem('user_info');

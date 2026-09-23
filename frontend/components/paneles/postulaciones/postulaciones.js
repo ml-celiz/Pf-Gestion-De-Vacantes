@@ -318,7 +318,7 @@ class PostulacionesComponent extends HTMLElement {
                                 title="Ver postulación"
                                 type="button">
 
-                                <i class="bi bi-eye"></i>
+                                <i class="bi bi-eye-fill"></i>
 
                             </button>
 
@@ -330,7 +330,7 @@ class PostulacionesComponent extends HTMLElement {
                                 title="Editar postulación"
                                 type="button">
 
-                                <i class="bi bi-pencil"></i>
+                                <i class="bi bi-pencil-fill"></i>
 
                             </button>
 
@@ -342,7 +342,7 @@ class PostulacionesComponent extends HTMLElement {
                                 title="Dar de baja postulación"
                                 type="button">
 
-                                <i class="bi bi-trash"></i>
+                                <i class="bi bi-trash-fill"></i>
 
                             </button>
 

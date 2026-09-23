@@ -389,7 +389,7 @@ class UsuariosComponent extends HTMLElement {
                             title="Editar"
                             type="button">
 
-                            <i class="bi bi-pencil"></i>
+                            <i class="bi bi-pencil-fill"></i>
 
                         </button>
 
@@ -398,7 +398,7 @@ class UsuariosComponent extends HTMLElement {
                             title="Eliminar"
                             type="button">
 
-                            <i class="bi bi-trash"></i>
+                            <i class="bi bi-trash-fill"></i>
 
                         </button>
 
