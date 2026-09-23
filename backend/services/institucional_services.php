@@ -56,9 +56,29 @@ class InstitucionalService {
     }
 
     public function eliminarDepartamento(int $id): bool {
-        $stmt = $this->db->prepare("DELETE FROM public.departamentos WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $stmt->rowCount() > 0;
+
+        try {
+
+            $stmt = $this->db->prepare(
+                "DELETE FROM public.departamentos
+                WHERE id = :id"
+            );
+
+            $stmt->execute([
+                'id' => $id
+            ]);
+
+            return $stmt->rowCount() > 0;
+
+        } catch (PDOException $e) {
+
+            error_log(
+                "Error PDO al eliminar departamento: "
+                . $e->getMessage()
+            );
+
+            return false;
+        }
     }
 
     // --- CÁTEDRAS ---
@@ -147,51 +167,194 @@ class InstitucionalService {
     }
 
     public function crearCatedra(array $data): bool {
+
         $catedra = new Catedra($data);
-        if (empty($catedra->nombre) || !$catedra->idDepartamento || !$catedra->idUsuario) {
+
+        if (
+            empty($catedra->nombre) ||
+            !$catedra->idDepartamento ||
+            !$catedra->idUsuario
+        ) {
+            return false;
+        }
+
+        // El usuario asignado a una cátedra debe tener rol jfc
+        if (!$this->usuarioTieneRolJfc($catedra->idUsuario)) {
             return false;
         }
 
         try {
-            $sql = "INSERT INTO public.catedras (nombre, id_departamento, id_usuario) 
-                    VALUES (:nombre, :id_departamento, :id_usuario)";
+
+            $sql = "INSERT INTO public.catedras
+                        (
+                            nombre,
+                            id_departamento,
+                            id_usuario
+                        )
+                    VALUES
+                        (
+                            :nombre,
+                            :id_departamento,
+                            :id_usuario
+                        )";
+
             $stmt = $this->db->prepare($sql);
+
             return $stmt->execute([
-                'nombre'          => $catedra->nombre,
-                'id_departamento' => $catedra->idDepartamento,
-                'id_usuario'      => $catedra->idUsuario
+                'nombre' =>
+                    $catedra->nombre,
+
+                'id_departamento' =>
+                    $catedra->idDepartamento,
+
+                'id_usuario' =>
+                    $catedra->idUsuario
             ]);
+
         } catch (PDOException $e) {
-            error_log("Error PDO al crear cátedra: " . $e->getMessage());
+
+            error_log(
+                "Error PDO al crear cátedra: "
+                . $e->getMessage()
+            );
+
             return false;
         }
     }
 
     public function actualizarCatedra(int $id, array $data): bool {
+
         $existente = $this->obtenerCatedraPorId($id);
-        if (!$existente) return false;
+
+        if (!$existente) {
+            return false;
+        }
 
         $catedra = new Catedra($data);
+
+        $idDepartamento =
+            $catedra->idDepartamento
+                ?: $existente['id_departamento'];
+
+        $idUsuario =
+            $catedra->idUsuario
+                ?: $existente['id_usuario'];
+
+        $nombre =
+            $catedra->nombre
+                ?: $existente['nombre'];
+
+        // El usuario asignado debe tener rol jfc
+        if (!$this->usuarioTieneRolJfc($idUsuario)) {
+            return false;
+        }
+
         try {
-            $sql = "UPDATE public.catedras 
-                    SET nombre = :nombre, id_departamento = :id_departamento, id_usuario = :id_usuario 
+
+            $sql = "UPDATE public.catedras
+                    SET
+                        nombre = :nombre,
+                        id_departamento = :id_departamento,
+                        id_usuario = :id_usuario
                     WHERE id = :id";
+
             $stmt = $this->db->prepare($sql);
+
             return $stmt->execute([
-                'id'              => $id,
-                'nombre'          => $catedra->nombre ?: $existente['nombre'],
-                'id_departamento' => $catedra->idDepartamento ?: $existente['id_departamento'],
-                'id_usuario'      => $catedra->idUsuario ?: $existente['id_usuario']
+
+                'id' =>
+                    $id,
+
+                'nombre' =>
+                    $nombre,
+
+                'id_departamento' =>
+                    $idDepartamento,
+
+                'id_usuario' =>
+                    $idUsuario
             ]);
+
         } catch (PDOException $e) {
-            error_log("Error PDO al actualizar cátedra: " . $e->getMessage());
+
+            error_log(
+                "Error PDO al actualizar cátedra: "
+                . $e->getMessage()
+            );
+
             return false;
         }
     }
 
     public function eliminarCatedra(int $id): bool {
-        $stmt = $this->db->prepare("DELETE FROM public.catedras WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $stmt->rowCount() > 0;
+
+        try {
+
+            $stmt = $this->db->prepare(
+                "DELETE FROM public.catedras
+                WHERE id = :id"
+            );
+
+            $stmt->execute([
+                'id' => $id
+            ]);
+
+            return $stmt->rowCount() > 0;
+
+        } catch (PDOException $e) {
+
+            error_log(
+                "Error PDO al eliminar cátedra: "
+                . $e->getMessage()
+            );
+
+            return false;
+        }
+    }
+
+    // ----- HELPERS -----
+
+    public function obtenerUsuariosJfc(): array {
+
+        $sql = "SELECT
+                    u.id,
+                    u.nombre,
+                    u.apellido,
+                    u.email
+                FROM public.usuarios u
+                JOIN public.roles_usuarios ru
+                    ON ru.id_usuario = u.id
+                JOIN public.roles r
+                    ON r.id = ru.id_rol
+                WHERE LOWER(r.nombre) = 'jfc'
+                AND u.fecha_baja IS NULL
+                ORDER BY u.apellido ASC, u.nombre ASC";
+
+        $stmt = $this->db->query($sql);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private function usuarioTieneRolJfc(int $idUsuario): bool {
+
+        $sql = "SELECT EXISTS (
+                    SELECT 1
+                    FROM public.usuarios u
+                    JOIN public.roles_usuarios ru
+                        ON ru.id_usuario = u.id
+                    JOIN public.roles r
+                        ON r.id = ru.id_rol
+                    WHERE u.id = :id_usuario
+                    AND u.fecha_baja IS NULL
+                    AND LOWER(r.nombre) = 'jfc'
+                )";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            ':id_usuario' => $idUsuario
+        ]);
+
+        return (bool)$stmt->fetchColumn();
     }
 }

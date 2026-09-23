@@ -100,4 +100,12 @@ class InstitucionalController {
             echo json_encode(["message" => "Cátedra no encontrada."]);
         }
     }
+
+    // --- JEFES DE CATEDRA ---
+    public function listarUsuariosJfc(): void {
+
+        echo json_encode(
+            $this->service->obtenerUsuariosJfc()
+        );
+    }
 }

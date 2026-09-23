@@ -42,29 +42,19 @@
     </div>
 
     <!-- LISTADO DE VACANTES -->
-    <div id="vacantes-view" style="display: none;">
-        <app-vacantes></app-vacantes>
-    </div>
+    <div id="vacantes-view" style="display: none;"></div>
 
     <!-- POSTULACIONES -->
-    <div id="postulaciones-view" style="display: none;">
-        <app-postulaciones></app-postulaciones>
-    </div>
+    <div id="postulaciones-view" style="display: none;"></div>
 
     <!-- GESTIÓN DE VACANTES -->
-    <div id="gestion-vacantes-view" style="display: none;">
-        <app-gestion-vacantes></app-gestion-vacantes>
-    </div>
+    <div id="gestion-vacantes-view" style="display: none;"></div>
 
     <!-- ROLES -->
-    <div id="roles-view" style="display: none;">
-        <app-roles></app-roles>
-    </div>
+    <div id="roles-view" style="display: none;"></div>
 
     <!-- USUARIOS -->
-    <div id="usuarios-view" style="display: none;">
-        <app-usuarios></app-usuarios>
-    </div>
+    <div id="usuarios-view" style="display: none;"></div>
 
 
     <!-- Bootstrap JS -->
@@ -130,7 +120,7 @@
 
         document.addEventListener(
             'navigate',
-            (event) => {
+            async (event) => {
 
                 const route =
                     event.detail.route;
@@ -276,6 +266,13 @@
                     case 'vacantes':
 
                         if (vacantesView) {
+
+                            if (!vacantesView.querySelector('app-vacantes')) {
+                                vacantesView.innerHTML = `
+                                    <app-vacantes></app-vacantes>
+                                `;
+                            }
+
                             vacantesView.style.display = 'block';
                         }
 
@@ -285,6 +282,13 @@
                     case 'postulaciones':
 
                         if (postulacionesView) {
+
+                            if (!postulacionesView.querySelector('app-postulaciones')) {
+                                postulacionesView.innerHTML = `
+                                    <app-postulaciones></app-postulaciones>
+                                `;
+                            }
+
                             postulacionesView.style.display = 'block';
                         }
 
@@ -294,6 +298,13 @@
                     case 'gestion-vacantes':
 
                         if (gestionVacantesView) {
+
+                            if (!gestionVacantesView.querySelector('app-gestion-vacantes')) {
+                                gestionVacantesView.innerHTML = `
+                                    <app-gestion-vacantes></app-gestion-vacantes>
+                                `;
+                            }
+
                             gestionVacantesView.style.display = 'block';
                         }
 
@@ -303,6 +314,13 @@
                     case 'roles':
 
                         if (rolesView) {
+
+                            if (!rolesView.querySelector('app-roles')) {
+                                rolesView.innerHTML = `
+                                    <app-roles></app-roles>
+                                `;
+                            }
+
                             rolesView.style.display = 'block';
                         }
 
@@ -312,6 +330,13 @@
                     case 'usuarios':
 
                         if (usuariosView) {
+
+                            if (!usuariosView.querySelector('app-usuarios')) {
+                                usuariosView.innerHTML = `
+                                    <app-usuarios></app-usuarios>
+                                `;
+                            }
+
                             usuariosView.style.display = 'block';
                         }
 

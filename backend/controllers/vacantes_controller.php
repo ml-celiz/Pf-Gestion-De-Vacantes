@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../services/vacantes_services.php';
+require_once __DIR__ . '/../services/auth_services.php';
 
 class VacantesController {
     private VacanteService $service;
@@ -29,13 +30,52 @@ class VacantesController {
     }
 
     public function crearVacante(): void {
-        $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        if ($this->service->crearVacante($input)) {
+
+        $sesionActual = verificarAutenticacion();
+
+        $idUsuario =
+            isset($sesionActual['id_usuario'])
+                ? (int)$sesionActual['id_usuario']
+                : null;
+
+        if (!$idUsuario) {
+            http_response_code(401);
+            echo json_encode([
+                "message" =>
+                    "No se pudo identificar al usuario autenticado."
+            ]);
+            return;
+        }
+
+        $input =
+            json_decode(
+                file_get_contents('php://input'),
+                true
+            ) ?? [];
+
+        /*
+        * El frontend NO decide el usuario.
+        * El backend lo obtiene de la sesión.
+        */
+        $input['id_usuario'] = $idUsuario;
+
+        if (
+            $this->service->crearVacante(
+                $input,
+                $idUsuario
+            )
+        ) {
             http_response_code(201);
-            echo json_encode(["message" => "Vacante creada exitosamente."]);
+            echo json_encode([
+                "message" =>
+                    "Vacante creada exitosamente."
+            ]);
         } else {
             http_response_code(400);
-            echo json_encode(["message" => "No se pudo crear la vacante. Verifique los datos."]);
+            echo json_encode([
+                "message" =>
+                    "No se pudo crear la vacante. Verifique los datos."
+            ]);
         }
     }
 
@@ -60,11 +100,17 @@ class VacantesController {
 
     // --- SOLICITUDES DE VACANTES ---
 
-    public function listarSolicitudes(): void {
-        $idUsuario = isset($_GET['id_usuario']) && is_numeric($_GET['id_usuario']) 
-            ? (int)$_GET['id_usuario'] 
-            : null;
-        echo json_encode($this->service->obtenerSolicitudes($idUsuario));
+    public function listarSolicitudes(): void
+    {
+        $idVacante =
+            isset($_GET['id_vacante']) &&
+            is_numeric($_GET['id_vacante'])
+                ? (int)$_GET['id_vacante']
+                : null;
+
+        echo json_encode(
+            $this->service->obtenerSolicitudes($idVacante)
+        );
     }
 
     public function obtenerSolicitudPorId(int $id): void {
@@ -128,5 +174,12 @@ class VacantesController {
             http_response_code(400);
             echo json_encode(["message" => "No se pudo registrar la orden de mérito."]);
         }
+    }
+
+    public function listarEstados(): void {
+
+        echo json_encode(
+            $this->service->obtenerEstados()
+        );
     }
 }

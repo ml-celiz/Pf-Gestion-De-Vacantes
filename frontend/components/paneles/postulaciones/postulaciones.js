@@ -34,7 +34,7 @@ class PostulacionesComponent extends HTMLElement {
             this.innerHTML =
                 await response.text();
 
-            this.inicializar();
+            await this.inicializar();
 
         } catch (error) {
 
@@ -52,11 +52,10 @@ class PostulacionesComponent extends HTMLElement {
     }
 
 
-    inicializar() {
+    async inicializar() {
 
         this.configurarEventos();
-
-        this.cargarPostulaciones();
+        await this.cargarPostulaciones();
     }
 
 

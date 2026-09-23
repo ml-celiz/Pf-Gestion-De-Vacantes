@@ -89,12 +89,20 @@ class Vacante {
             'fin' =>
                 $this->fin,
 
+            'id_estado' =>
+                $this->idEstado,
+
             'estado' =>
                 $this->estadoNombre,
 
-            'catedra' =>
-                $this->catedraNombre
+            'id_catedra' =>
+                $this->idCatedra,
 
+            'catedra' =>
+                $this->catedraNombre,
+
+            'id_usuario' =>
+                $this->idUsuario
         ];
     }
 }

@@ -1,7 +1,6 @@
 class GestionVacantesComponent extends HTMLElement {
 
     constructor() {
-
         super();
 
         // CANTIDAD POR PÁGINA
@@ -13,12 +12,13 @@ class GestionVacantesComponent extends HTMLElement {
         this.vacantes = [];
         this.catedras = [];
         this.departamentos = [];
+        this.usuariosJfc = [];
+        this.estados = [];
 
         // PÁGINAS ACTUALES
         this.vacantesCurrentPage = 1;
         this.catedrasCurrentPage = 1;
         this.departamentosCurrentPage = 1;
-
     }
 
     // INICIALIZACIÓN
@@ -53,13 +53,11 @@ class GestionVacantesComponent extends HTMLElement {
 
             // Cargar las tres tablas
             await Promise.all([
-
                 this.cargarVacantes(),
-
                 this.cargarCatedras(),
-
-                this.cargarDepartamentos()
-
+                this.cargarDepartamentos(),
+                this.cargarUsuariosJfc(),
+                this.cargarEstados()
             ]);
 
         } catch (error) {
@@ -81,12 +79,38 @@ class GestionVacantesComponent extends HTMLElement {
             this.querySelector('#btn-refresh');
 
         if (btnRefresh) {
-
             btnRefresh.addEventListener(
                 'click',
                 () => this.recargarTodo()
             );
+        }
 
+        // AGREGAR VACANTE
+        const btnAddVacante = this.querySelector('#btn-add-vacante');
+
+        if (btnAddVacante) {
+            btnAddVacante.addEventListener('click', () => {
+                this.abrirDialogoVacante();
+            });
+        }
+
+        // AGREGAR CÁTEDRA
+        const btnAddCatedra = this.querySelector('#btn-add-catedra');
+
+        if (btnAddCatedra) {
+            btnAddCatedra.addEventListener('click', () => {
+                this.abrirDialogoCatedra();
+            });
+        }
+
+        // AGREGAR DEPARTAMENTO
+        const btnAddDepartamento =
+            this.querySelector('#btn-add-departamento');
+
+        if (btnAddDepartamento) {
+            btnAddDepartamento.addEventListener('click', () => {
+                this.abrirDialogoDepartamento();
+            });
         }
 
         // PAGINACIÓN VACANTES
@@ -102,17 +126,12 @@ class GestionVacantesComponent extends HTMLElement {
             vacantesPrev.addEventListener(
                 'click',
                 () => {
-
                     if (
                         this.vacantesCurrentPage > 1
                     ) {
-
                         this.vacantesCurrentPage--;
-
                         this.renderVacantes();
-
                     }
-
                 }
             );
 
@@ -137,7 +156,6 @@ class GestionVacantesComponent extends HTMLElement {
                     ) {
 
                         this.vacantesCurrentPage++;
-
                         this.renderVacantes();
 
                     }
@@ -265,23 +283,17 @@ class GestionVacantesComponent extends HTMLElement {
 
     // RECARGAR TODO
     async recargarTodo() {
-
         this.vacantesCurrentPage = 1;
-
         this.catedrasCurrentPage = 1;
-
         this.departamentosCurrentPage = 1;
 
         await Promise.all([
-
             this.cargarVacantes(),
-
             this.cargarCatedras(),
-
-            this.cargarDepartamentos()
-
+            this.cargarDepartamentos(),
+            this.cargarUsuariosJfc(),
+            this.cargarEstados()
         ]);
-
     }
 
     // VACANTES
@@ -320,19 +332,9 @@ class GestionVacantesComponent extends HTMLElement {
 
         try {
 
-            const vacantes =
-                await ApiClient.get('/vacantes');
-
-
-            this.vacantes =
-                vacantes || [];
-
-
-            this.vacantesCurrentPage = 1;
-
-
+            const vacantes = await ApiClient.get('/vacantes');
+            this.vacantes = vacantes || [];
             this.renderVacantes();
-
 
         } catch (error) {
 
@@ -341,18 +343,13 @@ class GestionVacantesComponent extends HTMLElement {
                 error
             );
 
-
             tbody.innerHTML = `
                 <tr>
-
                     <td
                         colspan="9"
                         class="text-center text-danger">
-
                         Error al cargar vacantes.
-
                     </td>
-
                 </tr>
             `;
 
@@ -366,12 +363,9 @@ class GestionVacantesComponent extends HTMLElement {
         const tbody =
             this.querySelector('#tb-vacantes');
 
-
         if (!tbody) return;
 
-
         tbody.innerHTML = '';
-
 
         if (this.vacantes.length === 0) {
 
@@ -419,7 +413,6 @@ class GestionVacantesComponent extends HTMLElement {
             const tr =
                 document.createElement('tr');
 
-
             tr.innerHTML = `
                 <td>
                     ${vacante.titulo || '-'}
@@ -466,19 +459,14 @@ class GestionVacantesComponent extends HTMLElement {
                             class="btn-action edit"
                             title="Editar"
                             type="button">
-
                             <i class="bi bi-pencil"></i>
-
                         </button>
-
 
                         <button
                             class="btn-action delete"
                             title="Eliminar"
                             type="button">
-
                             <i class="bi bi-trash"></i>
-
                         </button>
 
                     </div>
@@ -486,19 +474,51 @@ class GestionVacantesComponent extends HTMLElement {
                 </td>
             `;
 
-
             tbody.appendChild(tr);
 
+            // VER REQUISITOS
             const btnRequisitos =
                 tr.querySelector('.btn-action.view');
 
             if (btnRequisitos) {
-
                 btnRequisitos.addEventListener(
                     'click',
-                    () => this.mostrarRequisitos(vacante.requisitos)
+                    (event) => {
+                        event.stopPropagation();
+                        this.mostrarRequisitos(vacante.requisitos);
+                    }
                 );
+            }
 
+            // EDITAR
+            const btnEdit =
+                tr.querySelector('.btn-action.edit');
+
+            if (btnEdit) {
+                btnEdit.addEventListener(
+                    'click',
+                    (event) => {
+                        event.stopPropagation();
+                        this.abrirDialogoVacante(vacante);
+                    }
+                );
+            }
+
+            // ELIMINAR
+            const btnDelete =
+                tr.querySelector('.btn-action.delete');
+
+            if (btnDelete) {
+                btnDelete.addEventListener(
+                    'click',
+                    (event) => {
+                        event.stopPropagation();
+                        this.abrirDialogoEliminar(
+                            'vacante',
+                            vacante
+                        );
+                    }
+                );
             }
 
         });
@@ -600,6 +620,42 @@ class GestionVacantesComponent extends HTMLElement {
 
     }
 
+    // CARGAR USUARIOS JEFES DE CATEDRA
+    async cargarUsuariosJfc() {
+        try {
+            const usuarios = await ApiClient.get(
+                '/institucional/usuarios-jfc'
+            );
+
+            this.usuariosJfc = usuarios || [];
+
+        } catch (error) {
+            console.error(
+                'Error obteniendo usuarios JFC:',
+                error
+            );
+
+            this.usuariosJfc = [];
+        }
+    }
+
+    // CARGAR ESTADOS
+    async cargarEstados() {
+        try {
+            const estados = await ApiClient.get('/vacantes/estados');
+
+            this.estados = estados || [];
+
+        } catch (error) {
+            console.error(
+                'Error obteniendo estados:',
+                error
+            );
+
+            this.estados = [];
+        }
+    }
+
     // CÁTEDRAS
     // GET /api/institucional/catedras
     async cargarCatedras() {
@@ -632,15 +688,7 @@ class GestionVacantesComponent extends HTMLElement {
                 await ApiClient.get(
                     '/institucional/catedras'
                 );
-
-
-            this.catedras =
-                catedras || [];
-
-
-            this.catedrasCurrentPage = 1;
-
-
+            this.catedras = catedras || [];
             this.renderCatedras();
 
 
@@ -651,18 +699,13 @@ class GestionVacantesComponent extends HTMLElement {
                 error
             );
 
-
             tbody.innerHTML = `
                 <tr>
-
                     <td
                         colspan="3"
                         class="text-center text-danger">
-
                         Error al obtener cátedras.
-
                     </td>
-
                 </tr>
             `;
 
@@ -676,12 +719,10 @@ class GestionVacantesComponent extends HTMLElement {
         const tbody =
             this.querySelector('#tb-catedras');
 
-
         if (!tbody) return;
 
 
         tbody.innerHTML = '';
-
 
         if (this.catedras.length === 0) {
 
@@ -767,8 +808,30 @@ class GestionVacantesComponent extends HTMLElement {
                 </td>
             `;
 
-
             tbody.appendChild(tr);
+
+            const btnEdit =
+                tr.querySelector('.btn-action.edit');
+
+            if (btnEdit) {
+                btnEdit.addEventListener(
+                    'click',
+                    () => this.abrirDialogoCatedra(catedra)
+                );
+            }
+
+            const btnDelete =
+                tr.querySelector('.btn-action.delete');
+
+            if (btnDelete) {
+                btnDelete.addEventListener(
+                    'click',
+                    () => this.abrirDialogoEliminar(
+                        'catedra',
+                        catedra
+                    )
+                );
+            }
 
         });
 
@@ -903,17 +966,8 @@ class GestionVacantesComponent extends HTMLElement {
                 await ApiClient.get(
                     '/institucional/departamentos'
                 );
-
-
-            this.departamentos =
-                departamentos || [];
-
-
-            this.departamentosCurrentPage = 1;
-
-
+            this.departamentos = departamentos || [];
             this.renderDepartamentos();
-
 
         } catch (error) {
 
@@ -922,18 +976,13 @@ class GestionVacantesComponent extends HTMLElement {
                 error
             );
 
-
             tbody.innerHTML = `
                 <tr>
-
                     <td
                         colspan="2"
                         class="text-center text-danger">
-
                         Error al obtener departamentos.
-
                     </td>
-
                 </tr>
             `;
 
@@ -1036,8 +1085,30 @@ class GestionVacantesComponent extends HTMLElement {
                 </td>
             `;
 
-
             tbody.appendChild(tr);
+
+            const btnEdit =
+                tr.querySelector('.btn-action.edit');
+
+            if (btnEdit) {
+                btnEdit.addEventListener(
+                    'click',
+                    () => this.abrirDialogoDepartamento(departamento)
+                );
+            }
+
+            const btnDelete =
+                tr.querySelector('.btn-action.delete');
+
+            if (btnDelete) {
+                btnDelete.addEventListener(
+                    'click',
+                    () => this.abrirDialogoEliminar(
+                        'departamento',
+                        departamento
+                    )
+                );
+            }
 
         });
 
@@ -1364,6 +1435,1030 @@ class GestionVacantesComponent extends HTMLElement {
 
     }
 
+    // HELPERS
+    crearDialogoBase() {
+        const dialog = document.createElement('dialog');
+        dialog.classList.add('custom-dialog');
+        return dialog;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text ?? '';
+        return div.innerHTML;
+    }
+
+    // DIALOG DEPARTAMENTOS
+    abrirDialogoDepartamento(departamento = null) {
+
+        const esEdicion = departamento !== null;
+
+        const dialog = this.crearDialogoBase();
+
+        dialog.innerHTML = `
+            <div class="dialog-header">
+                <h2>
+                    ${esEdicion
+                        ? 'Editar departamento'
+                        : 'Agregar departamento'}
+                </h2>
+            </div>
+
+            <form class="dialog-form">
+
+                <div class="form-group">
+
+                    <label for="departamento-nombre">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="departamento-nombre"
+                        class="form-control"
+                        maxlength="50"
+                        autocomplete="off"
+                        value="${this.escapeHtml(
+                            departamento?.nombre || ''
+                        )}"
+                        required>
+
+                </div>
+
+                <div class="dialog-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel">
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+                        ${esEdicion ? 'Guardar cambios' : 'Guardar'}
+                    </button>
+
+                </div>
+
+            </form>
+        `;
+
+        document.body.appendChild(dialog);
+
+        const form = dialog.querySelector('.dialog-form');
+
+        const input =
+            dialog.querySelector('#departamento-nombre');
+
+        const btnCancelar =
+            dialog.querySelector('.dialog-cancel');
+
+        btnCancelar.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+        form.addEventListener(
+            'submit',
+            async (event) => {
+
+                event.preventDefault();
+
+                const nombre = input.value.trim();
+
+                if (!nombre) {
+                    input.focus();
+                    return;
+                }
+
+                try {
+
+                    if (esEdicion) {
+
+                        await ApiClient.put(
+                            `/institucional/departamentos/${departamento.id}`,
+                            {
+                                nombre: nombre
+                            }
+                        );
+
+                    } else {
+
+                        await ApiClient.post(
+                            '/institucional/departamentos',
+                            {
+                                nombre: nombre
+                            }
+                        );
+                    }
+
+                    dialog.close();
+
+                    await this.cargarDepartamentos();
+
+                    this.mostrarSnackbar(
+                        esEdicion
+                            ? 'Departamento actualizado correctamente.'
+                            : 'Departamento creado correctamente.'
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        'Error guardando departamento:',
+                        error
+                    );
+
+                    this.mostrarSnackbar(
+                        esEdicion
+                            ? 'No se pudo actualizar el departamento.'
+                            : 'No se pudo crear el departamento.',
+                        'error'
+                    );
+                }
+            }
+        );
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+        dialog.showModal();
+
+        input.focus();
+    }
+
+    // DIALOG CATEDRA
+    abrirDialogoCatedra(catedra = null) {
+
+        const esEdicion = catedra !== null;
+
+        const dialog = this.crearDialogoBase();
+
+        const opcionesDepartamentos =
+            this.departamentos.map(departamento => `
+                <option
+                    value="${departamento.id}"
+                    ${Number(catedra?.id_departamento) === Number(departamento.id)
+                        ? 'selected'
+                        : ''}>
+                    ${this.escapeHtml(departamento.nombre)}
+                </option>
+            `).join('');
+
+        const opcionesUsuarios =
+            this.usuariosJfc.map(usuario => `
+                <option
+                    value="${usuario.id}"
+                    ${Number(catedra?.id_usuario) === Number(usuario.id)
+                        ? 'selected'
+                        : ''}>
+                    ${this.escapeHtml(
+                        `${usuario.apellido || ''}, ${usuario.nombre || ''}`
+                    )}
+                </option>
+            `).join('');
+
+        dialog.innerHTML = `
+            <div class="dialog-header">
+                <h2>
+                    ${esEdicion
+                        ? 'Editar cátedra'
+                        : 'Agregar cátedra'}
+                </h2>
+            </div>
+
+            <form class="dialog-form">
+
+                <div class="form-group">
+
+                    <label for="catedra-nombre">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="catedra-nombre"
+                        class="form-control"
+                        maxlength="50"
+                        autocomplete="off"
+                        value="${this.escapeHtml(
+                            catedra?.nombre || ''
+                        )}"
+                        required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="catedra-departamento">
+                        Departamento
+                    </label>
+
+                    <select
+                        id="catedra-departamento"
+                        class="form-control"
+                        required>
+
+                        <option value="">
+                            Seleccionar departamento
+                        </option>
+
+                        ${opcionesDepartamentos}
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="catedra-usuario">
+                        Jefe de Cátedra
+                    </label>
+
+                    <select
+                        id="catedra-usuario"
+                        class="form-control"
+                        required>
+
+                        <option value="">
+                            Seleccionar usuario
+                        </option>
+
+                        ${opcionesUsuarios}
+
+                    </select>
+
+                </div>
+
+                <div class="dialog-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel">
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+                        ${esEdicion
+                            ? 'Guardar cambios'
+                            : 'Guardar'}
+                    </button>
+
+                </div>
+
+            </form>
+        `;
+
+        document.body.appendChild(dialog);
+
+        const form =
+            dialog.querySelector('.dialog-form');
+
+        const inputNombre =
+            dialog.querySelector('#catedra-nombre');
+
+        const selectDepartamento =
+            dialog.querySelector('#catedra-departamento');
+
+        const selectUsuario =
+            dialog.querySelector('#catedra-usuario');
+
+        const btnCancelar =
+            dialog.querySelector('.dialog-cancel');
+
+        btnCancelar.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+        form.addEventListener(
+            'submit',
+            async (event) => {
+
+                event.preventDefault();
+
+                const nombre =
+                    inputNombre.value.trim();
+
+                const idDepartamento =
+                    Number(selectDepartamento.value);
+
+                const idUsuario =
+                    Number(selectUsuario.value);
+
+                if (!nombre) {
+                    inputNombre.focus();
+                    return;
+                }
+
+                if (!idDepartamento) {
+                    selectDepartamento.focus();
+                    return;
+                }
+
+                if (!idUsuario) {
+                    selectUsuario.focus();
+                    return;
+                }
+
+                try {
+
+                    const datos = {
+                        nombre: nombre,
+                        id_departamento: idDepartamento,
+                        id_usuario: idUsuario
+                    };
+
+                    if (esEdicion) {
+
+                        await ApiClient.put(
+                            `/institucional/catedras/${catedra.id}`,
+                            datos
+                        );
+
+                    } else {
+
+                        await ApiClient.post(
+                            '/institucional/catedras',
+                            datos
+                        );
+                    }
+
+                    dialog.close();
+
+                    await this.cargarCatedras();
+
+                    this.mostrarSnackbar(
+                        esEdicion
+                            ? 'Cátedra actualizada correctamente.'
+                            : 'Cátedra creada correctamente.'
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        'Error guardando cátedra:',
+                        error
+                    );
+
+                    this.mostrarSnackbar(
+                        esEdicion
+                            ? 'No se pudo actualizar la cátedra.'
+                            : 'No se pudo crear la cátedra.',
+                        'error'
+                    );
+                }
+            }
+        );
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+        dialog.showModal();
+
+        inputNombre.focus();
+    }
+
+    // DIALOG VACANTE
+    abrirDialogoVacante(vacante = null) {
+
+        const esEdicion = vacante !== null;
+
+        const dialog = this.crearDialogoBase();
+
+        // ANCHO ESPECÍFICO PARA EL DIALOG DE VACANTES
+        dialog.classList.add('vacante-dialog');
+
+        const opcionesCatedras =
+            this.catedras.map(catedra => `
+                <option
+                    value="${catedra.id}"
+                    ${Number(vacante?.id_catedra) === Number(catedra.id)
+                        ? 'selected'
+                        : ''}>
+                    ${this.escapeHtml(catedra.nombre)}
+                </option>
+            `).join('');
+
+        const opcionesEstados =
+            this.estados.map(estado => `
+                <option
+                    value="${estado.id}"
+                    ${Number(vacante?.id_estado) === Number(estado.id)
+                        ? 'selected'
+                        : ''}>
+                    ${this.escapeHtml(estado.nombre)}
+                </option>
+            `).join('');
+
+        dialog.innerHTML = `
+            <div class="dialog-header">
+
+                <h2>
+                    ${esEdicion
+                        ? 'Editar vacante'
+                        : 'Agregar vacante'}
+                </h2>
+
+            </div>
+
+
+            <form class="dialog-form">
+
+                <!-- TÍTULO -->
+
+                <div class="form-group">
+
+                    <label for="vacante-titulo">
+                        Vacante
+                    </label>
+
+                    <input
+                        type="text"
+                        id="vacante-titulo"
+                        class="form-control"
+                        maxlength="50"
+                        autocomplete="off"
+                        value="${this.escapeHtml(
+                            vacante?.titulo || ''
+                        )}"
+                        required>
+
+                </div>
+
+
+                <!-- DESCRIPCIÓN -->
+
+                <div class="form-group">
+
+                    <label for="vacante-descripcion">
+                        Descripción
+                    </label>
+
+                    <textarea
+                        id="vacante-descripcion"
+                        class="form-control"
+                        maxlength="50"
+                        rows="3"
+                        required>${this.escapeHtml(
+                            vacante?.descripcion || ''
+                        )}</textarea>
+
+                </div>
+
+
+                <!-- CÁTEDRA + ESTADO -->
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="vacante-catedra">
+                            Cátedra
+                        </label>
+
+                        <select
+                            id="vacante-catedra"
+                            class="form-control"
+                            required>
+
+                            <option value="">
+                                Seleccionar cátedra
+                            </option>
+
+                            ${opcionesCatedras}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="vacante-estado">
+                            Estado
+                        </label>
+
+                        <select
+                            id="vacante-estado"
+                            class="form-control"
+                            required>
+
+                            <option value="">
+                                Seleccionar estado
+                            </option>
+
+                            ${opcionesEstados}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- INICIO + FIN -->
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="vacante-inicio">
+                            Inicio
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="vacante-inicio"
+                            class="form-control"
+                            value="${this.formatearFechaInput(
+                                vacante?.inicio
+                            )}">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="vacante-fin">
+                            Fin
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="vacante-fin"
+                            class="form-control"
+                            value="${this.formatearFechaInput(
+                                vacante?.fin
+                            )}">
+
+                    </div>
+
+                </div>
+
+
+                <!-- REQUISITOS -->
+
+                <div class="form-group">
+
+                    <label for="vacante-requisitos">
+                        Requisitos
+                    </label>
+
+                    <textarea
+                        id="vacante-requisitos"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Ingrese un requisito por línea...">${this.formatearRequisitosInput(
+                            vacante?.requisitos
+                        )}</textarea>
+                        
+                </div>
+
+
+                <!-- BOTONES -->
+
+                <div class="dialog-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel">
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+                        ${esEdicion
+                            ? 'Guardar cambios'
+                            : 'Guardar'}
+                    </button>
+
+                </div>
+
+            </form>
+        `;
+
+        document.body.appendChild(dialog);
+
+
+        // REFERENCIAS
+
+        const form =
+            dialog.querySelector('.dialog-form');
+
+        const titulo =
+            dialog.querySelector('#vacante-titulo');
+
+        const descripcion =
+            dialog.querySelector('#vacante-descripcion');
+
+        const catedra =
+            dialog.querySelector('#vacante-catedra');
+
+        const estado =
+            dialog.querySelector('#vacante-estado');
+
+        const inicio =
+            dialog.querySelector('#vacante-inicio');
+
+        const fin =
+            dialog.querySelector('#vacante-fin');
+
+        const requisitos =
+            dialog.querySelector('#vacante-requisitos');
+
+        const btnCancelar =
+            dialog.querySelector('.dialog-cancel');
+
+
+        // CANCELAR
+
+        btnCancelar.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+
+        // GUARDAR
+
+        form.addEventListener(
+            'submit',
+            async (event) => {
+
+                event.preventDefault();
+
+
+                // VALIDACIONES
+
+                if (!titulo.value.trim()) {
+
+                    titulo.focus();
+
+                    return;
+
+                }
+
+
+                if (!catedra.value) {
+
+                    catedra.focus();
+
+                    return;
+
+                }
+
+
+                if (!estado.value) {
+
+                    estado.focus();
+
+                    return;
+
+                }
+
+
+                // DATOS
+
+                const datos = {
+
+                    titulo:
+                        titulo.value.trim(),
+
+                    descripcion:
+                        descripcion.value.trim(),
+
+                    inicio:
+                        inicio.value || null,
+
+                    fin:
+                        fin.value || null,
+
+                    id_estado:
+                        Number(estado.value),
+
+                    id_catedra:
+                        Number(catedra.value),
+
+                    requisitos:
+                        this.convertirRequisitos(
+                            requisitos.value
+                        )
+
+                };
+
+
+                try {
+
+                    if (esEdicion) {
+
+                        await ApiClient.put(
+                            `/vacantes/${vacante.id}`,
+                            datos
+                        );
+
+                    } else {
+
+                        await ApiClient.post(
+                            '/vacantes',
+                            datos
+                        );
+
+                    }
+
+
+                    dialog.close();
+
+
+                    await this.cargarVacantes();
+
+
+                    this.mostrarSnackbar(
+                        esEdicion
+                            ? 'Vacante actualizada correctamente.'
+                            : 'Vacante creada correctamente.'
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Error guardando vacante:',
+                        error
+                    );
+
+
+                    this.mostrarSnackbar(
+                        esEdicion
+                            ? 'No se pudo actualizar la vacante.'
+                            : 'No se pudo crear la vacante.',
+                        'error'
+                    );
+
+                }
+
+            }
+        );
+
+
+        // ELIMINAR DIALOG DEL DOM AL CERRAR
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+
+        dialog.showModal();
+
+
+        titulo.focus();
+
+    }
+
+    formatearFechaInput(fecha) {
+        if (!fecha) return '';
+        const date = new Date(fecha);
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+        const pad = numero =>
+            String(numero).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    formatearRequisitosInput(requisitos) {
+
+        if (!requisitos) {
+            return '';
+        }
+
+        // Si viene como string
+        if (typeof requisitos === 'string') {
+            return requisitos;
+        }
+
+        // Formato esperado:
+        // {
+        //     requisitos: [
+        //         "...",
+        //         "..."
+        //     ]
+        // }
+        if (
+            typeof requisitos === 'object' &&
+            Array.isArray(requisitos.requisitos)
+        ) {
+            return requisitos.requisitos.join('\n');
+        }
+
+        // Compatibilidad por si ya existen datos antiguos
+        if (
+            typeof requisitos === 'object' &&
+            typeof requisitos.requisitos === 'string'
+        ) {
+            return requisitos.requisitos;
+        }
+
+        return '';
+    }
+
+    convertirRequisitos(valor) {
+
+        const requisitos = valor
+            .split('\n')
+            .map(requisito => requisito.trim())
+            .filter(requisito => requisito !== '');
+
+        return {
+            requisitos: requisitos
+        };
+    }
+
+    abrirDialogoEliminar(tipo, elemento) {
+
+        const nombres = {
+            departamento: 'departamento',
+            catedra: 'cátedra',
+            vacante: 'vacante'
+        };
+
+        const endpoints = {
+            departamento:
+                `/institucional/departamentos/${elemento.id}`,
+
+            catedra:
+                `/institucional/catedras/${elemento.id}`,
+
+            vacante:
+                `/vacantes/${elemento.id}`
+        };
+
+        const nombreTipo = nombres[tipo];
+
+        const nombreElemento =
+            elemento.nombre ||
+            elemento.titulo ||
+            '-';
+
+        const dialog = this.crearDialogoBase();
+
+        dialog.innerHTML = `
+            <div class="dialog-header">
+                <h2>
+                    Eliminar ${nombreTipo}
+                </h2>
+            </div>
+
+            <div class="dialog-content">
+
+                <p>
+                    ¿Desea eliminar el ${nombreTipo}
+                    <strong>
+                        ${this.escapeHtml(nombreElemento)}
+                    </strong>?
+                </p>
+
+            </div>
+
+            <div class="dialog-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary dialog-cancel">
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-danger dialog-confirm-delete">
+                    Eliminar
+                </button>
+
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        const btnCancelar =
+            dialog.querySelector('.dialog-cancel');
+
+        const btnEliminar =
+            dialog.querySelector('.dialog-confirm-delete');
+
+        btnCancelar.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+        btnEliminar.addEventListener(
+            'click',
+            async () => {
+
+                try {
+
+                    await ApiClient.delete(
+                        endpoints[tipo]
+                    );
+
+                    dialog.close();
+
+                    if (tipo === 'departamento') {
+                        await this.cargarDepartamentos();
+                    }
+
+                    if (tipo === 'catedra') {
+                        await this.cargarCatedras();
+                    }
+
+                    if (tipo === 'vacante') {
+                        await this.cargarVacantes();
+                    }
+
+                    this.mostrarSnackbar(
+                        `${nombreTipo.charAt(0).toUpperCase() + nombreTipo.slice(1)} eliminado correctamente.`
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        `Error eliminando ${tipo}:`,
+                        error
+                    );
+
+                    this.mostrarSnackbar(
+                        `No se pudo eliminar el ${nombreTipo}.`,
+                        'error'
+                    );
+                }
+            }
+        );
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+        dialog.showModal();
+    }
+
+    mostrarSnackbar(mensaje, tipo = 'success') {
+
+        const anterior =
+            document.querySelector('.app-snackbar');
+
+        if (anterior) {
+            anterior.remove();
+        }
+
+        const snackbar =
+            document.createElement('div');
+
+        snackbar.className =
+            `app-snackbar app-snackbar-${tipo}`;
+
+        snackbar.innerHTML = `
+            <i class="bi ${
+                tipo === 'success'
+                    ? 'bi-check-circle-fill'
+                    : 'bi-exclamation-circle-fill'
+            }"></i>
+
+            <span>
+                ${this.escapeHtml(mensaje)}
+            </span>
+        `;
+
+        document.body.appendChild(snackbar);
+
+        requestAnimationFrame(() => {
+            snackbar.classList.add('show');
+        });
+
+        setTimeout(() => {
+
+            snackbar.classList.remove('show');
+
+            setTimeout(() => {
+                snackbar.remove();
+            }, 300);
+
+        }, 3000);
+    }
+
+
+        
 }
 
 // REGISTRAR COMPONENTE

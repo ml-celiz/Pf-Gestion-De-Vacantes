@@ -50,12 +50,17 @@ class Catedra {
             'nombre' =>
                 $this->nombre,
 
+            'id_departamento' =>
+                $this->idDepartamento,
+
             'departamento' =>
                 $this->departamentoNombre,
 
+            'id_usuario' =>
+                $this->idUsuario,
+
             'usuario_nombre' =>
                 $this->usuarioNombre
-
         ];
     }
 }

@@ -18,27 +18,25 @@ class VacantesComponent extends HTMLElement {
     // INICIALIZACIÓN
     async connectedCallback() {
         try {
-            // 1. CARGAR HTML DEL COMPONENTE
-            const response = await fetch(
-                'components/paneles/vacantes/vacantes.html'
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    'No se pudo cargar vacantes.html'
-                );
+            // 1. Inyectar el CSS de vacantes si no está en el DOM global
+            if (!document.querySelector('#vacantes-css')) {
+                const link = document.createElement('link');
+                link.id = 'vacantes-css';
+                link.rel = 'stylesheet';
+                link.href = 'components/paneles/vacantes/vacantes.css'; // Ajusta la ruta a tu archivo CSS si es diferente
+                document.head.appendChild(link);
             }
 
+            // 2. Cargar el HTML de la plantilla
+            const response = await fetch('components/paneles/vacantes/vacantes.html');
+            if (!response.ok) throw new Error('No se pudo cargar la plantilla HTML');
+            
             this.innerHTML = await response.text();
 
-            // 2. INICIALIZAR COMPONENTE
+            // 3. Inicializar eventos
             await this.inicializar();
-
         } catch (error) {
-            console.error(
-                'Error inicializando componente Vacantes:',
-                error
-            );
+            console.error('Error inicializando el componente de vacantes:', error);
         }
     }
 
@@ -229,7 +227,7 @@ class VacantesComponent extends HTMLElement {
             try {
 
                 const catedras =
-                    await ApiClient.get('/catedras');
+                    await ApiClient.get('/institucional/catedras');
 
                 this.catedras =
                     catedras || [];
@@ -450,25 +448,26 @@ class VacantesComponent extends HTMLElement {
 
                     <!-- ACCIONES -->
                     <td class="text-center">
-                        <div
-                            class="action-btn-group">
-
-                            <!-- PUBLICAR RESULTADOS -->
-                            <button
-                                class="btn-action publicar"
-                                type="button"
-                                title="Publicar resultados"
-                                data-action="publicar">
-                                <i class="bi bi-file-earmark-text-fill"></i>
-                            </button>
+                        <div class="action-btn-group">
 
                             <!-- VER POSTULADOS -->
+                            ${this.esJfc() ? `
+                                <button
+                                    class="btn-action postulados"
+                                    type="button"
+                                    title="Ver postulados"
+                                    data-action="postulados">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                            ` : ''}
+
+                            <!-- POSTULARSE -->
                             <button
-                                class="btn-action postulados"
+                                class="btn-action postularse"
                                 type="button"
-                                title="Ver postulados"
-                                data-action="postulados">
-                                <i class="bi bi-eye-fill"></i>
+                                title="Postularse"
+                                data-action="postularse">
+                                <i class="bi bi-check2-square"></i>
                             </button>
 
                             <!-- VER RESULTADOS GENERALES -->
@@ -477,8 +476,9 @@ class VacantesComponent extends HTMLElement {
                                 type="button"
                                 title="Ver resultados generales"
                                 data-action="resultados">
-                                <i class="bi bi-check2-square"></i>
+                                <i class="bi bi-file-earmark-text-fill"></i>
                             </button>
+
                         </div>
                     </td>
                 `;
@@ -1234,22 +1234,558 @@ class VacantesComponent extends HTMLElement {
 
     }
 
-
     // =========================================================
     // ACCIÓN: VER POSTULADOS
     // =========================================================
 
-    verPostulados(vacante) {
+    async verPostulados(vacante) {
 
-        console.log(
-            'Ver postulados:',
-            vacante
+        if (!vacante || !vacante.id) {
+
+            console.error(
+                'No se pudo identificar la vacante:',
+                vacante
+            );
+
+            return;
+        }
+
+        // Abrir inmediatamente el diálogo
+        this.mostrarDialogoPostulados(
+            [],
+            vacante,
+            false,
+            true
         );
 
-        // Se implementará posteriormente.
+        try {
 
+            console.log(
+                'Cargando postulados de vacante:',
+                vacante.id
+            );
+
+            const solicitudes =
+                await ApiClient.get(
+                    `/vacantes/solicitudes?id_vacante=${encodeURIComponent(vacante.id)}`
+                );
+
+            console.log(
+                'Postulados recibidos:',
+                solicitudes
+            );
+
+            // Actualizar diálogo con los datos
+            this.mostrarDialogoPostulados(
+                Array.isArray(solicitudes)
+                    ? solicitudes
+                    : [],
+                vacante,
+                false,
+                false
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Error cargando postulados:',
+                error
+            );
+
+            this.mostrarDialogoPostulados(
+                [],
+                vacante,
+                true,
+                false
+            );
+        }
     }
 
+    // =========================================================
+    // DIALOG: POSTULADOS
+    // =========================================================
+
+    mostrarDialogoPostulados(
+        solicitudes,
+        vacante,
+        error = false,
+        cargando = false
+    ) {
+
+        // Cerrar diálogo anterior
+        this.cerrarDialogoPostulados();
+
+        const overlay =
+            document.createElement('div');
+
+        overlay.className =
+            'postulados-dialog-overlay';
+
+        const dialog =
+            document.createElement('div');
+
+        dialog.className =
+            'postulados-dialog';
+
+        // =====================================================
+        // CONTENIDO
+        // =====================================================
+
+        let contenido = '';
+
+        // -----------------------------------------------------
+        // CARGANDO
+        // -----------------------------------------------------
+
+        if (cargando) {
+
+            contenido = `
+                <div class="postulados-loading">
+
+                    <div class="spinner-border" role="status">
+                    </div>
+
+                    <span>
+                        Cargando postulados...
+                    </span>
+
+                </div>
+            `;
+
+        // -----------------------------------------------------
+        // ERROR
+        // -----------------------------------------------------
+
+        } else if (error) {
+
+            contenido = `
+                <div class="postulados-empty">
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                    <p>
+                        No se pudieron cargar los postulados.
+                    </p>
+
+                </div>
+            `;
+
+        // -----------------------------------------------------
+        // SIN POSTULADOS
+        // -----------------------------------------------------
+
+        } else if (!solicitudes || solicitudes.length === 0) {
+
+            contenido = `
+                <div class="postulados-empty">
+
+                    <i class="bi bi-people"></i>
+
+                    <p>
+                        No hay postulados para esta vacante.
+                    </p>
+
+                </div>
+            `;
+
+        // -----------------------------------------------------
+        // TABLA
+        // -----------------------------------------------------
+
+        } else {
+
+            contenido = `
+
+                <div class="postulados-table-wrapper">
+
+                    <div class="table-responsive">
+
+                        <table class="postulados-table custom-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Nombre</th>
+
+                                    <th>Apellido</th>
+
+                                    <th>Email</th>
+
+                                    <th>DNI</th>
+
+                                    <th>Teléfono</th>
+
+                                    <th>Fecha de postulación</th>
+
+                                    <th class="text-center">
+                                        Acciones
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                ${solicitudes.map(
+                                    solicitud => {
+
+                                        const nombre =
+                                            solicitud.nombre ??
+                                            solicitud.usuario_nombre ??
+                                            '-';
+
+                                        const apellido =
+                                            solicitud.apellido ??
+                                            solicitud.usuario_apellido ??
+                                            '-';
+
+                                        const email =
+                                            solicitud.email ??
+                                            solicitud.usuario_email ??
+                                            '-';
+
+                                        const dni =
+                                            solicitud.dni ??
+                                            solicitud.usuario_dni ??
+                                            '-';
+
+                                        const telefono =
+                                            solicitud.telefono ??
+                                            solicitud.usuario_telefono ??
+                                            '-';
+
+                                        return `
+
+                                            <tr
+                                                data-solicitud-id="${this.escapeHtml(
+                                                    solicitud.id
+                                                )}"
+                                            >
+
+                                                <td>
+                                                    ${this.escapeHtml(
+                                                        nombre
+                                                    )}
+                                                </td>
+
+                                                <td>
+                                                    ${this.escapeHtml(
+                                                        apellido
+                                                    )}
+                                                </td>
+
+                                                <td>
+                                                    ${this.escapeHtml(
+                                                        email
+                                                    )}
+                                                </td>
+
+                                                <td>
+                                                    ${this.escapeHtml(
+                                                        dni
+                                                    )}
+                                                </td>
+
+                                                <td>
+                                                    ${this.escapeHtml(
+                                                        telefono
+                                                    )}
+                                                </td>
+
+                                                <td>
+                                                    ${this.formatearFecha(
+                                                        solicitud.fecha_postulacion
+                                                    )}
+                                                </td>
+
+                                                <td class="text-center">
+
+                                                    <div class="postulado-actions">
+
+                                                        <!-- VER CV -->
+
+                                                        <button
+                                                            type="button"
+                                                            class="btn-postulado-cv"
+                                                            title="Ver CV"
+                                                            data-action="ver-cv"
+                                                        >
+
+                                                            <i class="bi bi-file-earmark-person"></i>
+
+                                                        </button>
+
+
+                                                        <!-- PUBLICAR RESULTADO -->
+
+                                                        <button
+                                                            type="button"
+                                                            class="btn-postulado-resultado"
+                                                            title="Publicar resultado"
+                                                            data-action="publicar-resultado"
+                                                        >
+
+                                                            <i class="bi bi-plus-lg"></i>
+
+                                                        </button>
+
+                                                    </div>
+
+                                                </td>
+
+                                            </tr>
+
+                                        `;
+
+                                    }
+                                ).join('')}
+
+                            </tbody>
+
+                        </table>
+                        
+                    </div>
+
+                </div>
+
+            `;
+        }
+
+        // =====================================================
+        // HTML DEL DIALOG
+        // =====================================================
+
+        dialog.innerHTML = `
+
+            <div class="postulados-dialog-header">
+
+                <div>
+
+                    <h2>
+                        Postulados
+                    </h2>
+
+                    <span class="postulados-dialog-subtitle">
+                        ${this.escapeHtml(
+                            vacante.titulo ||
+                            vacante.vacante ||
+                            'Vacante'
+                        )}
+                    </span>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close-dialog"
+                    title="Cerrar"
+                >
+
+                    <i class="bi bi-x-lg"></i>
+
+                </button>
+
+            </div>
+
+
+            <div class="postulados-dialog-body">
+
+                ${contenido}
+
+            </div>
+
+
+            <div class="postulados-dialog-footer">
+
+                <button
+                    type="button"
+                    class="btn-postulados-cerrar"
+                >
+                    Cerrar
+                </button>
+
+            </div>
+
+        `;
+
+        overlay.appendChild(dialog);
+
+        document.body.appendChild(overlay);
+
+
+        // =====================================================
+        // CERRAR
+        // =====================================================
+
+        const cerrarConEscape = event => {
+
+            if (event.key === 'Escape') {
+
+                cerrar();
+
+            }
+
+        };
+
+
+        const cerrar = () => {
+
+            overlay.remove();
+
+            document.removeEventListener(
+                'keydown',
+                cerrarConEscape
+            );
+
+        };
+
+
+        const btnCerrar =
+            dialog.querySelector(
+                '.btn-close-dialog'
+            );
+
+        const btnCerrarFooter =
+            dialog.querySelector(
+                '.btn-postulados-cerrar'
+            );
+
+
+        if (btnCerrar) {
+
+            btnCerrar.addEventListener(
+                'click',
+                cerrar
+            );
+
+        }
+
+
+        if (btnCerrarFooter) {
+
+            btnCerrarFooter.addEventListener(
+                'click',
+                cerrar
+            );
+
+        }
+
+
+        // Cerrar haciendo click fuera
+
+        overlay.addEventListener(
+            'click',
+            event => {
+
+                if (event.target === overlay) {
+
+                    cerrar();
+
+                }
+
+            }
+        );
+
+
+        // ESC
+
+        document.addEventListener(
+            'keydown',
+            cerrarConEscape
+        );
+
+
+        // =====================================================
+        // BOTÓN VER CV
+        // =====================================================
+
+        const botonesCv =
+            dialog.querySelectorAll(
+                '[data-action="ver-cv"]'
+            );
+
+
+        botonesCv.forEach(
+            boton => {
+
+                boton.addEventListener(
+                    'click',
+                    () => {
+
+                        const fila =
+                            boton.closest('tr');
+
+                        const idSolicitud =
+                            fila?.dataset.solicitudId;
+
+                        console.log(
+                            'Ver CV solicitud:',
+                            idSolicitud
+                        );
+
+                        // Se implementará posteriormente.
+
+                    }
+                );
+
+            }
+        );
+
+
+        // =====================================================
+        // BOTÓN PUBLICAR RESULTADO
+        // =====================================================
+
+        const botonesResultado =
+            dialog.querySelectorAll(
+                '[data-action="publicar-resultado"]'
+            );
+
+
+        botonesResultado.forEach(
+            boton => {
+
+                boton.addEventListener(
+                    'click',
+                    () => {
+
+                        const fila =
+                            boton.closest('tr');
+
+                        const idSolicitud =
+                            fila?.dataset.solicitudId;
+
+                        console.log(
+                            'Publicar resultado solicitud:',
+                            idSolicitud
+                        );
+
+                        // Se implementará posteriormente.
+
+                    }
+                );
+
+            }
+        );
+    }
+
+    // =========================================================
+    // CERRAR DIALOG POSTULADOS
+    // =========================================================
+
+    cerrarDialogoPostulados() {
+
+        const dialog =
+            document.querySelector(
+                '.postulados-dialog-overlay'
+            );
+
+        if (dialog) {
+            dialog.remove();
+        }
+    }
 
     // =========================================================
     // ACCIÓN: RESULTADOS GENERALES
@@ -1372,6 +1908,48 @@ class VacantesComponent extends HTMLElement {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
 
+    }
+
+    // =========================================================
+    // VERIFICAR ROL JFC
+    // =========================================================
+
+    esJfc() {
+
+        try {
+
+            const usuario = AuthService.getUser();
+
+            if (!usuario) {
+                return false;
+            }
+
+            // El backend devuelve los roles como:
+            // roles: [{ rol: "admin" }]
+
+            if (!Array.isArray(usuario.roles)) {
+                return false;
+            }
+
+            return usuario.roles.some(item => {
+
+                const rol = String(item.rol ?? '')
+                    .trim()
+                    .toLowerCase();
+
+                return ['jfc', 'admin', 'ra'].includes(rol);
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                'Error obteniendo rol del usuario:',
+                error
+            );
+
+            return false;
+        }
     }
 
 }

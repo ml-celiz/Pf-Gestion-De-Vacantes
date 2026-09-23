@@ -16,74 +16,51 @@ class VacanteService {
     // 1. VACANTES
     // ==========================================
 
-    public function obtenerVacantes(?int $idUsuario = null): array {
+    public function obtenerVacantes(?int $idUsuario = null): array
+    {
+        $sql = "SELECT
+                    v.id,
+                    v.titulo,
+                    v.descripcion,
+                    v.requisitos,
+                    v.inicio,
+                    v.fin,
+                    v.id_estado,
+                    v.id_catedra,
+                    v.id_usuario,
+
+                    e.nombre AS estado_nombre,
+                    c.nombre AS catedra_nombre
+
+                FROM public.vacantes v
+
+                JOIN public.estados e
+                    ON v.id_estado = e.id
+
+                JOIN public.catedras c
+                    ON v.id_catedra = c.id
+
+                WHERE v.id_estado IN (1, 2)";
+
+        // Si se recibe un usuario, además se filtran
+        // únicamente sus propias vacantes.
+        if ($idUsuario !== null) {
+            $sql .= " AND v.id_usuario = :id_usuario";
+        }
+
+        $sql .= " ORDER BY v.id ASC";
+
+        $stmt = $this->db->prepare($sql);
 
         if ($idUsuario !== null) {
-
-            $sql = "SELECT
-                        v.id,
-                        v.titulo,
-                        v.descripcion,
-                        v.requisitos,
-                        v.inicio,
-                        v.fin,
-                        v.id_estado,
-                        v.id_catedra,
-                        v.id_usuario,
-
-                        e.nombre AS estado_nombre,
-                        c.nombre AS catedra_nombre
-
-                    FROM public.vacantes v
-
-                    JOIN public.estados e
-                        ON v.id_estado = e.id
-
-                    JOIN public.catedras c
-                        ON v.id_catedra = c.id
-
-                    WHERE v.id_usuario = :id_usuario
-
-                    ORDER BY v.id ASC";
-
-            $stmt = $this->db->prepare($sql);
-
             $stmt->execute([
                 'id_usuario' => $idUsuario
             ]);
-
         } else {
-
-            $sql = "SELECT
-                        v.id,
-                        v.titulo,
-                        v.descripcion,
-                        v.requisitos,
-                        v.inicio,
-                        v.fin,
-                        v.id_estado,
-                        v.id_catedra,
-                        v.id_usuario,
-
-                        e.nombre AS estado_nombre,
-                        c.nombre AS catedra_nombre
-
-                    FROM public.vacantes v
-
-                    JOIN public.estados e
-                        ON v.id_estado = e.id
-
-                    JOIN public.catedras c
-                        ON v.id_catedra = c.id
-
-                    ORDER BY v.id ASC";
-
-            $stmt = $this->db->query($sql);
+            $stmt->execute();
         }
 
-
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
         return array_map(
             fn($row) =>
@@ -135,63 +112,166 @@ class VacanteService {
             : null;
     }
 
-    public function crearVacante(array $data): bool {
+    public function crearVacante(
+        array $data,
+        int $idUsuario
+    ): bool {
+
         $vacante = new Vacante($data);
-        if (empty($vacante->titulo) || !$vacante->idEstado || !$vacante->idCatedra || !$vacante->idUsuario) {
+
+        if (
+            empty($vacante->titulo) ||
+            !$vacante->idEstado ||
+            !$vacante->idCatedra
+        ) {
             return false;
         }
 
         try {
-            $sql = "INSERT INTO public.vacantes (titulo, descripcion, requisitos, inicio, fin, id_estado, id_catedra, id_usuario)
-                    VALUES (:titulo, :descripcion, :requisitos, :inicio, :fin, :id_estado, :id_catedra, :id_usuario)";
+
+            $sql = "INSERT INTO public.vacantes
+                        (
+                            titulo,
+                            descripcion,
+                            requisitos,
+                            inicio,
+                            fin,
+                            id_estado,
+                            id_catedra,
+                            id_usuario
+                        )
+                    VALUES
+                        (
+                            :titulo,
+                            :descripcion,
+                            :requisitos,
+                            :inicio,
+                            :fin,
+                            :id_estado,
+                            :id_catedra,
+                            :id_usuario
+                        )";
+
             $stmt = $this->db->prepare($sql);
 
-            $reqJson = is_array($vacante->requisitos) ? json_encode($vacante->requisitos) : $vacante->requisitos;
+            $reqJson =
+                is_array($vacante->requisitos)
+                    ? json_encode($vacante->requisitos)
+                    : $vacante->requisitos;
 
             return $stmt->execute([
-                'titulo'      => $vacante->titulo,
-                'descripcion' => $vacante->descripcion,
-                'requisitos'  => $reqJson,
-                'inicio'      => $vacante->inicio ?? date('Y-m-d H:i:sP'),
-                'fin'         => $vacante->fin,
-                'id_estado'   => $vacante->idEstado,
-                'id_catedra'  => $vacante->idCatedra,
-                'id_usuario'  => $vacante->idUsuario
+
+                'titulo' =>
+                    $vacante->titulo,
+
+                'descripcion' =>
+                    $vacante->descripcion,
+
+                'requisitos' =>
+                    $reqJson,
+
+                'inicio' =>
+                    $vacante->inicio
+                        ?? date('Y-m-d H:i:sP'),
+
+                'fin' =>
+                    $vacante->fin,
+
+                'id_estado' =>
+                    $vacante->idEstado,
+
+                'id_catedra' =>
+                    $vacante->idCatedra,
+
+                // SIEMPRE sale de la sesión
+                'id_usuario' =>
+                    $idUsuario
             ]);
+
         } catch (PDOException $e) {
-            error_log("Error PDO al crear vacante: " . $e->getMessage());
+            error_log(
+                "Error PDO al crear vacante: "
+                . $e->getMessage()
+            );
             return false;
         }
     }
 
-    public function actualizarVacante(int $id, array $data): bool {
-        $existente = $this->obtenerVacantePorId($id);
-        if (!$existente) return false;
+    public function actualizarVacante(
+        int $id,
+        array $data
+    ): bool {
+
+        $existente =
+            $this->obtenerVacantePorId($id);
+
+
+        if (!$existente) {
+            return false;
+        }
 
         try {
-            $reqJson = isset($data['requisitos']) 
-                ? (is_array($data['requisitos']) ? json_encode($data['requisitos']) : $data['requisitos'])
-                : $existente['requisitos'];
 
-            $sql = "UPDATE public.vacantes 
-                    SET titulo = :titulo, descripcion = :descripcion, requisitos = :requisitos,
-                        inicio = :inicio, fin = :fin, id_estado = :id_estado,
-                        id_catedra = :id_catedra, id_usuario = :id_usuario
+            $reqJson =
+                isset($data['requisitos'])
+                    ? (
+                        is_array($data['requisitos'])
+                            ? json_encode($data['requisitos'])
+                            : $data['requisitos']
+                    )
+                    : $existente['requisitos'];
+
+            $sql = "UPDATE public.vacantes
+                    SET
+                        titulo = :titulo,
+                        descripcion = :descripcion,
+                        requisitos = :requisitos,
+                        inicio = :inicio,
+                        fin = :fin,
+                        id_estado = :id_estado,
+                        id_catedra = :id_catedra
                     WHERE id = :id";
+
             $stmt = $this->db->prepare($sql);
+
             return $stmt->execute([
-                'id'          => $id,
-                'titulo'      => $data['titulo'] ?? $existente['titulo'],
-                'descripcion' => $data['descripcion'] ?? $existente['descripcion'],
-                'requisitos'  => $reqJson,
-                'inicio'      => $data['inicio'] ?? $existente['inicio'],
-                'fin'         => $data['fin'] ?? $existente['fin'],
-                'id_estado'   => $data['id_estado'] ?? $existente['id_estado'],
-                'id_catedra'  => $data['id_catedra'] ?? $existente['id_catedra'],
-                'id_usuario'  => $data['id_usuario'] ?? $existente['id_usuario']
+
+                'id' =>
+                    $id,
+
+                'titulo' =>
+                    $data['titulo']
+                        ?? $existente['titulo'],
+
+                'descripcion' =>
+                    $data['descripcion']
+                        ?? $existente['descripcion'],
+
+                'requisitos' =>
+                    $reqJson,
+
+                'inicio' =>
+                    $data['inicio']
+                        ?? $existente['inicio'],
+
+                'fin' =>
+                    $data['fin']
+                        ?? $existente['fin'],
+
+                'id_estado' =>
+                    $data['id_estado']
+                        ?? $existente['id_estado'],
+
+                'id_catedra' =>
+                    $data['id_catedra']
+                        ?? $existente['id_catedra']
             ]);
+
         } catch (PDOException $e) {
-            error_log("Error PDO al actualizar vacante: " . $e->getMessage());
+            error_log(
+                "Error PDO al actualizar vacante: "
+                . $e->getMessage()
+            );
             return false;
         }
     }
@@ -206,45 +286,52 @@ class VacanteService {
     // 2. SOLICITUDES / POSTULACIONES
     // ==========================================
 
-    public function obtenerSolicitudes(?int $idUsuario = null): array {
-
+    public function obtenerSolicitudes(?int $idVacante = null): array
+    {
         $sql = "SELECT
                     s.id,
                     s.fecha_postulacion,
                     s.cv,
                     s.id_estado,
+
                     e.nombre AS estado_nombre,
+
                     s.id_vacante,
                     v.titulo AS vacante_titulo,
-                    s.id_usuario
+
+                    s.id_usuario,
+
+                    u.nombre AS usuario_nombre,
+                    u.apellido AS usuario_apellido,
+                    u.email AS usuario_email,
+                    u.dni AS usuario_dni,
+                    u.telefono AS usuario_telefono
+
                 FROM public.solicitudes_vacantes s
+
                 JOIN public.estados e
                     ON s.id_estado = e.id
+
                 JOIN public.vacantes v
-                    ON s.id_vacante = v.id";
+                    ON s.id_vacante = v.id
 
-        if ($idUsuario !== null) {
-            $sql .= "
-                WHERE s.id_usuario = :id_usuario
-            ";
+                JOIN public.usuarios u
+                    ON s.id_usuario = u.id";
 
-            $sql .= "
-                ORDER BY s.id ASC
-            ";
+        if ($idVacante !== null) {
+            $sql .= " WHERE s.id_vacante = :id_vacante";
+        }
 
-            $stmt =
-                $this->db->prepare($sql);
+        $sql .= " ORDER BY s.id ASC";
 
+        $stmt = $this->db->prepare($sql);
+
+        if ($idVacante !== null) {
             $stmt->execute([
-                'id_usuario' => $idUsuario
+                'id_vacante' => $idVacante
             ]);
         } else {
-            $sql .= "
-                ORDER BY s.id ASC
-            ";
-
-            $stmt =
-                $this->db->query($sql);
+            $stmt->execute();
         }
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -341,4 +428,20 @@ class VacanteService {
             return false;
         }
     }
+
+    // --- HELPERS ---
+    public function obtenerEstados(): array {
+
+        $sql = "SELECT
+                    id,
+                    nombre
+                FROM public.estados
+                WHERE id IN (1, 2, 3)
+                ORDER BY id ASC";
+
+        $stmt = $this->db->query($sql);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

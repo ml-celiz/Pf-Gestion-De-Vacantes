@@ -442,3 +442,414 @@
     color: var(--text-muted, #64748b);
     font-size: 0.85rem;
 }
+
+/* =========================================================
+   DIALOGS - BASE
+   ========================================================= */
+
+.custom-dialog {
+    width: 460px;
+    max-width: calc(100% - 40px);
+
+    padding: 0;
+
+    overflow: hidden;
+
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    border-radius: 1.1rem;
+
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+
+    color: var(--brand-dark);
+
+    animation: dialogFadeIn 0.18s ease-out;
+}
+
+.custom-dialog::before {
+    content: "";
+
+    display: block;
+
+    width: 100%;
+    height: 3px;
+
+    background: var(--brand-primary);
+}
+
+.custom-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.32);
+}
+
+/* =========================================================
+   DIALOG VACANTE
+   ========================================================= */
+
+.vacante-dialog {
+    width: min(800px, calc(100% - 40px));
+    max-width: 800px;
+}
+
+
+/* FILAS DE DOS COLUMNAS */
+
+.vacante-dialog .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+
+/* AYUDA DE REQUISITOS */
+
+.vacante-dialog .form-help {
+    display: block;
+    margin-top: 0.1rem;
+    color: #6c757d;
+    font-size: 0.82rem;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 700px) {
+
+    .vacante-dialog {
+        width: calc(100% - 24px);
+        max-width: none;
+    }
+
+    .vacante-dialog .form-row {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* =========================================================
+   DIALOG - ENCABEZADO
+   ========================================================= */
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+
+    padding: 18px 20px;
+
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dialog-header h2 {
+    margin: 0;
+
+    color: var(--brand-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+
+/* =========================================================
+   DIALOG - FORMULARIO
+   ========================================================= */
+
+.dialog-form {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 190px;
+
+    padding: 22px 20px 20px;
+
+    gap: 1rem;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group label {
+    margin-bottom: 0.25rem;
+
+    color: var(--brand-dark);
+
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   INPUTS / SELECTS / TEXTAREA
+   ========================================================= */
+
+.dialog-form .form-control {
+    width: 100%;
+
+    padding: 0.75rem 1rem;
+
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+
+    color: var(--brand-dark);
+    font-size: 0.9rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.dialog-form .form-control:hover {
+    border-color: #cbd5e1;
+}
+
+.dialog-form .form-control:focus {
+    outline: none !important;
+
+    border-color: var(--brand-accent);
+
+    box-shadow: none !important;
+}
+
+.dialog-form textarea {
+    resize: vertical;
+}
+
+
+/* =========================================================
+   DIALOG - CONTENIDO
+   ========================================================= */
+
+.dialog-content {
+    padding: 1.5rem;
+
+    color: #334155;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.dialog-content p {
+    margin: 0;
+}
+
+.dialog-content strong {
+    color: var(--brand-dark);
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   DIALOG - BOTONES
+   ========================================================= */
+
+.dialog-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+    margin-top: auto;
+    padding: 18px 20px 20px;
+
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+}
+
+.dialog-actions .dialog-cancel {
+    padding: 0.65rem 1.1rem;
+
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.7rem;
+
+    color: #475569;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.dialog-actions .dialog-cancel:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: var(--brand-dark);
+}
+
+.dialog-actions .btn-primary {
+    padding: 0.65rem 1.15rem;
+
+    background: var(--brand-primary);
+    border: none;
+    border-radius: 0.7rem;
+
+    color: #ffffff !important;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow: 0 3px 8px rgba(0, 86, 179, 0.14);
+
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.dialog-actions .btn-primary:hover {
+    background: var(--brand-primary-hover);
+    color: #ffffff !important;
+
+    box-shadow: 0 5px 12px rgba(0, 86, 179, 0.18);
+
+    transform: translateY(-1px);
+}
+
+.dialog-actions .dialog-confirm-delete {
+    padding: 0.65rem 1.15rem;
+
+    background: #dc3545;
+    border: none;
+    border-radius: 0.7rem;
+
+    color: #ffffff !important;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.dialog-actions .dialog-confirm-delete:hover {
+    background: #c82333;
+    color: #ffffff !important;
+
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.18);
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ANIMACIÓN
+   ========================================================= */
+
+@keyframes dialogFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================================
+   SNACKBAR
+   ========================================================= */
+
+.app-snackbar {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+
+    min-width: 280px;
+    max-width: 450px;
+
+    padding: 13px 18px;
+
+    gap: 10px;
+
+    background: #ffffff;
+    border: 1px solid #e2e5e8;
+    border-radius: 8px;
+
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
+
+    color: #495057;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    opacity: 0;
+
+    transform: translate(-50%, 20px);
+
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+}
+
+.app-snackbar.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.app-snackbar i {
+    font-size: 18px;
+}
+
+.app-snackbar-success i {
+    color: #6c9f7d;
+}
+
+.app-snackbar-error i {
+    color: #c97979;
+}
+
+
+/* =========================================================
+   RESPONSIVE DIALOG
+   ========================================================= */
+
+@media (max-width: 576px) {
+
+    .custom-dialog {
+        width: calc(100% - 24px);
+        max-width: none;
+    }
+
+    .dialog-header {
+        padding: 16px;
+    }
+
+    .dialog-form {
+        padding: 18px 16px 16px;
+    }
+
+    .dialog-content {
+        padding: 18px 16px 8px;
+    }
+
+    .dialog-actions {
+        padding: 16px;
+    }
+}

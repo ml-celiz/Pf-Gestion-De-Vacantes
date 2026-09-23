@@ -5,8 +5,18 @@ require_once __DIR__ . '/../controllers/vacantes_controller.php';
 function handleVacantesRoutes(string $method, array $uriParts): void {
     $controller = new VacantesController();
 
-    // $uriParts[0] = 'api', $uriParts[1] = 'vacantes'
     $subResource = $uriParts[2] ?? null; // 'solicitudes', 'ordenes_merito' o ID de vacante (si es numérico)
+
+    if ($subResource === 'estados') {
+
+        if ($method === 'GET') {
+            $controller->listarEstados();
+            return;
+        }
+
+        respondMethodNotAllowed();
+        return;
+    }
 
     // --- SOLICITUDES VACANTES ---
     if ($subResource === 'solicitudes') {

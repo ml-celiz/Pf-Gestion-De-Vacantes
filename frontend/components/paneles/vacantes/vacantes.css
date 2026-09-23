@@ -719,3 +719,388 @@
     }
 
 }
+
+/* =========================================================
+   DIALOG POSTULADOS
+   ========================================================= */
+
+.postulados-dialog-overlay {
+    position: fixed !important;
+    inset: 0 !important; /* Cubre toda la pantalla: top, left, bottom, right a 0 */
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999 !important; /* Eleva el diálogo por encima de cualquier tabla o footer */
+
+    background: rgba(15, 23, 42, 0.6); /* Fondo semitransparente bloqueante */
+    backdrop-filter: blur(2px); /* Opcional: desenfoque suave de fondo */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CONTENEDOR DEL DIALOG
+   ========================================================= */
+
+.postulados-dialog {
+    position: relative;
+    width: min(1150px, 100%);
+    max-height: 85vh;
+
+    background: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   CABECERA
+   ========================================================= */
+
+.postulados-dialog-header {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 1rem;
+
+    background: #e2e8f0;
+
+    padding: 0.9rem 1.25rem;
+
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.postulados-dialog-header h2 {
+    margin: 0;
+
+    font-size: 1rem;
+    font-weight: 700;
+
+    color: var(--brand-dark, #1e293b);
+}
+
+.postulados-dialog-subtitle {
+    display: block;
+
+    margin-top: 0.2rem;
+
+    font-size: 0.78rem;
+
+    color: #64748b;
+}
+
+
+/* =========================================================
+   BOTÓN CERRAR
+   ========================================================= */
+
+.postulados-dialog-header .btn-close-dialog {
+    flex-shrink: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #475569;
+
+    font-size: 0.95rem;
+
+    cursor: pointer;
+
+    padding: 0.3rem;
+
+    transition:
+        color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.postulados-dialog-header .btn-close-dialog:hover {
+    color: #1e293b;
+
+    transform: scale(1.1);
+}
+
+
+/* =========================================================
+   CUERPO
+   ========================================================= */
+
+.postulados-dialog-body {
+    flex: 1;
+
+    min-height: 0;
+
+    padding: 1.25rem;
+
+    overflow: auto;
+}
+
+
+/* =========================================================
+   CONTENEDOR TABLA
+   ========================================================= */
+
+.postulados-table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+/* =========================================================
+   TABLA
+   ========================================================= */
+
+.postulados-table {
+    width: 100%;
+
+    min-width: 900px;
+
+    border-collapse: collapse;
+
+    font-size: 0.84rem;
+}
+
+.postulados-table th {
+    background: #f1f5f9;
+
+    color: var(--brand-dark, #1e293b);
+
+    font-weight: 600;
+
+    padding: 0.75rem 0.8rem;
+
+    text-align: left;
+
+    white-space: nowrap;
+
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.postulados-table td {
+    padding: 0.75rem 0.8rem;
+
+    color: var(--brand-dark, #1e293b);
+
+    border-bottom: 1px solid #f1f5f9;
+
+    white-space: nowrap;
+}
+
+.postulados-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+
+/* =========================================================
+   ACCIONES DE CADA POSTULADO
+   ========================================================= */
+
+.postulado-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.5rem;
+}
+
+.btn-postulado-cv,
+.btn-postulado-resultado {
+    width: 30px;
+    height: 30px;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    border-radius: 0.4rem;
+
+    cursor: pointer;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.95rem;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+
+/* VER CV */
+
+.btn-postulado-cv {
+    color: #2563eb;
+}
+
+
+/* PUBLICAR RESULTADO */
+
+.btn-postulado-resultado {
+    color: #16a34a;
+}
+
+
+.btn-postulado-cv:hover,
+.btn-postulado-resultado:hover {
+    background: #f1f5f9;
+
+    transform: scale(1.08);
+}
+
+
+/* =========================================================
+   CARGANDO
+   ========================================================= */
+
+.postulados-loading {
+    min-height: 220px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.75rem;
+
+    color: #64748b;
+
+    font-size: 0.85rem;
+}
+
+
+/* =========================================================
+   SIN POSTULADOS / ERROR
+   ========================================================= */
+
+.postulados-empty {
+    min-height: 220px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #64748b;
+
+    text-align: center;
+}
+
+.postulados-empty i {
+    font-size: 2rem;
+
+    margin-bottom: 0.65rem;
+}
+
+.postulados-empty p {
+    margin: 0;
+
+    font-size: 0.85rem;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.postulados-dialog-footer {
+    flex-shrink: 0;
+
+    display: flex;
+
+    justify-content: flex-end;
+    align-items: center;
+
+    padding: 0.9rem 1.25rem;
+
+    border-top: 1px solid #f1f5f9;
+
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   BOTÓN CERRAR
+   ========================================================= */
+
+.btn-postulados-cerrar {
+    border: 1px solid #cbd5e1;
+
+    background: #ffffff;
+
+    color: #475569;
+
+    padding: 0.55rem 1rem;
+
+    border-radius: 0.55rem;
+
+    font-size: 0.82rem;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.btn-postulados-cerrar:hover {
+    background: #f8fafc;
+
+    border-color: #94a3b8;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .postulados-dialog-overlay {
+        padding: 0.75rem;
+    }
+
+    .postulados-dialog {
+        width: 100%;
+
+        max-height: 90vh;
+    }
+
+    .postulados-dialog-header {
+        padding: 0.8rem 1rem;
+    }
+
+    .postulados-dialog-body {
+        padding: 0.75rem;
+    }
+
+    .postulados-dialog-footer {
+        padding: 0.8rem 1rem;
+    }
+
+}
