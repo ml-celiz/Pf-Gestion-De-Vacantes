@@ -6,6 +6,15 @@ class VacantesComponent extends HTMLElement {
         // CONFIGURACIÓN
         this.vacantesPerPage = 5;
 
+        // ESTADOS DE UNA POSTULACIÓN (ids de la tabla estados)
+        this.ESTADO_PENDIENTE = 4;
+
+        // Estados que se pueden asignar al publicar un resultado
+        this.ESTADOS_RESULTADO = [
+            { id: 5, nombre: 'ACEPTADA' },
+            { id: 6, nombre: 'CANCELADA' }
+        ];
+
         // DATOS
         this.vacantes = [];
         this.vacantesFiltradas = [];
@@ -461,23 +470,27 @@ class VacantesComponent extends HTMLElement {
                                 </button>
                             ` : ''}
 
-                            <!-- POSTULARSE -->
-                            <button
-                                class="btn-action postularse"
-                                type="button"
-                                title="Postularse"
-                                data-action="postularse">
-                                <i class="bi bi-check2-square"></i>
-                            </button>
+                            <!-- POSTULARSE (admin, pos) -->
+                            ${this.puedePostularse() ? `
+                                <button
+                                    class="btn-action postularse"
+                                    type="button"
+                                    title="Postularse"
+                                    data-action="postularse">
+                                    <i class="bi bi-check2-square"></i>
+                                </button>
+                            ` : ''}
 
-                            <!-- VER RESULTADOS GENERALES -->
-                            <button
-                                class="btn-action resultados"
-                                type="button"
-                                title="Ver resultados generales"
-                                data-action="resultados">
-                                <i class="bi bi-file-earmark-text-fill"></i>
-                            </button>
+                            <!-- VER RESULTADOS GENERALES (admin, pos, ra) -->
+                            ${this.puedeVerResultados() ? `
+                                <button
+                                    class="btn-action resultados"
+                                    type="button"
+                                    title="Ver resultados generales"
+                                    data-action="resultados">
+                                    <i class="bi bi-file-earmark-text-fill"></i>
+                                </button>
+                            ` : ''}
 
                         </div>
                     </td>
@@ -550,6 +563,32 @@ class VacantesComponent extends HTMLElement {
 
                             this.verPostulados(
                                 vacante
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                // =================================================
+                // POSTULARSE
+                // =================================================
+
+                const btnPostularse =
+                    tr.querySelector(
+                        '[data-action="postularse"]'
+                    );
+
+                if (btnPostularse) {
+
+                    btnPostularse.addEventListener(
+                        'click',
+                        () => {
+
+                            this.postularse(
+                                vacante,
+                                btnPostularse
                             );
 
                         }
@@ -827,117 +866,40 @@ class VacantesComponent extends HTMLElement {
 
         this.cerrarDialogoRequisitos();
 
-
-        const overlay =
-            document.createElement('div');
-
-        overlay.className =
-            'requisitos-dialog-overlay';
-
-
         const dialog =
-            document.createElement('div');
+            this.crearDialogoBase();
 
-        dialog.className =
-            'requisitos-dialog';
-
+        dialog.classList.add(
+            'vac-requisitos-dialog'
+        );
 
         dialog.innerHTML = `
-
-            <div
-                class="requisitos-dialog-header">
-
+            <div class="dialog-header">
                 <h2>
                     Requisitos de la vacante
                 </h2>
-
-                <button
-                    class="btn-close-dialog"
-                    type="button"
-                    title="Cerrar">
-
-                    <i class="bi bi-x-lg"></i>
-
-                </button>
-
             </div>
 
-
-            <div
-                class="requisitos-dialog-body">
-
+            <div class="dialog-content">
                 ${this.generarHtmlRequisitos(
                     vacante.requisitos
                 )}
-
             </div>
 
+            <div class="dialog-actions">
+                <button
+                    type="button"
+                    class="btn btn-secondary dialog-cancel">
+                    Cerrar
+                </button>
+            </div>
         `;
 
+        document.body.appendChild(dialog);
 
-        overlay.appendChild(dialog);
+        this.enlazarCierreDialogo(dialog);
 
-        document.body.appendChild(
-            overlay
-        );
-
-
-        // -----------------------------------------------------
-        // CERRAR
-        // -----------------------------------------------------
-
-        const btnCerrar =
-            dialog.querySelector(
-                '.btn-close-dialog'
-            );
-
-        btnCerrar.addEventListener(
-            'click',
-            () => {
-
-                overlay.remove();
-
-            }
-        );
-
-
-        // Cerrar haciendo click fuera
-        overlay.addEventListener(
-            'click',
-            e => {
-
-                if (e.target === overlay) {
-
-                    overlay.remove();
-
-                }
-
-            }
-        );
-
-
-        // Cerrar con ESC
-        const cerrarConEscape =
-            e => {
-
-                if (e.key === 'Escape') {
-
-                    overlay.remove();
-
-                    document.removeEventListener(
-                        'keydown',
-                        cerrarConEscape
-                    );
-
-                }
-
-            };
-
-
-        document.addEventListener(
-            'keydown',
-            cerrarConEscape
-        );
+        dialog.showModal();
 
     }
 
@@ -1275,6 +1237,11 @@ class VacantesComponent extends HTMLElement {
                 solicitudes
             );
 
+            // Si el usuario cerró el diálogo mientras cargaba, no reabrirlo
+            if (!document.querySelector('.postulados-dialog[open]')) {
+                return;
+            }
+
             // Actualizar diálogo con los datos
             this.mostrarDialogoPostulados(
                 Array.isArray(solicitudes)
@@ -1291,6 +1258,10 @@ class VacantesComponent extends HTMLElement {
                 'Error cargando postulados:',
                 error
             );
+
+            if (!document.querySelector('.postulados-dialog[open]')) {
+                return;
+            }
 
             this.mostrarDialogoPostulados(
                 [],
@@ -1312,20 +1283,25 @@ class VacantesComponent extends HTMLElement {
         cargando = false
     ) {
 
-        // Cerrar diálogo anterior
-        this.cerrarDialogoPostulados();
+        // El diálogo se crea una sola vez: los cambios de estado
+        // (cargando -> datos / error) solo actualizan el contenido.
+        let dialog =
+            document.querySelector(
+                '.postulados-dialog[open]'
+            );
 
-        const overlay =
-            document.createElement('div');
+        const esNuevo = !dialog;
 
-        overlay.className =
-            'postulados-dialog-overlay';
+        if (esNuevo) {
 
-        const dialog =
-            document.createElement('div');
+            dialog =
+                this.crearDialogoBase();
 
-        dialog.className =
-            'postulados-dialog';
+            dialog.classList.add(
+                'postulados-dialog'
+            );
+
+        }
 
         // =====================================================
         // CONTENIDO
@@ -1418,6 +1394,8 @@ class VacantesComponent extends HTMLElement {
 
                                     <th>Fecha de postulación</th>
 
+                                    <th>Estado</th>
+
                                     <th class="text-center">
                                         Acciones
                                     </th>
@@ -1500,6 +1478,16 @@ class VacantesComponent extends HTMLElement {
                                                     )}
                                                 </td>
 
+                                                <td>
+                                                    <span
+                                                        class="estado-badge"
+                                                        data-estado-cell>
+                                                        ${this.escapeHtml(
+                                                            solicitud.estado_nombre ?? '-'
+                                                        )}
+                                                    </span>
+                                                </td>
+
                                                 <td class="text-center">
 
                                                     <div class="postulado-actions">
@@ -1523,8 +1511,17 @@ class VacantesComponent extends HTMLElement {
                                                         <button
                                                             type="button"
                                                             class="btn-postulado-resultado"
-                                                            title="Publicar resultado"
+                                                            title="${
+                                                                Number(solicitud.id_estado) === this.ESTADO_PENDIENTE
+                                                                    ? 'Publicar resultado'
+                                                                    : 'Resultado ya publicado'
+                                                            }"
                                                             data-action="publicar-resultado"
+                                                            ${
+                                                                Number(solicitud.id_estado) === this.ESTADO_PENDIENTE
+                                                                    ? ''
+                                                                    : 'disabled'
+                                                            }
                                                         >
 
                                                             <i class="bi bi-plus-lg"></i>
@@ -1557,144 +1554,51 @@ class VacantesComponent extends HTMLElement {
         // HTML DEL DIALOG
         // =====================================================
 
-        dialog.innerHTML = `
+        if (esNuevo) {
 
-            <div class="postulados-dialog-header">
+            dialog.innerHTML = `
+                <div class="dialog-header">
 
-                <div>
+                    <div>
 
-                    <h2>
-                        Postulados
-                    </h2>
+                        <h2>
+                            Postulados
+                        </h2>
 
-                    <span class="postulados-dialog-subtitle">
-                        ${this.escapeHtml(
-                            vacante.titulo ||
-                            vacante.vacante ||
-                            'Vacante'
-                        )}
-                    </span>
+                        <span class="dialog-subtitle">
+                            ${this.escapeHtml(
+                                vacante.titulo ||
+                                vacante.vacante ||
+                                'Vacante'
+                            )}
+                        </span>
+
+                    </div>
 
                 </div>
 
-                <button
-                    type="button"
-                    class="btn-close-dialog"
-                    title="Cerrar"
-                >
+                <div class="dialog-content"></div>
 
-                    <i class="bi bi-x-lg"></i>
+                <div class="dialog-actions">
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel">
+                        Cerrar
+                    </button>
+                </div>
+            `;
 
-                </button>
+            document.body.appendChild(dialog);
 
-            </div>
+            this.enlazarCierreDialogo(dialog);
 
-
-            <div class="postulados-dialog-body">
-
-                ${contenido}
-
-            </div>
-
-
-            <div class="postulados-dialog-footer">
-
-                <button
-                    type="button"
-                    class="btn-postulados-cerrar"
-                >
-                    Cerrar
-                </button>
-
-            </div>
-
-        `;
-
-        overlay.appendChild(dialog);
-
-        document.body.appendChild(overlay);
-
-
-        // =====================================================
-        // CERRAR
-        // =====================================================
-
-        const cerrarConEscape = event => {
-
-            if (event.key === 'Escape') {
-
-                cerrar();
-
-            }
-
-        };
-
-
-        const cerrar = () => {
-
-            overlay.remove();
-
-            document.removeEventListener(
-                'keydown',
-                cerrarConEscape
-            );
-
-        };
-
-
-        const btnCerrar =
-            dialog.querySelector(
-                '.btn-close-dialog'
-            );
-
-        const btnCerrarFooter =
-            dialog.querySelector(
-                '.btn-postulados-cerrar'
-            );
-
-
-        if (btnCerrar) {
-
-            btnCerrar.addEventListener(
-                'click',
-                cerrar
-            );
+            dialog.showModal();
 
         }
 
-
-        if (btnCerrarFooter) {
-
-            btnCerrarFooter.addEventListener(
-                'click',
-                cerrar
-            );
-
-        }
-
-
-        // Cerrar haciendo click fuera
-
-        overlay.addEventListener(
-            'click',
-            event => {
-
-                if (event.target === overlay) {
-
-                    cerrar();
-
-                }
-
-            }
-        );
-
-
-        // ESC
-
-        document.addEventListener(
-            'keydown',
-            cerrarConEscape
-        );
+        dialog.querySelector(
+            '.dialog-content'
+        ).innerHTML = contenido;
 
 
         // =====================================================
@@ -1757,12 +1661,37 @@ class VacantesComponent extends HTMLElement {
                         const idSolicitud =
                             fila?.dataset.solicitudId;
 
-                        console.log(
-                            'Publicar resultado solicitud:',
-                            idSolicitud
-                        );
+                        const solicitud =
+                            solicitudes.find(
+                                item =>
+                                    String(item.id) ===
+                                    String(idSolicitud)
+                            );
 
-                        // Se implementará posteriormente.
+                        if (solicitud) {
+
+                            this.abrirDialogoOrdenMerito(
+                                solicitud,
+                                boton,
+                                estado => {
+
+                                    // Reflejar el nuevo estado en la tabla
+                                    solicitud.id_estado = estado.id;
+                                    solicitud.estado_nombre = estado.nombre;
+
+                                    const celda =
+                                        fila?.querySelector(
+                                            '[data-estado-cell]'
+                                        );
+
+                                    if (celda) {
+                                        celda.textContent = estado.nombre;
+                                    }
+
+                                }
+                            );
+
+                        }
 
                     }
                 );
@@ -1779,26 +1708,698 @@ class VacantesComponent extends HTMLElement {
 
         const dialog =
             document.querySelector(
-                '.postulados-dialog-overlay'
+                '.postulados-dialog'
             );
 
         if (dialog) {
-            dialog.remove();
+            dialog.close();
         }
     }
 
     // =========================================================
-    // ACCIÓN: RESULTADOS GENERALES
+    // DIALOG: ORDEN DE MÉRITO
+    // POST /api/vacantes/ordenes_merito
     // =========================================================
 
-    verResultadosGenerales(vacante) {
+    abrirDialogoOrdenMerito(
+        solicitud,
+        botonPublicar = null,
+        onPublicado = null
+    ) {
 
-        console.log(
-            'Ver resultados generales:',
-            vacante
+        const nombreCompleto =
+            [
+                solicitud.nombre ??
+                    solicitud.usuario_nombre,
+
+                solicitud.apellido ??
+                    solicitud.usuario_apellido
+            ]
+                .filter(Boolean)
+                .join(' ') || '-';
+
+        const dialog =
+            this.crearDialogoBase();
+
+        dialog.classList.add(
+            'orden-merito-dialog'
         );
 
-        // Se implementará posteriormente.
+        dialog.innerHTML = `
+            <div class="dialog-header">
+                <h2>
+                    Orden de mérito
+                </h2>
+            </div>
+
+            <form
+                id="orden-merito-form"
+                class="dialog-form"
+                novalidate>
+
+                <p class="orden-merito-postulante">
+                    Postulante:
+                    <strong>
+                        ${this.escapeHtml(nombreCompleto)}
+                    </strong>
+                </p>
+
+                <div class="form-group">
+                    <label for="orden-merito-puntaje">
+                        Puntaje
+                    </label>
+
+                    <input
+                        type="number"
+                        id="orden-merito-puntaje"
+                        class="form-control"
+                        min="0"
+                        step="1"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="orden-merito-posicion">
+                        Posición
+                    </label>
+
+                    <input
+                        type="number"
+                        id="orden-merito-posicion"
+                        class="form-control"
+                        min="1"
+                        step="1"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="orden-merito-estado">
+                        Estado de la postulación
+                    </label>
+
+                    <select
+                        id="orden-merito-estado"
+                        class="form-control"
+                        required>
+
+                        <option value="">
+                            Seleccionar...
+                        </option>
+
+                        ${this.ESTADOS_RESULTADO.map(
+                            estado => `
+                                <option value="${estado.id}">
+                                    ${this.escapeHtml(estado.nombre)}
+                                </option>
+                            `
+                        ).join('')}
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="orden-merito-observaciones">
+                        Observaciones
+                    </label>
+
+                    <textarea
+                        id="orden-merito-observaciones"
+                        class="form-control"
+                        rows="4"></textarea>
+                </div>
+
+                <p
+                    class="dialog-error"
+                    role="alert"
+                    hidden></p>
+
+            </form>
+
+            <div class="dialog-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary dialog-cancel">
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    form="orden-merito-form"
+                    class="btn btn-primary">
+                    Publicar
+                </button>
+
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        const form =
+            dialog.querySelector('form');
+
+        const inputPuntaje =
+            dialog.querySelector('#orden-merito-puntaje');
+
+        const inputPosicion =
+            dialog.querySelector('#orden-merito-posicion');
+
+        const selectEstado =
+            dialog.querySelector('#orden-merito-estado');
+
+        const inputObservaciones =
+            dialog.querySelector('#orden-merito-observaciones');
+
+        const mensajeError =
+            dialog.querySelector('.dialog-error');
+
+        const btnCancelar =
+            dialog.querySelector('.dialog-cancel');
+
+        const btnPublicar =
+            dialog.querySelector('.btn-primary');
+
+        const mostrarError = mensaje => {
+
+            mensajeError.textContent = mensaje;
+            mensajeError.hidden = false;
+
+        };
+
+        btnCancelar.addEventListener(
+            'click',
+            () => dialog.close()
+        );
+
+        form.addEventListener(
+            'submit',
+            async event => {
+
+                event.preventDefault();
+
+                mensajeError.hidden = true;
+
+                const puntaje =
+                    inputPuntaje.value.trim();
+
+                const posicion =
+                    inputPosicion.value.trim();
+
+                if (
+                    !/^\d+$/.test(puntaje)
+                ) {
+
+                    mostrarError(
+                        'Ingrese un puntaje válido (número entero, 0 o mayor).'
+                    );
+
+                    inputPuntaje.focus();
+
+                    return;
+
+                }
+
+                if (
+                    !/^\d+$/.test(posicion) ||
+                    Number(posicion) < 1
+                ) {
+
+                    mostrarError(
+                        'Ingrese una posición válida (número entero, 1 o mayor).'
+                    );
+
+                    inputPosicion.focus();
+
+                    return;
+
+                }
+
+                const estado =
+                    this.ESTADOS_RESULTADO.find(
+                        item =>
+                            String(item.id) ===
+                            selectEstado.value
+                    );
+
+                if (!estado) {
+
+                    mostrarError(
+                        'Seleccione el estado de la postulación.'
+                    );
+
+                    selectEstado.focus();
+
+                    return;
+
+                }
+
+                btnPublicar.disabled = true;
+                btnCancelar.disabled = true;
+
+                try {
+
+                    await ApiClient.post(
+                        '/vacantes/ordenes_merito',
+                        {
+                            id_solicitud:
+                                Number(solicitud.id),
+
+                            puntaje:
+                                Number(puntaje),
+
+                            posicion:
+                                Number(posicion),
+
+                            id_estado:
+                                estado.id,
+
+                            observaciones:
+                                inputObservaciones.value.trim()
+                        }
+                    );
+
+                    dialog.close();
+
+                    // Ya tiene orden de mérito: no se puede publicar otra
+                    if (
+                        botonPublicar &&
+                        botonPublicar.isConnected
+                    ) {
+
+                        botonPublicar.disabled = true;
+
+                        botonPublicar.title =
+                            'Resultado ya publicado';
+
+                    }
+
+                    if (onPublicado) {
+
+                        onPublicado(estado);
+
+                    }
+
+                    this.mostrarSnackbar(
+                        'Orden de mérito publicada correctamente.'
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        'Error publicando orden de mérito:',
+                        error
+                    );
+
+                    mostrarError(
+                        error.message ||
+                        'No se pudo publicar la orden de mérito.'
+                    );
+
+                    btnPublicar.disabled = false;
+                    btnCancelar.disabled = false;
+
+                }
+
+            }
+        );
+
+        // Si el usuario cierra con ESC o cancela, se elimina del DOM.
+        // No se cierra al hacer click fuera para no perder lo cargado.
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
+
+        dialog.showModal();
+
+        inputPuntaje.focus();
+
+    }
+
+    // =========================================================
+    // SNACKBAR
+    // =========================================================
+
+    mostrarSnackbar(mensaje, tipo = 'success') {
+
+        const anterior =
+            document.querySelector('.panel-snackbar');
+
+        if (anterior) {
+            anterior.remove();
+        }
+
+        const snackbar =
+            document.createElement('div');
+
+        snackbar.className =
+            `app-snackbar panel-snackbar app-snackbar-${tipo}`;
+
+        snackbar.innerHTML = `
+            <i class="bi ${
+                tipo === 'success'
+                    ? 'bi-check-circle-fill'
+                    : 'bi-exclamation-circle-fill'
+            }"></i>
+
+            <span>
+                ${this.escapeHtml(mensaje)}
+            </span>
+        `;
+
+        document.body.appendChild(snackbar);
+
+        // Los <dialog> modales viven en la "top layer": un popover
+        // manual permite mostrar el aviso por encima de ellos.
+        if (typeof snackbar.showPopover === 'function') {
+
+            snackbar.setAttribute('popover', 'manual');
+
+            snackbar.showPopover();
+
+        }
+
+        requestAnimationFrame(() => {
+            snackbar.classList.add('show');
+        });
+
+        setTimeout(() => {
+
+            snackbar.classList.remove('show');
+
+            setTimeout(() => {
+                snackbar.remove();
+            }, 300);
+
+        }, 3000);
+
+    }
+
+    // =========================================================
+    // ACCIÓN: POSTULARSE
+    // POST /api/vacantes/solicitudes
+    // El backend toma el usuario de la sesión, la fecha actual
+    // y deja la solicitud en estado PENDIENTE.
+    // =========================================================
+
+    async postularse(vacante, boton) {
+
+        if (!vacante || !vacante.id) {
+
+            console.error(
+                'No se pudo identificar la vacante:',
+                vacante
+            );
+
+            return;
+        }
+
+        // Evitar postulaciones duplicadas por doble click
+        if (boton) {
+            boton.disabled = true;
+        }
+
+        try {
+
+            await ApiClient.post(
+                '/vacantes/solicitudes',
+                {
+                    id_vacante: Number(vacante.id)
+                }
+            );
+
+            this.mostrarSnackbar(
+                'Te postulaste correctamente a la vacante.'
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Error al postularse:',
+                error
+            );
+
+            this.mostrarSnackbar(
+                error.message ||
+                'No se pudo procesar la postulación.',
+                'error'
+            );
+
+        } finally {
+
+            if (boton) {
+                boton.disabled = false;
+            }
+
+        }
+    }
+
+
+    // =========================================================
+    // ACCIÓN: RESULTADOS GENERALES
+    // GET /api/vacantes/ordenes_merito?id_vacante=
+    // =========================================================
+
+    async verResultadosGenerales(vacante) {
+
+        if (!vacante || !vacante.id) {
+
+            console.error(
+                'No se pudo identificar la vacante:',
+                vacante
+            );
+
+            return;
+        }
+
+        this.mostrarDialogoResultados(
+            [],
+            vacante,
+            false,
+            true
+        );
+
+        try {
+
+            const ordenes =
+                await ApiClient.get(
+                    `/vacantes/ordenes_merito?id_vacante=${encodeURIComponent(vacante.id)}`
+                );
+
+            // Si el usuario cerró el diálogo mientras cargaba, no reabrirlo
+            if (!document.querySelector('.resultados-dialog[open]')) {
+                return;
+            }
+
+            this.mostrarDialogoResultados(
+                Array.isArray(ordenes)
+                    ? ordenes
+                    : [],
+                vacante,
+                false,
+                false
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Error cargando resultados generales:',
+                error
+            );
+
+            if (!document.querySelector('.resultados-dialog[open]')) {
+                return;
+            }
+
+            this.mostrarDialogoResultados(
+                [],
+                vacante,
+                true,
+                false
+            );
+        }
+    }
+
+
+    // =========================================================
+    // DIALOG: RESULTADOS GENERALES
+    // =========================================================
+
+    mostrarDialogoResultados(
+        ordenes,
+        vacante,
+        error = false,
+        cargando = false
+    ) {
+
+        // El diálogo se crea una sola vez: los cambios de estado
+        // (cargando -> datos / error) solo actualizan el contenido.
+        let dialog =
+            document.querySelector(
+                '.resultados-dialog[open]'
+            );
+
+        const esNuevo = !dialog;
+
+        if (esNuevo) {
+
+            dialog =
+                this.crearDialogoBase();
+
+            dialog.classList.add(
+                'resultados-dialog'
+            );
+
+            dialog.innerHTML = `
+                <div class="dialog-header">
+
+                    <div>
+
+                        <h2>
+                            Resultados generales
+                        </h2>
+
+                        <span class="dialog-subtitle">
+                            ${this.escapeHtml(
+                                vacante.titulo ||
+                                vacante.vacante ||
+                                'Vacante'
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="dialog-content"></div>
+
+                <div class="dialog-actions">
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel">
+                        Cerrar
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(dialog);
+
+            this.enlazarCierreDialogo(dialog);
+
+            dialog.showModal();
+
+        }
+
+
+        let contenido = '';
+
+        if (cargando) {
+
+            contenido = `
+                <div class="postulados-loading">
+
+                    <div class="spinner-border" role="status">
+                    </div>
+
+                    <span>
+                        Cargando resultados...
+                    </span>
+
+                </div>
+            `;
+
+        } else if (error) {
+
+            contenido = `
+                <div class="postulados-empty">
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                    <p>
+                        No se pudieron cargar los resultados.
+                    </p>
+
+                </div>
+            `;
+
+        } else if (!ordenes || ordenes.length === 0) {
+
+            contenido = `
+                <div class="postulados-empty">
+
+                    <i class="bi bi-list-ol"></i>
+
+                    <p>
+                        Todavía no hay resultados publicados para esta vacante.
+                    </p>
+
+                </div>
+            `;
+
+        } else {
+
+            contenido = `
+                <div class="postulados-table-wrapper">
+
+                    <table class="postulados-table resultados-table custom-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>DNI</th>
+
+                                <th>Puntaje</th>
+
+                                <th>Posición</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            ${ordenes.map(
+                                orden => `
+
+                                    <tr>
+
+                                        <td>
+                                            ${this.escapeHtml(
+                                                orden.usuario_dni ?? '-'
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${this.escapeHtml(
+                                                orden.puntaje ?? '-'
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${this.escapeHtml(
+                                                orden.posicion ?? '-'
+                                            )}
+                                        </td>
+
+                                    </tr>
+
+                                `
+                            ).join('')}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            `;
+
+        }
+
+        dialog.querySelector(
+            '.dialog-content'
+        ).innerHTML = contenido;
 
     }
 
@@ -1811,14 +2412,73 @@ class VacantesComponent extends HTMLElement {
 
         const dialog =
             document.querySelector(
-                '.requisitos-dialog-overlay'
+                '.vac-requisitos-dialog'
             );
 
         if (dialog) {
 
-            dialog.remove();
+            dialog.close();
 
         }
+
+    }
+
+
+    // =========================================================
+    // DIALOG BASE (misma interfaz que gestión de vacantes)
+    // =========================================================
+
+    crearDialogoBase() {
+
+        const dialog =
+            document.createElement('dialog');
+
+        dialog.classList.add(
+            'custom-dialog',
+            'panel-dialog'
+        );
+
+        return dialog;
+
+    }
+
+
+    // Cierre por botón "Cerrar", click en el fondo y ESC (nativo).
+    // Al cerrarse, el dialog se elimina del DOM.
+    enlazarCierreDialogo(dialog) {
+
+        const btnCerrar =
+            dialog.querySelector(
+                '.dialog-cancel'
+            );
+
+        if (btnCerrar) {
+
+            btnCerrar.addEventListener(
+                'click',
+                () => dialog.close()
+            );
+
+        }
+
+        dialog.addEventListener(
+            'click',
+            event => {
+
+                if (event.target === dialog) {
+
+                    dialog.close();
+
+                }
+
+            }
+        );
+
+        dialog.addEventListener(
+            'close',
+            () => dialog.remove(),
+            { once: true }
+        );
 
     }
 
@@ -1911,10 +2571,11 @@ class VacantesComponent extends HTMLElement {
     }
 
     // =========================================================
-    // VERIFICAR ROL JFC
+    // VERIFICAR ROLES
     // =========================================================
 
-    esJfc() {
+    // ¿El usuario logueado tiene alguno de los roles indicados?
+    tieneRol(rolesPermitidos) {
 
         try {
 
@@ -1937,7 +2598,7 @@ class VacantesComponent extends HTMLElement {
                     .trim()
                     .toLowerCase();
 
-                return ['jfc', 'admin', 'ra'].includes(rol);
+                return rolesPermitidos.includes(rol);
 
             });
 
@@ -1950,6 +2611,25 @@ class VacantesComponent extends HTMLElement {
 
             return false;
         }
+    }
+
+    // Ver postulados y publicar resultados
+    esJfc() {
+
+        return this.tieneRol(['jfc', 'admin', 'ra']);
+
+    }
+
+    puedePostularse() {
+
+        return this.tieneRol(['admin', 'pos']);
+
+    }
+
+    puedeVerResultados() {
+
+        return this.tieneRol(['admin', 'pos', 'ra']);
+
     }
 
 }

@@ -34,6 +34,30 @@ function obtenerRolesUsuario(int $idUsuario): array {
     return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 }
 
+/* Indica si el usuario tiene al menos uno de los roles indicados (sin distinguir mayúsculas) */
+function usuarioTieneAlgunRol(int $idUsuario, array $rolesPermitidos): bool {
+    $rolesPermitidos = array_map('strtolower', $rolesPermitidos);
+
+    foreach (obtenerRolesUsuario($idUsuario) as $fila) {
+        if (in_array(strtolower(trim($fila['rol'] ?? '')), $rolesPermitidos, true)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/* Corta la petición con 403 si el usuario de la sesión no tiene ninguno de los roles */
+function exigirRol(array $sesion, array $rolesPermitidos): void {
+    $idUsuario = isset($sesion['id_usuario']) ? (int)$sesion['id_usuario'] : 0;
+
+    if (!$idUsuario || !usuarioTieneAlgunRol($idUsuario, $rolesPermitidos)) {
+        http_response_code(403);
+        echo json_encode(["message" => "No tiene permisos para realizar esta acción."]);
+        exit;
+    }
+}
+
 /* Middleware para proteger rutas usando Bearer Token */
 function verificarAutenticacion(): array {
     $headers = function_exists('getallheaders') ? getallheaders() : [];

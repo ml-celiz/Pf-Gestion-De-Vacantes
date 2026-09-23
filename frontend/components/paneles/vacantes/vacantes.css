@@ -8,6 +8,48 @@
 
 
 /* =========================================================
+   ALTO DE LA PANTALLA
+   La pantalla ocupa como mínimo todo el alto disponible y la
+   tarjeta de la tabla se estira para llenarlo, así no se achica
+   según la cantidad de vacantes de la página.
+   (Acotado a app-vacantes: gestión de vacantes reutiliza
+   estas mismas clases.)
+   ========================================================= */
+
+app-vacantes {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-height: 100vh;
+
+}
+
+app-vacantes .vacantes-container {
+
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+app-vacantes .main-vacantes-card {
+
+    flex: 1;
+
+}
+
+app-vacantes .main-vacantes-card .table-responsive {
+
+    flex: 1;
+
+}
+
+
+/* =========================================================
    BREADCRUMB
    ========================================================= */
 
@@ -353,9 +395,17 @@
 
 }
 
-.btn-action:hover {
+.btn-action:hover:not(:disabled) {
 
     transform: scale(1.12);
+
+}
+
+.btn-action:disabled {
+
+    opacity: 0.4;
+
+    cursor: not-allowed;
 
 }
 
@@ -475,88 +525,6 @@
 
 
 /* =========================================================
-   DIALOG DE REQUISITOS
-   ========================================================= */
-
-.requisitos-dialog-overlay {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 9999;
-
-    background: rgba(15, 23, 42, 0.45);
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding: 1rem;
-
-}
-
-
-/* =========================================================
-   DIALOG
-   ========================================================= */
-
-.requisitos-dialog {
-
-    width: min(650px, 100%);
-
-    max-height: 85vh;
-
-    background: #ffffff;
-
-    border-radius: 0.75rem;
-
-    box-shadow:
-        0 12px 35px rgba(0, 0, 0, 0.18);
-
-    display: flex;
-
-    flex-direction: column;
-
-    overflow: hidden;
-
-}
-
-
-/* =========================================================
-   CABECERA DIALOG
-   ========================================================= */
-
-.requisitos-dialog-header {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    background: #e2e8f0;
-
-    padding: 0.9rem 1.25rem;
-
-}
-
-.requisitos-dialog-header h2 {
-
-    margin: 0;
-
-    font-size: 1rem;
-
-    font-weight: 700;
-
-    color: var(--brand-dark, #1e293b);
-
-}
-
-
-/* =========================================================
    CERRAR DIALOG
    ========================================================= */
 
@@ -581,19 +549,6 @@
     color: #1e293b;
 
     transform: scale(1.1);
-
-}
-
-
-/* =========================================================
-   CUERPO DIALOG
-   ========================================================= */
-
-.requisitos-dialog-body {
-
-    padding: 1.25rem;
-
-    overflow-y: auto;
 
 }
 
@@ -721,135 +676,6 @@
 }
 
 /* =========================================================
-   DIALOG POSTULADOS
-   ========================================================= */
-
-.postulados-dialog-overlay {
-    position: fixed !important;
-    inset: 0 !important; /* Cubre toda la pantalla: top, left, bottom, right a 0 */
-    width: 100vw;
-    height: 100vh;
-    z-index: 99999 !important; /* Eleva el diálogo por encima de cualquier tabla o footer */
-
-    background: rgba(15, 23, 42, 0.6); /* Fondo semitransparente bloqueante */
-    backdrop-filter: blur(2px); /* Opcional: desenfoque suave de fondo */
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 1.5rem;
-    box-sizing: border-box;
-}
-
-
-/* =========================================================
-   CONTENEDOR DEL DIALOG
-   ========================================================= */
-
-.postulados-dialog {
-    position: relative;
-    width: min(1150px, 100%);
-    max-height: 85vh;
-
-    background: #ffffff;
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-
-    display: flex;
-    flex-direction: column;
-
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-/* =========================================================
-   CABECERA
-   ========================================================= */
-
-.postulados-dialog-header {
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 1rem;
-
-    background: #e2e8f0;
-
-    padding: 0.9rem 1.25rem;
-
-    border-bottom: 1px solid #cbd5e1;
-}
-
-.postulados-dialog-header h2 {
-    margin: 0;
-
-    font-size: 1rem;
-    font-weight: 700;
-
-    color: var(--brand-dark, #1e293b);
-}
-
-.postulados-dialog-subtitle {
-    display: block;
-
-    margin-top: 0.2rem;
-
-    font-size: 0.78rem;
-
-    color: #64748b;
-}
-
-
-/* =========================================================
-   BOTÓN CERRAR
-   ========================================================= */
-
-.postulados-dialog-header .btn-close-dialog {
-    flex-shrink: 0;
-
-    border: none;
-
-    background: transparent;
-
-    color: #475569;
-
-    font-size: 0.95rem;
-
-    cursor: pointer;
-
-    padding: 0.3rem;
-
-    transition:
-        color 0.15s ease,
-        transform 0.15s ease;
-}
-
-.postulados-dialog-header .btn-close-dialog:hover {
-    color: #1e293b;
-
-    transform: scale(1.1);
-}
-
-
-/* =========================================================
-   CUERPO
-   ========================================================= */
-
-.postulados-dialog-body {
-    flex: 1;
-
-    min-height: 0;
-
-    padding: 1.25rem;
-
-    overflow: auto;
-}
-
-
-/* =========================================================
    CONTENEDOR TABLA
    ========================================================= */
 
@@ -960,8 +786,14 @@
 }
 
 
+.btn-postulado-resultado:disabled {
+    opacity: 0.35;
+
+    cursor: not-allowed;
+}
+
 .btn-postulado-cv:hover,
-.btn-postulado-resultado:hover {
+.btn-postulado-resultado:hover:not(:disabled) {
     background: #f1f5f9;
 
     transform: scale(1.08);
@@ -1022,85 +854,415 @@
 }
 
 
+
+
 /* =========================================================
-   FOOTER
+   DIALOGS DEL PANEL DE VACANTES
+   (misma interfaz que gestión de vacantes)
+
+   Todo va bajo `.custom-dialog.panel-dialog` para que las hojas
+   de otros paneles (roles, usuarios, gestión de vacantes), que
+   también definen `.custom-dialog` con otro ancho, no pisen estos
+   estilos según el orden en que se hayan cargado.
    ========================================================= */
 
-.postulados-dialog-footer {
-    flex-shrink: 0;
+.custom-dialog.panel-dialog {
+    width: 460px;
+    max-width: calc(100% - 40px);
 
-    display: flex;
+    padding: 0;
 
-    justify-content: flex-end;
-    align-items: center;
-
-    padding: 0.9rem 1.25rem;
-
-    border-top: 1px solid #f1f5f9;
+    overflow: hidden;
 
     background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    border-radius: 1.1rem;
+
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+
+    color: var(--brand-dark);
+
+    animation: dialogFadeIn 0.18s ease-out;
+}
+
+.custom-dialog.panel-dialog[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-dialog.panel-dialog::before {
+    content: "";
+
+    display: block;
+    flex-shrink: 0;
+
+    width: 100%;
+    height: 3px;
+
+    background: var(--brand-primary);
+}
+
+.custom-dialog.panel-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.32);
 }
 
 
 /* =========================================================
-   BOTÓN CERRAR
+   DIALOGS - TAMAÑOS
    ========================================================= */
 
-.btn-postulados-cerrar {
-    border: 1px solid #cbd5e1;
+.custom-dialog.panel-dialog.vac-requisitos-dialog {
+    width: min(650px, calc(100% - 40px));
+    max-width: 650px;
+    max-height: 85vh;
+}
+
+.custom-dialog.panel-dialog.postulados-dialog {
+    width: min(1150px, calc(100% - 40px));
+    max-width: 1150px;
+    max-height: 85vh;
+}
+
+.custom-dialog.panel-dialog.orden-merito-dialog {
+    width: min(460px, calc(100% - 40px));
+    max-width: 460px;
+}
+
+.custom-dialog.panel-dialog.resultados-dialog {
+    width: min(560px, calc(100% - 40px));
+    max-width: 560px;
+    max-height: 85vh;
+}
+
+/* La tabla de resultados solo tiene 3 columnas */
+.postulados-table.resultados-table {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   DIALOG - ENCABEZADO
+   ========================================================= */
+
+.custom-dialog.panel-dialog .dialog-header {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+
+    padding: 18px 20px;
+
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.custom-dialog.panel-dialog .dialog-header h2 {
+    margin: 0;
+
+    color: var(--brand-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.custom-dialog.panel-dialog .dialog-subtitle {
+    display: block;
+
+    margin-top: 0.2rem;
+
+    color: #64748b;
+    font-size: 0.78rem;
+}
+
+
+/* =========================================================
+   DIALOG - CONTENIDO
+   ========================================================= */
+
+.custom-dialog.panel-dialog .dialog-content {
+    flex: 1;
+
+    min-height: 0;
+
+    padding: 1.5rem;
+
+    overflow-y: auto;
+
+    color: #334155;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   DIALOG - FORMULARIO
+   ========================================================= */
+
+.custom-dialog.panel-dialog .dialog-form {
+    display: flex;
+    flex-direction: column;
+
+    padding: 22px 20px 20px;
+
+    gap: 1rem;
+}
+
+.custom-dialog.panel-dialog .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.custom-dialog.panel-dialog .form-group label {
+    margin-bottom: 0.25rem;
+
+    color: var(--brand-dark);
+
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.custom-dialog.panel-dialog .form-control {
+    width: 100%;
+
+    padding: 0.75rem 1rem;
+
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+
+    color: var(--brand-dark);
+    font-size: 0.9rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.custom-dialog.panel-dialog .form-control:hover {
+    border-color: #cbd5e1;
+}
+
+.custom-dialog.panel-dialog .form-control:focus {
+    outline: none !important;
+
+    border-color: var(--brand-accent);
+
+    box-shadow: none !important;
+}
+
+.custom-dialog.panel-dialog textarea.form-control {
+    resize: vertical;
+}
+
+.custom-dialog.panel-dialog .orden-merito-postulante {
+    margin: 0;
+
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.custom-dialog.panel-dialog .orden-merito-postulante strong {
+    color: var(--brand-dark);
+    font-weight: 600;
+}
+
+.custom-dialog.panel-dialog .dialog-error {
+    margin: 0;
+
+    color: #dc3545;
+    font-size: 0.82rem;
+}
+
+.custom-dialog.panel-dialog .dialog-error[hidden] {
+    display: none;
+}
+
+
+/* =========================================================
+   DIALOG - BOTONES
+   ========================================================= */
+
+.custom-dialog.panel-dialog .dialog-actions {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+    margin-top: auto;
+    padding: 18px 20px 20px;
 
     background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+}
+
+.custom-dialog.panel-dialog .dialog-actions .dialog-cancel {
+    padding: 0.65rem 1.1rem;
+
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.7rem;
 
     color: #475569;
 
-    padding: 0.55rem 1rem;
-
-    border-radius: 0.55rem;
-
-    font-size: 0.82rem;
-
+    font-size: 0.85rem;
     font-weight: 600;
 
     cursor: pointer;
 
     transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease;
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
 }
 
-.btn-postulados-cerrar:hover {
-    background: #f8fafc;
+.custom-dialog.panel-dialog .dialog-actions .dialog-cancel:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: var(--brand-dark);
+}
 
-    border-color: #94a3b8;
+.custom-dialog.panel-dialog .dialog-actions .btn-primary {
+    padding: 0.65rem 1.15rem;
+
+    background: var(--brand-primary);
+    border: none;
+    border-radius: 0.7rem;
+
+    color: #ffffff !important;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow: 0 3px 8px rgba(0, 86, 179, 0.14);
+
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.custom-dialog.panel-dialog .dialog-actions .btn-primary:hover:not(:disabled) {
+    background: var(--brand-primary-hover);
+
+    box-shadow: 0 5px 12px rgba(0, 86, 179, 0.18);
+
+    transform: translateY(-1px);
+}
+
+.custom-dialog.panel-dialog .dialog-actions .btn-primary:disabled,
+.custom-dialog.panel-dialog .dialog-actions .dialog-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 
 /* =========================================================
-   RESPONSIVE
+   ANIMACIÓN
    ========================================================= */
 
-@media (max-width: 768px) {
-
-    .postulados-dialog-overlay {
-        padding: 0.75rem;
+@keyframes dialogFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
     }
 
-    .postulados-dialog {
-        width: 100%;
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
-        max-height: 90vh;
+
+/* =========================================================
+   SNACKBAR
+   Es un popover para quedar por encima de los <dialog> modales.
+   ========================================================= */
+
+.app-snackbar.panel-snackbar {
+    position: fixed;
+    inset: auto auto 28px 50%;
+
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+
+    min-width: 280px;
+    max-width: 450px;
+
+    padding: 13px 18px;
+
+    gap: 10px;
+
+    background: #ffffff;
+    border: 1px solid #e2e5e8;
+    border-radius: 8px;
+
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
+
+    color: #495057;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    opacity: 0;
+
+    transform: translate(-50%, 20px);
+
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+}
+
+.app-snackbar.panel-snackbar.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.app-snackbar.panel-snackbar i {
+    font-size: 18px;
+}
+
+.app-snackbar.panel-snackbar.app-snackbar-success i {
+    color: #6c9f7d;
+}
+
+.app-snackbar.panel-snackbar.app-snackbar-error i {
+    color: #c97979;
+}
+
+
+/* =========================================================
+   RESPONSIVE DIALOG
+   ========================================================= */
+
+@media (max-width: 576px) {
+
+    .custom-dialog.panel-dialog {
+        width: calc(100% - 24px);
+        max-width: none;
     }
 
-    .postulados-dialog-header {
-        padding: 0.8rem 1rem;
+    .custom-dialog.panel-dialog .dialog-header {
+        padding: 16px;
     }
 
-    .postulados-dialog-body {
-        padding: 0.75rem;
+    .custom-dialog.panel-dialog .dialog-content {
+        padding: 18px 16px;
     }
 
-    .postulados-dialog-footer {
-        padding: 0.8rem 1rem;
+    .custom-dialog.panel-dialog .dialog-form {
+        padding: 18px 16px 16px;
+    }
+
+    .custom-dialog.panel-dialog .dialog-actions {
+        padding: 16px;
     }
 
 }

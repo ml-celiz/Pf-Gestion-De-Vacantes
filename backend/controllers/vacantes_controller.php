@@ -124,13 +124,35 @@ class VacantesController {
     }
 
     public function crearSolicitud(): void {
+
+        $sesionActual = verificarAutenticacion();
+
+        exigirRol($sesionActual, ['admin', 'pos']);
+
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        if ($this->service->crearSolicitud($input)) {
+
+        /*
+        * El frontend solo indica la vacante. El usuario sale de la sesión,
+        * la fecha es la actual y el estado inicial es PENDIENTE.
+        */
+        $idVacante = isset($input['id_vacante']) && is_numeric($input['id_vacante'])
+            ? (int)$input['id_vacante']
+            : 0;
+
+        try {
+            $id = $this->service->crearSolicitud(
+                $idVacante,
+                (int)$sesionActual['id_usuario']
+            );
+
             http_response_code(201);
-            echo json_encode(["message" => "Postulación realizada con éxito."]);
-        } else {
-            http_response_code(400);
-            echo json_encode(["message" => "No se pudo procesar la postulación."]);
+            echo json_encode([
+                "message" => "Postulación realizada con éxito.",
+                "id"      => $id
+            ]);
+        } catch (RuntimeException $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode(["message" => $e->getMessage()]);
         }
     }
 
@@ -162,17 +184,44 @@ class VacantesController {
     // --- ORDENES DE MÉRITO ---
 
     public function listarOrdenesMerito(): void {
-        echo json_encode($this->service->obtenerOrdenesMerito());
+
+        exigirRol(verificarAutenticacion(), ['admin', 'pos', 'ra']);
+
+        $idVacante =
+            isset($_GET['id_vacante']) &&
+            is_numeric($_GET['id_vacante'])
+                ? (int)$_GET['id_vacante']
+                : null;
+
+        echo json_encode($this->service->obtenerOrdenesMerito($idVacante));
     }
 
     public function crearOrdenMerito(): void {
+
+        // Publican resultados los mismos roles que ven los postulados
+        exigirRol(verificarAutenticacion(), ['jfc', 'admin', 'ra']);
+
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        if ($this->service->crearOrdenMerito($input)) {
+
+        try {
+            $id = $this->service->crearOrdenMerito($input);
+        } catch (RuntimeException $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode(["message" => $e->getMessage()]);
+            return;
+        }
+
+        if ($id !== false) {
             http_response_code(201);
-            echo json_encode(["message" => "Orden de mérito creada exitosamente."]);
+            echo json_encode([
+                "message" => "Orden de mérito creada exitosamente.",
+                "id"      => $id
+            ]);
         } else {
             http_response_code(400);
-            echo json_encode(["message" => "No se pudo registrar la orden de mérito."]);
+            echo json_encode([
+                "message" => "No se pudo registrar la orden de mérito. Verifique los datos."
+            ]);
         }
     }
 

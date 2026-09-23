@@ -6,6 +6,12 @@ require_once __DIR__ . '/../models/SolicitudVacante.php';
 require_once __DIR__ . '/../models/OrdenMerito.php';
 
 class VacanteService {
+    // Ids de public.estados
+    public const ESTADO_VACANTE_ABIERTA    = 1;
+    public const ESTADO_SOLICITUD_PENDIENTE = 4;
+    public const ESTADO_SOLICITUD_ACEPTADA  = 5;
+    public const ESTADO_SOLICITUD_CANCELADA = 6;
+
     private PDO $db;
 
     public function __construct() {
@@ -291,7 +297,7 @@ class VacanteService {
         $sql = "SELECT
                     s.id,
                     s.fecha_postulacion,
-                    s.cv,
+                    u.cv AS cv,
                     s.id_estado,
 
                     e.nombre AS estado_nombre,
@@ -344,10 +350,11 @@ class VacanteService {
     }
 
     public function obtenerSolicitudPorId(int $id): ?array {
-        $sql = "SELECT s.*, e.nombre as estado_nombre, v.titulo as vacante_titulo
+        $sql = "SELECT s.*, u.cv AS cv, e.nombre as estado_nombre, v.titulo as vacante_titulo
                 FROM public.solicitudes_vacantes s
                 JOIN public.estados e ON s.id_estado = e.id
                 JOIN public.vacantes v ON s.id_vacante = v.id
+                JOIN public.usuarios u ON s.id_usuario = u.id
                 WHERE s.id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -355,26 +362,56 @@ class VacanteService {
         return $row ?: null;
     }
 
-    public function crearSolicitud(array $data): bool {
-        $solicitud = new SolicitudVacante($data);
-        if (empty($solicitud->cv) || !$solicitud->idEstado || !$solicitud->idVacante || !$solicitud->idUsuario) {
-            return false;
+    /**
+     * Postula a un usuario a una vacante.
+     * La fecha es la actual y el estado inicial siempre es PENDIENTE.
+     * Devuelve el id de la solicitud creada; ante un dato inválido lanza
+     * RuntimeException cuyo código es el HTTP status a responder.
+     */
+    public function crearSolicitud(int $idVacante, int $idUsuario): int {
+        if ($idVacante <= 0) {
+            throw new RuntimeException("Debe indicar la vacante a la que desea postularse.", 400);
+        }
+
+        $stmt = $this->db->prepare("SELECT id_estado FROM public.vacantes WHERE id = :id");
+        $stmt->execute(['id' => $idVacante]);
+        $vacante = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$vacante) {
+            throw new RuntimeException("Vacante no encontrada.", 404);
+        }
+
+        if ((int)$vacante['id_estado'] !== self::ESTADO_VACANTE_ABIERTA) {
+            throw new RuntimeException("La vacante no está abierta para postulaciones.", 409);
+        }
+
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM public.solicitudes_vacantes
+             WHERE id_vacante = :id_vacante AND id_usuario = :id_usuario
+             LIMIT 1"
+        );
+        $stmt->execute(['id_vacante' => $idVacante, 'id_usuario' => $idUsuario]);
+
+        if ($stmt->fetchColumn() !== false) {
+            throw new RuntimeException("Ya se encuentra postulado a esta vacante.", 409);
         }
 
         try {
-            $sql = "INSERT INTO public.solicitudes_vacantes (fecha_postulacion, cv, id_estado, id_vacante, id_usuario)
-                    VALUES (:fecha_postulacion, :cv, :id_estado, :id_vacante, :id_usuario)";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
-                'fecha_postulacion' => $solicitud->fechaPostulacion ?? date('Y-m-d H:i:sP'),
-                'cv'                => $solicitud->cv,
-                'id_estado'         => $solicitud->idEstado,
-                'id_vacante'        => $solicitud->idVacante,
-                'id_usuario'        => $solicitud->idUsuario
+            $stmt = $this->db->prepare(
+                "INSERT INTO public.solicitudes_vacantes (fecha_postulacion, id_estado, id_vacante, id_usuario)
+                 VALUES (NOW(), :id_estado, :id_vacante, :id_usuario)
+                 RETURNING id"
+            );
+            $stmt->execute([
+                'id_estado'  => self::ESTADO_SOLICITUD_PENDIENTE,
+                'id_vacante' => $idVacante,
+                'id_usuario' => $idUsuario
             ]);
+
+            return (int)$stmt->fetchColumn();
         } catch (PDOException $e) {
             error_log("Error PDO al crear solicitud: " . $e->getMessage());
-            return false;
+            throw new RuntimeException("No se pudo procesar la postulación.", 400);
         }
     }
 
@@ -398,32 +435,131 @@ class VacanteService {
     // 3. ORDENES DE MÉRITO
     // ==========================================
 
-    public function obtenerOrdenesMerito(): array {
-        $sql = "SELECT om.*, s.id_usuario, u.usuario as usuario_nombre, s.id_vacante
+    /**
+     * Resultados generales: ordenes de mérito publicadas, de la mejor
+     * posición (1) hacia abajo. Si se indica una vacante, solo las de esa vacante.
+     * No incluye observaciones: son notas de la evaluación de cada postulante.
+     */
+    public function obtenerOrdenesMerito(?int $idVacante = null): array {
+        $sql = "SELECT
+                    om.id,
+                    om.puntaje,
+                    om.posicion,
+                    om.fecha_publicacion,
+                    om.id_solicitud,
+
+                    s.id_usuario,
+                    s.id_vacante,
+
+                    u.dni AS usuario_dni
+
                 FROM public.ordenes_merito om
-                JOIN public.solicitudes_vacantes s ON om.id_solicitud = s.id
-                JOIN public.usuarios u ON s.id_usuario = u.id
-                ORDER BY om.posicion ASC";
-        $stmt = $this->db->query($sql);
+
+                JOIN public.solicitudes_vacantes s
+                    ON om.id_solicitud = s.id
+
+                JOIN public.usuarios u
+                    ON s.id_usuario = u.id";
+
+        if ($idVacante !== null) {
+            $sql .= " WHERE s.id_vacante = :id_vacante";
+        }
+
+        $sql .= " ORDER BY om.posicion ASC, om.id ASC";
+
+        $stmt = $this->db->prepare($sql);
+
+        if ($idVacante !== null) {
+            $stmt->execute(['id_vacante' => $idVacante]);
+        } else {
+            $stmt->execute();
+        }
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function crearOrdenMerito(array $data): bool {
+    public function existeOrdenMeritoDeSolicitud(int $idSolicitud): bool {
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM public.ordenes_merito WHERE id_solicitud = :id_solicitud LIMIT 1"
+        );
+        $stmt->execute(['id_solicitud' => $idSolicitud]);
+        return $stmt->fetchColumn() !== false;
+    }
+
+    /**
+     * Publica la orden de mérito de una postulación y actualiza el estado
+     * de esa postulación (ACEPTADA o CANCELADA) en una misma transacción.
+     * Devuelve el id creado, o false si los datos no son válidos; si la
+     * postulación no existe o ya tiene orden de mérito lanza RuntimeException
+     * cuyo código es el HTTP status a responder.
+     */
+    public function crearOrdenMerito(array $data): int|false {
         $om = new OrdenMerito($data);
-        if (!$om->idSolicitud) return false;
+
+        // El modelo convierte los faltantes en 0, por eso se valida sobre $data
+        $puntajeValido  = isset($data['puntaje'])  && filter_var($data['puntaje'],  FILTER_VALIDATE_INT) !== false && (int)$data['puntaje']  >= 0;
+        $posicionValida = isset($data['posicion']) && filter_var($data['posicion'], FILTER_VALIDATE_INT) !== false && (int)$data['posicion'] >= 1;
+
+        $idEstado = filter_var($data['id_estado'] ?? null, FILTER_VALIDATE_INT);
+        $estadoValido = in_array(
+            $idEstado,
+            [self::ESTADO_SOLICITUD_ACEPTADA, self::ESTADO_SOLICITUD_CANCELADA],
+            true
+        );
+
+        if (!$om->idSolicitud || !$puntajeValido || !$posicionValida || !$estadoValido) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare("SELECT 1 FROM public.solicitudes_vacantes WHERE id = :id");
+        $stmt->execute(['id' => $om->idSolicitud]);
+
+        if ($stmt->fetchColumn() === false) {
+            throw new RuntimeException("Solicitud no encontrada.", 404);
+        }
+
+        if ($this->existeOrdenMeritoDeSolicitud($om->idSolicitud)) {
+            throw new RuntimeException("Este postulante ya tiene una orden de mérito publicada.", 409);
+        }
+
+        $observaciones = is_string($om->observaciones)
+            ? trim($om->observaciones)
+            : null;
 
         try {
-            $sql = "INSERT INTO public.ordenes_merito (puntaje, posicion, observaciones, fecha_publicacion, id_solicitud)
-                    VALUES (:puntaje, :posicion, :observaciones, :fecha_publicacion, :id_solicitud)";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare(
+                "INSERT INTO public.ordenes_merito (puntaje, posicion, observaciones, fecha_publicacion, id_solicitud)
+                 VALUES (:puntaje, :posicion, :observaciones, :fecha_publicacion, :id_solicitud)
+                 RETURNING id"
+            );
+            $stmt->execute([
                 'puntaje'           => $om->puntaje,
                 'posicion'          => $om->posicion,
-                'observaciones'     => $om->observaciones,
+                'observaciones'     => $observaciones !== '' ? $observaciones : null,
                 'fecha_publicacion' => $om->fechaPublicacion ?? date('H:i:sP'),
                 'id_solicitud'      => $om->idSolicitud
             ]);
+
+            $id = $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare(
+                "UPDATE public.solicitudes_vacantes SET id_estado = :id_estado WHERE id = :id"
+            );
+            $stmt->execute([
+                'id_estado' => $idEstado,
+                'id'        => $om->idSolicitud
+            ]);
+
+            $this->db->commit();
+
+            return $id !== false ? (int)$id : false;
         } catch (PDOException $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
             error_log("Error PDO al crear orden de mérito: " . $e->getMessage());
             return false;
         }
