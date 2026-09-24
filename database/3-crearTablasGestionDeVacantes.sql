@@ -102,7 +102,7 @@ CREATE TABLE public.ordenes_merito
     puntaje integer NOT NULL,
     posicion integer NOT NULL,
     observaciones text,
-    fecha_publicacion time with time zone NOT NULL,
+    fecha_publicacion timestamp with time zone NOT NULL,
     id_solicitud integer NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT id_solicitud_fk FOREIGN KEY (id_solicitud)

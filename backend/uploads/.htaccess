@@ -1,0 +1,3 @@
+# Los CV solo se descargan por la API (GET /api/usuarios/{id}/cv),
+# que controla los permisos. Nunca acceso directo al archivo.
+Require all denied

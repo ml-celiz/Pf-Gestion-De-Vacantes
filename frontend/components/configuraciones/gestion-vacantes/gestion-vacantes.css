@@ -1,41 +1,18 @@
-.vacantes-container {
-    width: 100%;
-    padding: 1.5rem 2.5rem;
+/* =========================================================
+   GESTIÓN DE VACANTES
+   La estructura del panel y las tablas está en global.css;
+   acá solo lo propio de esta pantalla.
+   ========================================================= */
+
+/* TABLAS LATERALES (cátedras y departamentos): alto fijo */
+app-gestion-vacantes .side-table-body {
+    height: 200px;
+    overflow-x: auto;
 }
 
-/* BREADCRUMB */
-.breadcrumb-bar {
-    margin-bottom: 0.75rem;
-}
-
-.breadcrumb-path {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted, #64748b);
-    letter-spacing: 0.5px;
-}
-
-/* ENCABEZADO */
-.vacantes-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #e2e8f0;
-    padding: 0.75rem 1.25rem;
-    border-radius: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.vacantes-header h1 {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--brand-dark, #1e293b);
-}
-
-.header-actions {
-    display: flex;
-    gap: 0.75rem;
+/* Ancho mínimo para que aparezca el scroll horizontal */
+app-gestion-vacantes .side-table-body .custom-table {
+    min-width: 500px;
 }
 
 /* ENCABEZADO DE ACCIONES */
@@ -48,289 +25,13 @@
 
 /* BOTÓN AGREGAR */
 .btn-action.add {
-    color: var(--brand-dark, #1e293b);
+    color: var(--color-dark);
     font-size: 0.9rem;
 }
 
 .btn-action.add:hover {
-    color: var(--brand-primary, #0056b3);
+    color: var(--color-primary);
     transform: scale(1.1);
-}
-
-/* BOTONES SUPERIORES */
-.btn-icon,
-.btn-icon-sm {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--brand-dark, #1e293b);
-    font-size: 1.1rem;
-    display: inline-flex;
-    align-items: center;
-    transition:
-        transform 0.15s ease,
-        color 0.15s ease;
-}
-
-.btn-icon:hover,
-.btn-icon-sm:hover {
-    transform: scale(1.1);
-    color: var(--brand-primary, #0056b3);
-}
-
-/* FILTRO */
-.filter-bar {
-    height: 34px;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.35rem;
-    margin-bottom: 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ffffff;
-    color: var(--brand-dark, #1e293b);
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-/* GRID PRINCIPAL */
-.vacantes-grid {
-    display: grid;
-    grid-template-columns: 1fr 500px;
-    gap: 1.25rem;
-}
-
-.side-tables-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-/* CARDS */
-.card-table {
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 0.75rem;
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.03);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.main-vacantes-card {
-    min-width: 0;
-}
-
-/* TABLAS */
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-}
-
-.custom-table th {
-    background: #e2e8f0;
-    color: var(--brand-dark, #1e293b);
-    font-weight: 600;
-    padding: 0.85rem 1rem;
-    text-align: left;
-}
-
-.custom-table td {
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: var(--brand-dark, #1e293b);
-}
-
-.custom-table.compact {
-    width: 100%;
-}
-
-.custom-table.compact th,
-.custom-table.compact td {
-    padding: 0.6rem 0.75rem;
-}
-
-/* TABLAS LATERALES */
-.side-header {
-    display: flex;
-    align-items: center;
-    background: #e2e8f0;
-    padding: 0.75rem 1rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-}
-
-/* CUERPO TABLAS LATERALES */
-.side-table-body {
-    height: 200px;
-    min-height: 200px;
-    overflow-y: auto;
-    overflow-x: auto;
-    flex-shrink: 0;
-}
-
-/* ANCHO MÍNIMO PARA GENERAR SCROLL HORIZONTAL */
-.side-table-body .custom-table {
-    min-width: 500px;
-}
-
-/* SCROLL */
-.side-table-body::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-.side-table-body::-webkit-scrollbar-track {
-    background: #f1f5f9;
-}
-
-.side-table-body::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-
-.side-table-body::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* BOTONES DE ACCIÓN */
-.action-btn-group {
-    display: flex;
-    justify-content: center;
-    gap: 0.6rem;
-}
-
-.btn-action {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.95rem;
-    padding: 0.2rem;
-}
-
-.btn-action.view {
-    color: #16a34a;
-}
-
-.btn-action.edit {
-    color: #2563eb;
-}
-
-.btn-action.delete {
-    color: #ef4444;
-}
-
-/* FOOTER */
-.table-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    gap: 1rem;
-    font-size: 0.8rem;
-    color: var(--text-muted, #64748b);
-    margin-top: auto;
-}
-
-.table-footer.compact {
-    justify-content: space-between;
-    padding: 0.6rem 0.75rem;
-}
-
-/* PAGINACIÓN */
-.pagination-buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    border-radius: 0.35rem;
-    cursor: pointer;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-        background 0.15s ease,
-        color 0.15s ease;
-}
-
-.pagination-btn:hover:not(:disabled) {
-    background: #e2e8f0;
-}
-
-.pagination-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* NÚMERO DE PÁGINA */
-#vacantes-page-number,
-#catedras-page-number,
-#departamentos-page-number {
-    min-width: 65px;
-    text-align: center;
-}
-
-/* TABLA PRINCIPAL */
-.main-vacantes-card .table-responsive {
-    overflow-x: auto;
-}
-
-/* RESPONSIVE */
-@media (max-width: 992px) {
-    .vacantes-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 576px) {
-    .vacantes-container {
-        padding: 1rem;
-    }
-
-    .vacantes-grid {
-        gap: 1rem;
-    }
-
-    .custom-table {
-        font-size: 0.8rem;
-    }
-
-    .custom-table th,
-    .custom-table td {
-        padding: 0.65rem 0.5rem;
-    }
-
-    .table-footer {
-        flex-wrap: wrap;
-    }
-}
-
-/* BOTÓN VER REQUISITOS */
-.btn-requisitos {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border: none;
-    background: transparent;
-    color: var(--brand-primary, #0056b3);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0.25rem 0.4rem;
-}
-
-.btn-requisitos:hover {
-    color: #003f80;
-    text-decoration: underline;
 }
 
 /* OVERLAY DEL DIALOG */
@@ -338,7 +39,7 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: rgba(15, 23, 42, 0.45);
+    background: var(--color-overlay-strong);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -349,9 +50,9 @@
 .requisitos-dialog {
     width: min(650px, 100%);
     max-height: 85vh;
-    background: #ffffff;
+    background: var(--color-white);
     border-radius: 0.75rem;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 12px 35px var(--color-shadow-lg);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -362,7 +63,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #e2e8f0;
+    background: var(--color-gray-200);
     padding: 0.9rem 1.25rem;
 }
 
@@ -370,21 +71,21 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
-    color: var(--brand-dark, #1e293b);
+    color: var(--color-dark);
 }
 
 /* BOTÓN CERRAR */
 .btn-close-dialog {
     border: none;
     background: transparent;
-    color: #475569;
+    color: var(--color-gray-600);
     font-size: 1rem;
     cursor: pointer;
     padding: 0.25rem;
 }
 
 .btn-close-dialog:hover {
-    color: #1e293b;
+    color: var(--color-dark);
     transform: scale(1.1);
 }
 
@@ -407,7 +108,7 @@
     margin: 0 0 0.45rem;
     font-size: 0.85rem;
     font-weight: 700;
-    color: var(--brand-dark, #1e293b);
+    color: var(--color-dark);
 }
 
 /* TEXTO */
@@ -415,14 +116,14 @@
     margin: 0;
     font-size: 0.85rem;
     line-height: 1.5;
-    color: #475569;
+    color: var(--color-gray-600);
 }
 
 /* LISTA */
 .requisitos-list {
     margin: 0;
     padding-left: 1.25rem;
-    color: #475569;
+    color: var(--color-gray-600);
 }
 
 .requisitos-list li {
@@ -439,7 +140,7 @@
 .requisitos-empty {
     margin: 0;
     text-align: center;
-    color: var(--text-muted, #64748b);
+    color: var(--color-gray-500);
     font-size: 0.85rem;
 }
 
@@ -450,35 +151,26 @@
 .custom-dialog {
     width: 460px;
     max-width: calc(100% - 40px);
-
     padding: 0;
-
     overflow: hidden;
-
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
     border-radius: 1.1rem;
-
-    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
-
-    color: var(--brand-dark);
-
+    box-shadow: 0 12px 35px var(--color-shadow-dialog);
+    color: var(--color-dark);
     animation: dialogFadeIn 0.18s ease-out;
 }
 
 .custom-dialog::before {
     content: "";
-
     display: block;
-
     width: 100%;
     height: 3px;
-
-    background: var(--brand-primary);
+    background: var(--color-primary);
 }
 
 .custom-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.32);
+    background: var(--color-overlay);
 }
 
 /* =========================================================
@@ -490,7 +182,6 @@
     max-width: 800px;
 }
 
-
 /* FILAS DE DOS COLUMNAS */
 
 .vacante-dialog .form-row {
@@ -499,21 +190,18 @@
     gap: 1.25rem;
 }
 
-
 /* AYUDA DE REQUISITOS */
 
 .vacante-dialog .form-help {
     display: block;
     margin-top: 0.1rem;
-    color: #6c757d;
+    color: var(--color-gray-500);
     font-size: 0.82rem;
 }
-
 
 /* RESPONSIVE */
 
 @media (max-width: 700px) {
-
     .vacante-dialog {
         width: calc(100% - 24px);
         max-width: none;
@@ -522,7 +210,6 @@
     .vacante-dialog .form-row {
         grid-template-columns: 1fr;
     }
-
 }
 
 /* =========================================================
@@ -532,22 +219,18 @@
 .dialog-header {
     display: flex;
     align-items: center;
-
     padding: 18px 20px;
-
-    background: #f1f5f9;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--color-gray-100);
+    border-bottom: 1px solid var(--color-gray-200);
 }
 
 .dialog-header h2 {
     margin: 0;
-
-    color: var(--brand-dark);
+    color: var(--color-dark);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: -0.2px;
 }
-
 
 /* =========================================================
    DIALOG - FORMULARIO
@@ -556,14 +239,10 @@
 .dialog-form {
     display: flex;
     flex-direction: column;
-
     min-height: 190px;
-
     padding: 22px 20px 20px;
-
     gap: 1rem;
 }
-
 
 /* =========================================================
    CAMPOS
@@ -577,13 +256,10 @@
 
 .form-group label {
     margin-bottom: 0.25rem;
-
-    color: var(--brand-dark);
-
+    color: var(--color-dark);
     font-size: 0.875rem;
     font-weight: 600;
 }
-
 
 /* =========================================================
    INPUTS / SELECTS / TEXTAREA
@@ -591,16 +267,12 @@
 
 .dialog-form .form-control {
     width: 100%;
-
     padding: 0.75rem 1rem;
-
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-200);
     border-radius: 0.75rem;
-
-    color: var(--brand-dark);
+    color: var(--color-dark);
     font-size: 0.9rem;
-
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -608,14 +280,12 @@
 }
 
 .dialog-form .form-control:hover {
-    border-color: #cbd5e1;
+    border-color: var(--color-gray-300);
 }
 
 .dialog-form .form-control:focus {
     outline: none !important;
-
-    border-color: var(--brand-accent);
-
+    border-color: var(--color-accent);
     box-shadow: none !important;
 }
 
@@ -623,15 +293,13 @@
     resize: vertical;
 }
 
-
 /* =========================================================
    DIALOG - CONTENIDO
    ========================================================= */
 
 .dialog-content {
     padding: 1.5rem;
-
-    color: #334155;
+    color: var(--color-gray-700);
     font-size: 0.9rem;
     line-height: 1.6;
 }
@@ -641,10 +309,9 @@
 }
 
 .dialog-content strong {
-    color: var(--brand-dark);
+    color: var(--color-dark);
     font-weight: 600;
 }
-
 
 /* =========================================================
    DIALOG - BOTONES
@@ -654,29 +321,22 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-
     gap: 10px;
     margin-top: auto;
     padding: 18px 20px 20px;
-
-    background: #ffffff;
-    border-top: 1px solid #f1f5f9;
+    background: var(--color-white);
+    border-top: 1px solid var(--color-gray-100);
 }
 
 .dialog-actions .dialog-cancel {
     padding: 0.65rem 1.1rem;
-
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
     border-radius: 0.7rem;
-
-    color: #475569;
-
+    color: var(--color-gray-600);
     font-size: 0.85rem;
     font-weight: 600;
-
     cursor: pointer;
-
     transition:
         background-color 0.2s ease,
         border-color 0.2s ease,
@@ -684,27 +344,21 @@
 }
 
 .dialog-actions .dialog-cancel:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: var(--brand-dark);
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-300);
+    color: var(--color-dark);
 }
 
 .dialog-actions .btn-primary {
     padding: 0.65rem 1.15rem;
-
-    background: var(--brand-primary);
+    background: var(--color-primary);
     border: none;
     border-radius: 0.7rem;
-
-    color: #ffffff !important;
-
+    color: var(--color-white) !important;
     font-size: 0.85rem;
     font-weight: 700;
-
     cursor: pointer;
-
-    box-shadow: 0 3px 8px rgba(0, 86, 179, 0.14);
-
+    box-shadow: 0 3px 8px var(--color-primary-shadow);
     transition:
         background-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -712,28 +366,21 @@
 }
 
 .dialog-actions .btn-primary:hover {
-    background: var(--brand-primary-hover);
-    color: #ffffff !important;
-
-    box-shadow: 0 5px 12px rgba(0, 86, 179, 0.18);
-
+    background: var(--color-primary-hover);
+    color: var(--color-white) !important;
+    box-shadow: 0 5px 12px var(--color-primary-shadow-strong);
     transform: translateY(-1px);
 }
 
 .dialog-actions .dialog-confirm-delete {
     padding: 0.65rem 1.15rem;
-
-    background: #dc3545;
+    background: var(--color-danger);
     border: none;
     border-radius: 0.7rem;
-
-    color: #ffffff !important;
-
+    color: var(--color-white) !important;
     font-size: 0.85rem;
     font-weight: 700;
-
     cursor: pointer;
-
     transition:
         background-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -741,14 +388,11 @@
 }
 
 .dialog-actions .dialog-confirm-delete:hover {
-    background: #c82333;
-    color: #ffffff !important;
-
-    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.18);
-
+    background: var(--color-danger-hover);
+    color: var(--color-white) !important;
+    box-shadow: 0 4px 10px var(--color-danger-shadow);
     transform: translateY(-1px);
 }
-
 
 /* =========================================================
    ANIMACIÓN
@@ -766,7 +410,6 @@
     }
 }
 
-
 /* =========================================================
    SNACKBAR
    ========================================================= */
@@ -775,34 +418,22 @@
     position: fixed;
     left: 50%;
     bottom: 28px;
-
     z-index: 9999;
-
     display: flex;
     align-items: center;
-
     min-width: 280px;
     max-width: 450px;
-
     padding: 13px 18px;
-
     gap: 10px;
-
-    background: #ffffff;
-    border: 1px solid #e2e5e8;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
     border-radius: 8px;
-
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
-
-    color: #495057;
-
+    box-shadow: 0 5px 18px var(--color-shadow-md);
+    color: var(--color-gray-600);
     font-size: 14px;
     font-weight: 500;
-
     opacity: 0;
-
     transform: translate(-50%, 20px);
-
     transition:
         opacity 0.3s ease,
         transform 0.3s ease;
@@ -818,20 +449,18 @@
 }
 
 .app-snackbar-success i {
-    color: #6c9f7d;
+    color: var(--color-success-muted);
 }
 
 .app-snackbar-error i {
-    color: #c97979;
+    color: var(--color-danger-muted);
 }
-
 
 /* =========================================================
    RESPONSIVE DIALOG
    ========================================================= */
 
 @media (max-width: 576px) {
-
     .custom-dialog {
         width: calc(100% - 24px);
         max-width: none;

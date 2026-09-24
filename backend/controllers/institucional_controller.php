@@ -15,16 +15,6 @@ class InstitucionalController {
         echo json_encode($this->service->obtenerTodosDepartamentos());
     }
 
-    public function obtenerDepartamentoPorId(int $id): void {
-        $dept = $this->service->obtenerDepartamentoPorId($id);
-        if ($dept) {
-            echo json_encode($dept);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Departamento no encontrado."]);
-        }
-    }
-
     public function crearDepartamento(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         if ($this->service->crearDepartamento($input)) {
@@ -59,16 +49,6 @@ class InstitucionalController {
 
     public function listarCatedras(): void {
         echo json_encode($this->service->obtenerTodasCatedras());
-    }
-
-    public function obtenerCatedraPorId(int $id): void {
-        $catedra = $this->service->obtenerCatedraPorId($id);
-        if ($catedra) {
-            echo json_encode($catedra);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Cátedra no encontrada."]);
-        }
     }
 
     public function crearCatedra(): void {

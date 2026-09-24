@@ -1,10 +1,10 @@
 .app-footer {
     background: transparent;
-    color: var(--text-muted);
+    color: var(--color-gray-500);
 }
 
 .app-footer .container {
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 1px solid var(--color-shadow-xs);
     padding-top: 1.5rem;
 }
 

@@ -1,5 +1,4 @@
 class RolesComponent extends HTMLElement {
-
     constructor() {
         super();
 
@@ -22,12 +21,10 @@ class RolesComponent extends HTMLElement {
     }
 
     async connectedCallback() {
-
         try {
-
-            const response = await fetch(
-                'components/usuarios/roles/roles.html'
-            );
+            // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
+            const estilos = cargarEstilos('components/usuarios/roles/roles.css');
+            const response = await fetch('components/usuarios/roles/roles.html');
 
             if (!response.ok) {
                 throw new Error('Error al cargar vista de roles.');
@@ -35,36 +32,25 @@ class RolesComponent extends HTMLElement {
 
             const html = await response.text();
 
-            this.innerHTML = `
-                <link rel="stylesheet" href="components/usuarios/roles/roles.css">
-                ${html}
-            `;
+            await estilos;
+
+            this.innerHTML = html;
 
             this.initEvents();
 
             await this.cargarRoles();
-
         } catch (error) {
-
-            console.error(
-                'Error inicializando <app-roles>:',
-                error
-            );
-
+            console.error('Error inicializando <app-roles>:', error);
         }
     }
 
     // EVENTOS
     initEvents() {
-
         // REFRESCAR
         const btnRefresh = this.querySelector('#btn-refresh');
 
         if (btnRefresh) {
-            btnRefresh.addEventListener(
-                'click',
-                () => this.recargarTodo()
-            );
+            btnRefresh.addEventListener('click', () => this.recargarTodo());
         }
 
         // AGREGAR ROL
@@ -80,20 +66,14 @@ class RolesComponent extends HTMLElement {
         const btnAddModulo = this.querySelector('#btn-add-modulo');
 
         if (btnAddModulo) {
-            btnAddModulo.addEventListener(
-                'click',
-                () => this.abrirDialogoCrear('modulo')
-            );
+            btnAddModulo.addEventListener('click', () => this.abrirDialogoCrear('modulo'));
         }
 
         // AGREGAR PANEL
         const btnAddPanel = this.querySelector('#btn-add-panel');
 
         if (btnAddPanel) {
-            btnAddPanel.addEventListener(
-                'click',
-                () => this.abrirDialogoCrear('panel')
-            );
+            btnAddPanel.addEventListener('click', () => this.abrirDialogoCrear('panel'));
         }
 
         // PAGINACIÓN ROLES
@@ -101,35 +81,22 @@ class RolesComponent extends HTMLElement {
         const rolesNext = this.querySelector('#roles-next');
 
         if (rolesPrev) {
-            rolesPrev.addEventListener(
-                'click',
-                () => {
-                    if (this.rolesCurrentPage > 1) {
-                        this.rolesCurrentPage--;
-                        this.renderRoles();
-                    }
+            rolesPrev.addEventListener('click', () => {
+                if (this.rolesCurrentPage > 1) {
+                    this.rolesCurrentPage--;
+                    this.renderRoles();
                 }
-            );
+            });
         }
 
         if (rolesNext) {
-            rolesNext.addEventListener(
-                'click',
-                () => {
-                    const totalPages =
-                        Math.ceil(
-                            this.roles.length /
-                            this.rolesPerPage
-                        );
-                    if (
-                        this.rolesCurrentPage <
-                        totalPages
-                    ) {
-                        this.rolesCurrentPage++;
-                        this.renderRoles();
-                    }
+            rolesNext.addEventListener('click', () => {
+                const totalPages = Math.ceil(this.roles.length / this.rolesPerPage);
+                if (this.rolesCurrentPage < totalPages) {
+                    this.rolesCurrentPage++;
+                    this.renderRoles();
                 }
-            );
+            });
         }
 
         // PAGINACIÓN MÓDULOS
@@ -137,36 +104,22 @@ class RolesComponent extends HTMLElement {
         const modulosNext = this.querySelector('#modulos-next');
 
         if (modulosPrev) {
-            modulosPrev.addEventListener(
-                'click',
-                () => {
-                    if (this.modulosCurrentPage > 1) {
-                        this.modulosCurrentPage--;
-                        this.renderModulos();
-                    }
+            modulosPrev.addEventListener('click', () => {
+                if (this.modulosCurrentPage > 1) {
+                    this.modulosCurrentPage--;
+                    this.renderModulos();
                 }
-            );
+            });
         }
 
         if (modulosNext) {
-            modulosNext.addEventListener(
-                'click',
-                () => {
-                    const totalPages =
-                        Math.ceil(
-                            this.modulos.length /
-                            this.modulosPerPage
-                        );
-                    if (
-                        this.modulosCurrentPage <
-                        totalPages
-                    ) {
-                        this.modulosCurrentPage++;
-                        this.renderModulos();
-                    }
+            modulosNext.addEventListener('click', () => {
+                const totalPages = Math.ceil(this.modulos.length / this.modulosPerPage);
+                if (this.modulosCurrentPage < totalPages) {
+                    this.modulosCurrentPage++;
+                    this.renderModulos();
                 }
-            );
-
+            });
         }
 
         // PAGINACIÓN PANELES
@@ -174,37 +127,23 @@ class RolesComponent extends HTMLElement {
         const panelesNext = this.querySelector('#paneles-next');
 
         if (panelesPrev) {
-            panelesPrev.addEventListener(
-                'click',
-                () => {
-                    if (this.panelesCurrentPage > 1) {
-                        this.panelesCurrentPage--;
-                        this.renderPaneles();
-                    }
+            panelesPrev.addEventListener('click', () => {
+                if (this.panelesCurrentPage > 1) {
+                    this.panelesCurrentPage--;
+                    this.renderPaneles();
                 }
-            );
+            });
         }
 
         if (panelesNext) {
-            panelesNext.addEventListener(
-                'click',
-                () => {
-                    const totalPages =
-                        Math.ceil(
-                            this.paneles.length /
-                            this.panelesPerPage
-                        );
-                    if (
-                        this.panelesCurrentPage <
-                        totalPages
-                    ) {
-                        this.panelesCurrentPage++;
-                        this.renderPaneles();
-                    }
+            panelesNext.addEventListener('click', () => {
+                const totalPages = Math.ceil(this.paneles.length / this.panelesPerPage);
+                if (this.panelesCurrentPage < totalPages) {
+                    this.panelesCurrentPage++;
+                    this.renderPaneles();
                 }
-            );
+            });
         }
-
     }
 
     // RECARGAR TODO
@@ -215,29 +154,20 @@ class RolesComponent extends HTMLElement {
     // ROLES
     // GET /api/roles
     async cargarRoles() {
-
-        const tbody =
-            this.querySelector('#tb-roles');
+        const tbody = this.querySelector('#tb-roles');
 
         if (!tbody) {
-            console.error(
-                'No se encontró #tb-roles'
-            );
+            console.error('No se encontró #tb-roles');
             return;
         }
 
         tbody.innerHTML = `
             <tr>
-                <td
-                    colspan="4"
-                    class="text-center">
-                    Cargando roles...
-                </td>
+                <td colspan="4" class="text-center">Cargando roles...</td>
             </tr>
         `;
 
         try {
-
             const roles = await ApiClient.get('/roles');
 
             this.roles = roles || [];
@@ -246,7 +176,6 @@ class RolesComponent extends HTMLElement {
 
             // Si no hay roles
             if (this.roles.length === 0) {
-
                 this.selectedRolId = null;
 
                 this.modulos = [];
@@ -257,11 +186,7 @@ class RolesComponent extends HTMLElement {
 
                 tbody.innerHTML = `
                     <tr>
-                        <td
-                            colspan="4"
-                            class="text-center">
-                            No hay roles registrados.
-                        </td>
+                        <td colspan="4" class="text-center">No hay roles registrados.</td>
                     </tr>
                 `;
 
@@ -291,122 +216,63 @@ class RolesComponent extends HTMLElement {
                 );
 
                 if (selectedRow) {
-                    this.seleccionarRol(
-                        rolSeleccionado.id,
-                        selectedRow
-                    );
+                    this.seleccionarRol(rolSeleccionado.id, selectedRow);
                 }
             }
-
         } catch (error) {
-
-            console.error(
-                'Error cargando roles:',
-                error
-            );
+            console.error('Error cargando roles:', error);
 
             tbody.innerHTML = `
                 <tr>
-                    <td
-                        colspan="4"
-                        class="text-center text-danger">
-                        Error al cargar roles.
-                    </td>
+                    <td colspan="4" class="text-center text-danger">Error al cargar roles.</td>
                 </tr>
             `;
-
         }
-
     }
 
     // RENDER ROLES
     renderRoles() {
-
         const tbody = this.querySelector('#tb-roles');
 
         if (!tbody) return;
 
         tbody.innerHTML = '';
 
-        const start =
-            (this.rolesCurrentPage - 1) *
-            this.rolesPerPage;
-
-        const end =
-            start +
-            this.rolesPerPage;
-
-        const rolesPagina =
-            this.roles.slice(
-                start,
-                end
-            );
+        const start = (this.rolesCurrentPage - 1) * this.rolesPerPage;
+        const end = start + this.rolesPerPage;
+        const rolesPagina = this.roles.slice(start, end);
 
         rolesPagina.forEach(rol => {
-
-            const tr =
-                document.createElement('tr');
+            const tr = document.createElement('tr');
 
             tr.dataset.id = rol.id;
 
             tr.innerHTML = `
-                <td>
-                    ${rol.nombre || rol.rol || '-'}
-                </td>
-
-                <td>
-                    ${rol.duracion_token || '-'}
-                </td>
+                <td>${rol.nombre || rol.rol || '-'}</td>
+                <td>${rol.duracion_token || '-'}</td>
 
                 <td class="text-center">
-
                     <div class="action-btn-group">
-
-                        <button
-                            class="btn-action view"
-                            title="Ver detalles"
-                            type="button">
+                        <button class="btn-action view" title="Ver detalles" type="button">
                             <i class="bi bi-eye-fill"></i>
                         </button>
 
-                        <button
-                            class="btn-action edit"
-                            title="Editar"
-                            type="button">
+                        <button class="btn-action edit" title="Editar" type="button">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button
-                            class="btn-action delete"
-                            title="Eliminar"
-                            type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button">
                             <i class="bi bi-trash-fill"></i>
                         </button>
-
                     </div>
-
                 </td>
             `;
 
-            tr.addEventListener(
-                'click',
-                (e) => {
-
-                    if (
-                        !e.target.closest(
-                            '.btn-action'
-                        )
-                    ) {
-
-                        this.seleccionarRol(
-                            rol.id,
-                            tr
-                        );
-
-                    }
-
+            tr.addEventListener('click', (e) => {
+                if (!e.target.closest('.btn-action')) {
+                    this.seleccionarRol(rol.id, tr);
                 }
-            );
+            });
 
             const btnEdit = tr.querySelector('.btn-action.edit');
             const btnDelete = tr.querySelector('.btn-action.delete');
@@ -434,7 +300,6 @@ class RolesComponent extends HTMLElement {
             }
 
             tbody.appendChild(tr);
-
         });
 
         this.actualizarPaginacionRoles();
@@ -442,139 +307,70 @@ class RolesComponent extends HTMLElement {
         // Mantener seleccionado el rol actual
 
         if (this.selectedRolId !== null) {
-
             const selectedRow =
                 tbody.querySelector(
                     `tr[data-id="${this.selectedRolId}"]`
                 );
 
             if (selectedRow) {
-
-                selectedRow.classList.add(
-                    'active-row'
-                );
-
+                selectedRow.classList.add('active-row');
             }
-
         }
-
     }
 
     // =====================================================
     // PAGINACIÓN ROLES
     // =====================================================
-
     actualizarPaginacionRoles() {
-
-        const total =
-            this.roles.length;
-
-        const totalPages =
-            Math.max(
-                1,
-                Math.ceil(
-                    total /
-                    this.rolesPerPage
-                )
-            );
+        const total = this.roles.length;
+        const totalPages = Math.max(1, Math.ceil(total / this.rolesPerPage));
 
         const start =
             total === 0
                 ? 0
-                : (
-                    (this.rolesCurrentPage - 1) *
-                    this.rolesPerPage
-                ) + 1;
+                : ((this.rolesCurrentPage - 1) * this.rolesPerPage) + 1;
 
-        const end =
-            Math.min(
-                this.rolesCurrentPage *
-                this.rolesPerPage,
-                total
-            );
-
-        const info =
-            this.querySelector(
-                '#roles-page-info'
-            );
-
-        const pageNumber =
-            this.querySelector(
-                '#roles-page-number'
-            );
-
-        const prev =
-            this.querySelector(
-                '#roles-prev'
-            );
-
-        const next =
-            this.querySelector(
-                '#roles-next'
-            );
+        const end = Math.min(this.rolesCurrentPage * this.rolesPerPage, total);
+        const info = this.querySelector('#roles-page-info');
+        const pageNumber = this.querySelector('#roles-page-number');
+        const prev = this.querySelector('#roles-prev');
+        const next = this.querySelector('#roles-next');
 
         if (info) {
-
             info.textContent =
                 `${start} - ${end} de ${total}`;
-
         }
 
         if (pageNumber) {
-
             pageNumber.textContent =
                 `Página ${this.rolesCurrentPage} de ${totalPages}`;
-
         }
 
         if (prev) {
-
-            prev.disabled =
-                this.rolesCurrentPage <= 1;
-
+            prev.disabled = this.rolesCurrentPage <= 1;
         }
 
         if (next) {
-
-            next.disabled =
-                this.rolesCurrentPage >= totalPages;
-
+            next.disabled = this.rolesCurrentPage >= totalPages;
         }
-
     }
 
     // =====================================================
     // SELECCIONAR ROL
     // =====================================================
-
-    seleccionarRol(
-        rolId,
-        elementRow
-    ) {
-
+    seleccionarRol(rolId, elementRow) {
         this.selectedRolId = rolId;
 
-        this.querySelectorAll(
-            '#tb-roles tr'
-        ).forEach(row => {
-
-            row.classList.remove(
-                'active-row'
-            );
-
+        this.querySelectorAll('#tb-roles tr').forEach(row => {
+            row.classList.remove('active-row');
         });
 
         if (elementRow) {
-
-            elementRow.classList.add(
-                'active-row'
-            );
-
+            elementRow.classList.add('active-row');
         }
 
         this.cargarModulosRol();
         this.cargarPanelesRol();
-
     }
 
     // =====================================================
@@ -582,111 +378,66 @@ class RolesComponent extends HTMLElement {
     // GET /api/modulos
     // =====================================================
     async cargarModulosRol() {
-
         const tbody = this.querySelector('#tb-modulos');
 
         if (!tbody) return;
 
         tbody.innerHTML = `
             <tr>
-                <td
-                    colspan="2"
-                    class="text-center">
-                    Cargando...
-                </td>
+                <td colspan="2" class="text-center">Cargando...</td>
             </tr>
         `;
 
         try {
-
             const modulos = await ApiClient.get('/modulos');
 
             this.modulos = modulos || [];
 
-            const totalPages = Math.max(
-                1,
-                Math.ceil(
-                    this.modulos.length /
-                    this.modulosPerPage
-                )
-            );
+            const totalPages = Math.max(1, Math.ceil(this.modulos.length / this.modulosPerPage));
 
             if (this.modulosCurrentPage > totalPages) {
                 this.modulosCurrentPage = totalPages;
             }
 
             this.renderModulos();
-
         } catch (error) {
-
-            console.error(
-                'Error obteniendo módulos:',
-                error
-            );
+            console.error('Error obteniendo módulos:', error);
 
             tbody.innerHTML = `
                 <tr>
-                    <td
-                        colspan="2"
-                        class="text-center text-danger">
-                        Error al obtener módulos.
-                    </td>
+                    <td colspan="2" class="text-center text-danger">Error al obtener módulos.</td>
                 </tr>
             `;
-
         }
-
     }
 
     // =====================================================
     // RENDER MÓDULOS
     // =====================================================
-
     renderModulos() {
-
-        const tbody =
-            this.querySelector(
-                '#tb-modulos'
-            );
+        const tbody = this.querySelector('#tb-modulos');
 
         if (!tbody) return;
 
         tbody.innerHTML = '';
 
         if (this.modulos.length === 0) {
-
             tbody.innerHTML = `
                 <tr>
-                    <td
-                        colspan="2"
-                        class="text-center text-muted">
-                        No hay módulos registrados.
-                    </td>
+                    <td colspan="2" class="text-center text-muted">No hay módulos registrados.</td>
                 </tr>
             `;
 
             this.actualizarPaginacionModulos();
 
             return;
-
         }
 
-        const start =
-            (this.modulosCurrentPage - 1) *
-            this.modulosPerPage;
-
-        const end =
-            start +
-            this.modulosPerPage;
-
-        const modulosPagina =
-            this.modulos.slice(
-                start,
-                end
-            );
+        const start = (this.modulosCurrentPage - 1) * this.modulosPerPage;
+        const end = start + this.modulosPerPage;
+        const modulosPagina = this.modulos.slice(start, end);
 
         modulosPagina.forEach(mod => {
-
             const tr = document.createElement('tr');
 
             tr.dataset.id = mod.id;
@@ -696,17 +447,11 @@ class RolesComponent extends HTMLElement {
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button
-                            class="btn-action edit"
-                            title="Editar"
-                            type="button">
+                        <button class="btn-action edit" title="Editar" type="button">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button
-                            class="btn-action delete"
-                            title="Eliminar"
-                            type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button">
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
@@ -716,107 +461,54 @@ class RolesComponent extends HTMLElement {
             // EDITAR
             const btnEdit = tr.querySelector('.btn-action.edit');
 
-            btnEdit.addEventListener(
-                'click',
-                () => this.abrirDialogoEditar('modulo', mod)
-            );
+            btnEdit.addEventListener('click', () => this.abrirDialogoEditar('modulo', mod));
 
             // ELIMINAR
             const btnDelete = tr.querySelector('.btn-action.delete');
 
-            btnDelete.addEventListener(
-                'click',
-                () => this.abrirDialogoEliminar('modulo', mod)
-            );
+            btnDelete.addEventListener('click', () => this.abrirDialogoEliminar('modulo', mod));
 
             tbody.appendChild(tr);
         });
 
         this.actualizarPaginacionModulos();
-
     }
 
     // =====================================================
     // PAGINACIÓN MÓDULOS
     // =====================================================
-
     actualizarPaginacionModulos() {
-
-        const total =
-            this.modulos.length;
-
-        const totalPages =
-            Math.max(
-                1,
-                Math.ceil(
-                    total /
-                    this.modulosPerPage
-                )
-            );
+        const total = this.modulos.length;
+        const totalPages = Math.max(1, Math.ceil(total / this.modulosPerPage));
 
         const start =
             total === 0
                 ? 0
-                : (
-                    (this.modulosCurrentPage - 1) *
-                    this.modulosPerPage
-                ) + 1;
+                : ((this.modulosCurrentPage - 1) * this.modulosPerPage) + 1;
 
-        const end =
-            Math.min(
-                this.modulosCurrentPage *
-                this.modulosPerPage,
-                total
-            );
-
-        const info =
-            this.querySelector(
-                '#modulos-page-info'
-            );
-
-        const pageNumber =
-            this.querySelector(
-                '#modulos-page-number'
-            );
-
-        const prev =
-            this.querySelector(
-                '#modulos-prev'
-            );
-
-        const next =
-            this.querySelector(
-                '#modulos-next'
-            );
+        const end = Math.min(this.modulosCurrentPage * this.modulosPerPage, total);
+        const info = this.querySelector('#modulos-page-info');
+        const pageNumber = this.querySelector('#modulos-page-number');
+        const prev = this.querySelector('#modulos-prev');
+        const next = this.querySelector('#modulos-next');
 
         if (info) {
-
             info.textContent =
                 `${start} - ${end} de ${total}`;
-
         }
 
         if (pageNumber) {
-
             pageNumber.textContent =
                 `Página ${this.modulosCurrentPage} de ${totalPages}`;
-
         }
 
         if (prev) {
-
-            prev.disabled =
-                this.modulosCurrentPage <= 1;
-
+            prev.disabled = this.modulosCurrentPage <= 1;
         }
 
         if (next) {
-
-            next.disabled =
-                this.modulosCurrentPage >= totalPages;
-
+            next.disabled = this.modulosCurrentPage >= totalPages;
         }
-
     }
 
     // =====================================================
@@ -824,276 +516,148 @@ class RolesComponent extends HTMLElement {
     // GET /api/paneles
     // =====================================================
     async cargarPanelesRol() {
-
         const tbody = this.querySelector('#tb-paneles');
 
         if (!tbody) return;
 
         tbody.innerHTML = `
             <tr>
-                <td
-                    colspan="2"
-                    class="text-center">
-                    Cargando...
-                </td>
+                <td colspan="2" class="text-center">Cargando...</td>
             </tr>
         `;
 
         try {
-
             const paneles = await ApiClient.get('/paneles');
 
             this.paneles = paneles || [];
 
-            const totalPages = Math.max(
-                1,
-                Math.ceil(
-                    this.paneles.length /
-                    this.panelesPerPage
-                )
-            );
+            const totalPages = Math.max(1, Math.ceil(this.paneles.length / this.panelesPerPage));
 
             if (this.panelesCurrentPage > totalPages) {
                 this.panelesCurrentPage = totalPages;
             }
 
             this.renderPaneles();
-
         } catch (error) {
-
-            console.error(
-                'Error obteniendo paneles:',
-                error
-            );
+            console.error('Error obteniendo paneles:', error);
 
             tbody.innerHTML = `
                 <tr>
-                    <td
-                        colspan="2"
-                        class="text-center text-danger">
-                        Error al obtener paneles.
-                    </td>
+                    <td colspan="2" class="text-center text-danger">Error al obtener paneles.</td>
                 </tr>
             `;
-
         }
-
     }
 
     // =====================================================
     // RENDER PANELES
     // =====================================================
     renderPaneles() {
-
-        const tbody =
-            this.querySelector(
-                '#tb-paneles'
-            );
+        const tbody = this.querySelector('#tb-paneles');
 
         if (!tbody) return;
 
         tbody.innerHTML = '';
 
         if (this.paneles.length === 0) {
-
             tbody.innerHTML = `
                 <tr>
-                    <td
-                        colspan="2"
-                        class="text-center text-muted">
-                        No hay paneles registrados.
-                    </td>
+                    <td colspan="2" class="text-center text-muted">No hay paneles registrados.</td>
                 </tr>
             `;
 
             this.actualizarPaginacionPaneles();
 
             return;
-
         }
 
-        const start =
-            (this.panelesCurrentPage - 1) *
-            this.panelesPerPage;
-
-        const end =
-            start +
-            this.panelesPerPage;
-
-        const panelesPagina =
-            this.paneles.slice(
-                start,
-                end
-            );
+        const start = (this.panelesCurrentPage - 1) * this.panelesPerPage;
+        const end = start + this.panelesPerPage;
+        const panelesPagina = this.paneles.slice(start, end);
 
         panelesPagina.forEach(panel => {
-
-            const tr =
-                document.createElement('tr');
+            const tr = document.createElement('tr');
 
             tr.dataset.id = panel.id;
 
             tr.innerHTML = `
-                <td>
-                    ${panel.nombre || panel.panel || '-'}
-                </td>
+                <td>${panel.nombre || panel.panel || '-'}</td>
 
                 <td class="text-center">
-
                     <div class="action-btn-group">
-
-                        <button
-                            class="btn-action edit"
-                            title="Editar"
-                            type="button">
-
+                        <button class="btn-action edit" title="Editar" type="button">
                             <i class="bi bi-pencil-fill"></i>
-
                         </button>
 
-                        <button
-                            class="btn-action delete"
-                            title="Eliminar"
-                            type="button">
-
+                        <button class="btn-action delete" title="Eliminar" type="button">
                             <i class="bi bi-trash-fill"></i>
-
                         </button>
-
                     </div>
-
                 </td>
             `;
 
             // EDITAR
-            const btnEdit =
-                tr.querySelector(
-                    '.btn-action.edit'
-                );
+            const btnEdit = tr.querySelector('.btn-action.edit');
 
-            btnEdit.addEventListener(
-                'click',
-                () => this.abrirDialogoEditar(
-                    'panel',
-                    panel
-                )
-            );
+            btnEdit.addEventListener('click', () => this.abrirDialogoEditar('panel', panel));
 
             // ELIMINAR
-            const btnDelete =
-                tr.querySelector(
-                    '.btn-action.delete'
-                );
+            const btnDelete = tr.querySelector('.btn-action.delete');
 
-            btnDelete.addEventListener(
-                'click',
-                () => this.abrirDialogoEliminar(
-                    'panel',
-                    panel
-                )
-            );
+            btnDelete.addEventListener('click', () => this.abrirDialogoEliminar('panel', panel));
 
             tbody.appendChild(tr);
-
         });
 
         this.actualizarPaginacionPaneles();
-
     }
 
     // =====================================================
     // PAGINACIÓN PANELES
     // =====================================================
     actualizarPaginacionPaneles() {
-
-        const total =
-            this.paneles.length;
-
-        const totalPages =
-            Math.max(
-                1,
-                Math.ceil(
-                    total /
-                    this.panelesPerPage
-                )
-            );
+        const total = this.paneles.length;
+        const totalPages = Math.max(1, Math.ceil(total / this.panelesPerPage));
 
         const start =
             total === 0
                 ? 0
-                : (
-                    (this.panelesCurrentPage - 1) *
-                    this.panelesPerPage
-                ) + 1;
+                : ((this.panelesCurrentPage - 1) * this.panelesPerPage) + 1;
 
-        const end =
-            Math.min(
-                this.panelesCurrentPage *
-                this.panelesPerPage,
-                total
-            );
-
-        const info =
-            this.querySelector(
-                '#paneles-page-info'
-            );
-
-        const pageNumber =
-            this.querySelector(
-                '#paneles-page-number'
-            );
-
-        const prev =
-            this.querySelector(
-                '#paneles-prev'
-            );
-
-        const next =
-            this.querySelector(
-                '#paneles-next'
-            );
+        const end = Math.min(this.panelesCurrentPage * this.panelesPerPage, total);
+        const info = this.querySelector('#paneles-page-info');
+        const pageNumber = this.querySelector('#paneles-page-number');
+        const prev = this.querySelector('#paneles-prev');
+        const next = this.querySelector('#paneles-next');
 
         if (info) {
-
             info.textContent =
                 `${start} - ${end} de ${total}`;
-
         }
 
         if (pageNumber) {
-
             pageNumber.textContent =
                 `Página ${this.panelesCurrentPage} de ${totalPages}`;
-
         }
 
         if (prev) {
-
-            prev.disabled =
-                this.panelesCurrentPage <= 1;
-
+            prev.disabled = this.panelesCurrentPage <= 1;
         }
 
         if (next) {
-
-            next.disabled =
-                this.panelesCurrentPage >= totalPages;
-
+            next.disabled = this.panelesCurrentPage >= totalPages;
         }
-
     }
 
     // =========================================================
     // CREAR MÓDULO / PANEL
     // =========================================================
     abrirDialogoCrear(tipo) {
-
         const esModulo = tipo === 'modulo';
         const titulo = esModulo ? 'Agregar módulo' : 'Agregar panel';
         const dialog = this.crearDialogoBase();
 
         dialog.innerHTML = `
-
             <div class="dialog-header">
                 <h2>${titulo}</h2>
             </div>
@@ -1111,16 +675,8 @@ class RolesComponent extends HTMLElement {
                 </div>
 
                 <div class="dialog-actions">
-                    <button
-                        type="button"
-                        class="btn btn-secondary dialog-cancel">
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        class="btn btn-primary">
-                        Guardar
-                    </button>
+                    <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
             </form>
         `;
@@ -1129,83 +685,68 @@ class RolesComponent extends HTMLElement {
         const input = dialog.querySelector('#dialog-nombre');
         const btnCancel = dialog.querySelector('.dialog-cancel');
 
-        btnCancel.addEventListener(
-            'click',
-            () => dialog.close()
-        );
+        btnCancel.addEventListener('click', () => dialog.close());
 
-        form.addEventListener(
-            'submit',
-            async (event) => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-                event.preventDefault();
+            const nombre = input.value.trim();
 
-                const nombre = input.value.trim();
-
-                if (!nombre) {
-                    input.focus();
-                    return;
-                }
-
-                try {
-                    const endpoint = esModulo ? '/modulos' : '/paneles';
-
-                    await ApiClient.post(
-                        endpoint,
-                        {
-                            nombre: nombre
-                        }
-                    );
-
-                    dialog.close();
-
-                    if (esModulo) {
-                        await this.cargarModulosRol();
-                    } else {
-                        await this.cargarPanelesRol();
-                    }
-
-                    this.mostrarSnackbar(
-                        `${esModulo ? 'Módulo' : 'Panel'} creado correctamente.`
-                    );
-
-                } catch (error) {
-                    console.error(
-                        `Error creando ${tipo}:`,
-                        error
-                    );
-
-                    this.mostrarSnackbar(
-                        `No se pudo crear el ${esModulo ? 'módulo' : 'panel'}.`,
-                        'error'
-                    );
-                }
+            if (!nombre) {
+                input.focus();
+                return;
             }
-        );
+
+            try {
+                const endpoint = esModulo ? '/modulos' : '/paneles';
+
+                await ApiClient.post(
+                    endpoint,
+                    {
+                        nombre: nombre
+                    }
+                );
+
+                dialog.close();
+
+                if (esModulo) {
+                    await this.cargarModulosRol();
+                } else {
+                    await this.cargarPanelesRol();
+                }
+
+                this.mostrarSnackbar(
+                    `${esModulo ? 'Módulo' : 'Panel'} creado correctamente.`
+                );
+            } catch (error) {
+                console.error(
+                    `Error creando ${tipo}:`,
+                    error
+                );
+
+                this.mostrarSnackbar(
+                    `No se pudo crear el ${esModulo ? 'módulo' : 'panel'}.`,
+                    'error'
+                );
+            }
+        });
 
         document.body.appendChild(dialog);
         dialog.showModal();
         input.focus();
 
-        dialog.addEventListener(
-            'close',
-            () => dialog.remove(),
-            { once: true }
-        );
-
+        dialog.addEventListener('close', () => dialog.remove(), { once: true });
     }
 
     // =========================================================
     // EDITAR MÓDULO / PANEL
     // =========================================================
     abrirDialogoEditar(tipo, elemento) {
-
         const esModulo = tipo === 'modulo';
         const titulo = esModulo ? 'Editar módulo' : 'Editar panel';
         const dialog = this.crearDialogoBase();
 
         dialog.innerHTML = `
-
             <div class="dialog-header">
                 <h2>${titulo}</h2>
             </div>
@@ -1224,16 +765,8 @@ class RolesComponent extends HTMLElement {
                 </div>
 
                 <div class="dialog-actions">
-                    <button
-                        type="button"
-                        class="btn btn-secondary dialog-cancel">
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        class="btn btn-primary">
-                        Guardar
-                    </button>
+                    <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
             </form>
         `;
@@ -1242,84 +775,68 @@ class RolesComponent extends HTMLElement {
         const input = dialog.querySelector('#dialog-nombre');
         const btnCancel = dialog.querySelector('.dialog-cancel');
 
-        btnCancel.addEventListener(
-            'click',
-            () => dialog.close()
-        );
+        btnCancel.addEventListener('click', () => dialog.close());
 
-        form.addEventListener(
-            'submit',
-            async (event) => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-                event.preventDefault();
+            const nombre = input.value.trim();
 
-                const nombre = input.value.trim();
-
-                if (!nombre) {
-                    input.focus();
-                    return;
-                }
-
-                try {
-                    const endpoint = esModulo ? `/modulos/${elemento.id}` : `/paneles/${elemento.id}`;
-
-                    await ApiClient.put(
-                        endpoint,
-                        {
-                            nombre: nombre
-                        }
-                    );
-
-                    dialog.close();
-
-                    if (esModulo) {
-                        await this.cargarModulosRol();
-                    } else {
-                        await this.cargarPanelesRol();
-                    }
-
-                    this.mostrarSnackbar(
-                        `${esModulo ? 'Módulo' : 'Panel'} actualizado correctamente.`
-                    );
-
-                } catch (error) {
-                    console.error(
-                        `Error editando ${tipo}:`,
-                        error
-                    );
-
-                    this.mostrarSnackbar(
-                        `No se pudo editar el ${esModulo ? 'módulo' : 'panel'}.`,
-                        'error'
-                    );
-                }
+            if (!nombre) {
+                input.focus();
+                return;
             }
-        );
 
+            try {
+                const endpoint = esModulo ? `/modulos/${elemento.id}` : `/paneles/${elemento.id}`;
+
+                await ApiClient.put(
+                    endpoint,
+                    {
+                        nombre: nombre
+                    }
+                );
+
+                dialog.close();
+
+                if (esModulo) {
+                    await this.cargarModulosRol();
+                } else {
+                    await this.cargarPanelesRol();
+                }
+
+                this.mostrarSnackbar(
+                    `${esModulo ? 'Módulo' : 'Panel'} actualizado correctamente.`
+                );
+            } catch (error) {
+                console.error(
+                    `Error editando ${tipo}:`,
+                    error
+                );
+
+                this.mostrarSnackbar(
+                    `No se pudo editar el ${esModulo ? 'módulo' : 'panel'}.`,
+                    'error'
+                );
+            }
+        });
 
         document.body.appendChild(dialog);
         dialog.showModal();
         input.focus();
 
-        dialog.addEventListener(
-            'close',
-            () => dialog.remove(),
-            { once: true }
-        );
-
+        dialog.addEventListener('close', () => dialog.remove(), { once: true });
     }
 
     // =========================================================
     // ELIMINAR MÓDULO / PANEL
     // =========================================================
     abrirDialogoEliminar(tipo, elemento) {
-
         const esModulo = tipo === 'modulo';
         const nombreTipo = esModulo ? 'módulo' : 'panel';
         const dialog = this.crearDialogoBase();
 
         dialog.innerHTML = `
-
             <div class="dialog-header">
                 <h2>Eliminar ${nombreTipo}</h2>
             </div>
@@ -1332,70 +849,50 @@ class RolesComponent extends HTMLElement {
             </div>
 
             <div class="dialog-actions">
-                <button
-                    type="button"
-                    class="btn btn-secondary dialog-cancel">
-                    Cancelar
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-danger dialog-confirm-delete">
-                    Eliminar
-                </button>
+                <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
+                <button type="button" class="btn btn-danger dialog-confirm-delete">Eliminar</button>
             </div>
         `;
 
         const btnCancel = dialog.querySelector('.dialog-cancel');
         const btnDelete = dialog.querySelector('.dialog-confirm-delete');
 
-        btnCancel.addEventListener(
-            'click',
-            () => dialog.close()
-        );
+        btnCancel.addEventListener('click', () => dialog.close());
 
-        btnDelete.addEventListener(
-            'click',
-            async () => {
-                try {
-                    const endpoint =
-                        esModulo ? `/modulos/${elemento.id}` : `/paneles/${elemento.id}`;
-                    await ApiClient.delete(endpoint);
+        btnDelete.addEventListener('click', async () => {
+            try {
+                const endpoint =
+                    esModulo ? `/modulos/${elemento.id}` : `/paneles/${elemento.id}`;
+                await ApiClient.delete(endpoint);
 
-                    dialog.close();
+                dialog.close();
 
-                    if (esModulo) {
-                        await this.cargarModulosRol();
-                    } else {
-                        await this.cargarPanelesRol();
-                    }
-
-                    this.mostrarSnackbar(
-                        `${esModulo ? 'Módulo' : 'Panel'} eliminado correctamente.`
-                    );
-
-                } catch (error) {
-                    console.error(
-                        `Error eliminando ${tipo}:`,
-                        error
-                    );
-
-                    this.mostrarSnackbar(
-                        `No se pudo eliminar el ${nombreTipo}.`,
-                        'error'
-                    );
+                if (esModulo) {
+                    await this.cargarModulosRol();
+                } else {
+                    await this.cargarPanelesRol();
                 }
+
+                this.mostrarSnackbar(
+                    `${esModulo ? 'Módulo' : 'Panel'} eliminado correctamente.`
+                );
+            } catch (error) {
+                console.error(
+                    `Error eliminando ${tipo}:`,
+                    error
+                );
+
+                this.mostrarSnackbar(
+                    `No se pudo eliminar el ${nombreTipo}.`,
+                    'error'
+                );
             }
-        );
+        });
 
         document.body.appendChild(dialog);
         dialog.showModal();
 
-        dialog.addEventListener(
-            'close',
-            () => dialog.remove(),
-            { once: true }
-        );
-
+        dialog.addEventListener('close', () => dialog.remove(), { once: true });
     }
 
     // CREAR/ EDITAR ROL
@@ -1409,23 +906,17 @@ class RolesComponent extends HTMLElement {
 
     async abrirDialogoVerRol(rol) {
         await this.abrirDialogoRol(rol, true);
-    }  
+    }
 
     // DIALOG PRINCIPAL DE ROL
-    async abrirDialogoRol(
-        rol = null,
-        soloLectura = false
-    ) {
-
+    async abrirDialogoRol(rol = null, soloLectura = false) {
         const esEdicion = rol !== null;
-
         let modulos = [];
         let paneles = [];
         let modulosAsignados = [];
         let panelesAsignados = [];
 
         try {
-
             // Obtener todos los módulos y paneles disponibles
             const [respuestaModulos, respuestaPaneles] = await Promise.all([
                 ApiClient.get('/modulos'),
@@ -1437,7 +928,6 @@ class RolesComponent extends HTMLElement {
 
             // Si estamos editando, obtener las asociaciones actuales
             if (esEdicion) {
-
                 const [
                     respuestaModulosAsignados,
                     respuestaPanelesAsignados
@@ -1449,9 +939,7 @@ class RolesComponent extends HTMLElement {
                 modulosAsignados = respuestaModulosAsignados || [];
                 panelesAsignados = respuestaPanelesAsignados || [];
             }
-
         } catch (error) {
-
             console.error('Error cargando datos del rol:', error);
 
             alert('No se pudieron cargar los módulos y paneles.');
@@ -1481,12 +969,7 @@ class RolesComponent extends HTMLElement {
         const modulosMap = new Map();
 
         modulosAsignados.forEach(modulo => {
-
-            modulosMap.set(
-                Number(modulo.id_modulo),
-                modulo
-            );
-
+            modulosMap.set(Number(modulo.id_modulo), modulo);
         });
 
         // IDs de paneles asignados
@@ -1497,161 +980,117 @@ class RolesComponent extends HTMLElement {
         );
 
         const filasModulos = modulos.map(modulo => {
-
             const idModulo = Number(modulo.id);
-
             const asignado = modulosMap.get(idModulo);
-
             const leer = asignado?.leer === true;
             const escribir = asignado?.escribir === true;
             const editar = asignado?.editar === true;
 
             return `
                 <tr data-modulo-id="${idModulo}">
-
-                    <td>
-                        ${this.escapeHtml(
-                            modulo.nombre ||
-                            modulo.modulo ||
-                            '-'
-                        )}
-                    </td>
+                    <td>${this.escapeHtml(modulo.nombre || modulo.modulo || '-')}</td>
 
                     <td class="text-center">
-                        <input 
-                            type="checkbox" 
-                            data-permiso="leer" 
-                            ${leer ? 'checked' : ''} 
+                        <input
+                            type="checkbox"
+                            data-permiso="leer"
+                            ${leer ? 'checked' : ''}
                             ${soloLectura ? 'disabled' : ''}
                         >
                     </td>
 
                     <td class="text-center">
-                        <input 
-                            type="checkbox" 
-                            data-permiso="escribir" 
-                            ${escribir ? 'checked' : ''} 
+                        <input
+                            type="checkbox"
+                            data-permiso="escribir"
+                            ${escribir ? 'checked' : ''}
                             ${soloLectura ? 'disabled' : ''}
                         >
                     </td>
 
                     <td class="text-center">
-                        <input 
-                            type="checkbox" 
-                            data-permiso="editar" 
-                            ${editar ? 'checked' : ''} 
+                        <input
+                            type="checkbox"
+                            data-permiso="editar"
+                            ${editar ? 'checked' : ''}
                             ${soloLectura ? 'disabled' : ''}
                         >
                     </td>
-
                 </tr>
             `;
         }).join('');
 
         const filasPaneles = paneles.map(panel => {
-
             const idPanel = Number(panel.id);
-
-            const seleccionado =
-                panelesAsignadosSet.has(idPanel);
+            const seleccionado = panelesAsignadosSet.has(idPanel);
 
             return `
                 <tr data-panel-id="${idPanel}">
-
-                    <td>
-                        ${this.escapeHtml(
-                            panel.nombre ||
-                            panel.panel ||
-                            '-'
-                        )}
-                    </td>
+                    <td>${this.escapeHtml(panel.nombre || panel.panel || '-')}</td>
 
                     <td class="text-center">
-                        <input 
-                            type="checkbox" 
-                            data-permiso="ver" 
-                            ${seleccionado ? 'checked' : ''} 
+                        <input
+                            type="checkbox"
+                            data-permiso="ver"
+                            ${seleccionado ? 'checked' : ''}
                             ${soloLectura ? 'disabled' : ''}
                         >
                     </td>
-
                 </tr>
             `;
         }).join('');
 
         dialog.innerHTML = `
-
             <div class="dialog-header">
-
                 <h2>${titulo}</h2>
-
             </div>
 
             <form class="dialog-form role-dialog-form">
-
                 <div class="role-dialog-scroll">
-
                     <!-- DATOS DEL ROL -->
 
                     <div class="form-group">
+                        <label for="rol-nombre">Nombre del rol</label>
 
-                        <label for="rol-nombre">
-                            Nombre del rol
-                        </label>
-
-                        <input 
-                            type="text" 
-                            id="rol-nombre" 
-                            class="form-control" 
-                            value="${this.escapeHtml(nombreInicial)}" 
-                            maxlength="100" 
+                        <input
+                            type="text"
+                            id="rol-nombre"
+                            class="form-control"
+                            value="${this.escapeHtml(nombreInicial)}"
+                            maxlength="100"
                             ${soloLectura ? 'disabled' : 'required'}
                         >
-
                     </div>
 
                     <div class="form-group">
+                        <label for="rol-token">Duración del token</label>
 
-                        <label for="rol-token">
-                            Duración del token
-                        </label>
-
-                        <input 
-                            type="number" 
-                            id="rol-token" 
-                            class="form-control" 
-                            value="${duracionInicial}" 
-                            min="1" 
+                        <input
+                            type="number"
+                            id="rol-token"
+                            class="form-control"
+                            value="${duracionInicial}"
+                            min="1"
                             ${soloLectura ? 'disabled' : 'required'}
                         >
-
                     </div>
-
 
                     <!-- PERMISOS POR MÓDULO -->
                     <div class="permissions-section">
-
-                        <h3>
-                            Permisos por Módulo
-                        </h3>
+                        <h3>Permisos por Módulo</h3>
 
                         <div class="permissions-table-wrapper">
-
                             <table class="permissions-table">
-
                                 <thead>
-
                                     <tr>
                                         <th>MÓDULO</th>
                                         <th>LEER</th>
                                         <th>ESCRIBIR</th>
                                         <th>EDITAR</th>
                                     </tr>
-
                                 </thead>
 
                                 <tbody>
-
                                     ${
                                         filasModulos ||
                                         `
@@ -1663,39 +1102,26 @@ class RolesComponent extends HTMLElement {
                                         </tr>
                                         `
                                     }
-
                                 </tbody>
-
                             </table>
-
                         </div>
-
                     </div>
-
 
                     <!-- PERMISOS POR PANEL -->
 
                     <div class="permissions-section">
-
-                        <h3>
-                            Permisos por panel
-                        </h3>
+                        <h3>Permisos por panel</h3>
 
                         <div class="permissions-table-wrapper">
-
                             <table class="permissions-table">
-
                                 <thead>
-
                                     <tr>
                                         <th>PANEL</th>
                                         <th>VER</th>
                                     </tr>
-
                                 </thead>
 
                                 <tbody>
-
                                     ${
                                         filasPaneles ||
                                         `
@@ -1707,24 +1133,17 @@ class RolesComponent extends HTMLElement {
                                         </tr>
                                         `
                                     }
-
                                 </tbody>
-
                             </table>
-
                         </div>
-
                     </div>
-
                 </div>
-
 
                 <!-- BOTONES -->
                 <div class="dialog-actions">
-
-                    <button 
-                        type="button" 
-                        class="btn btn-secondary dialog-cancel" 
+                    <button
+                        type="button"
+                        class="btn btn-secondary dialog-cancel"
                         id="btn-cancelar-rol">
                         ${soloLectura ? 'Cerrar' : 'Cancelar'}
                     </button>
@@ -1733,39 +1152,28 @@ class RolesComponent extends HTMLElement {
                         soloLectura
                             ? ''
                             : `
-                                <button 
-                                    type="submit" 
-                                    class="btn btn-primary">
+                                <button type="submit" class="btn btn-primary">
                                     ${esEdicion ? 'Guardar cambios' : 'Guardar'}
                                 </button>
                             `
                     }
-
                 </div>
-
             </form>
         `;
 
         document.body.appendChild(dialog);
 
         const form = dialog.querySelector('.role-dialog-form');
-
-        const btnCancelar =
-            dialog.querySelector('#btn-cancelar-rol');
+        const btnCancelar = dialog.querySelector('#btn-cancelar-rol');
 
         btnCancelar.addEventListener('click', () => {
             dialog.close();
         });
 
         form.addEventListener('submit', async (event) => {
-
             event.preventDefault();
 
-            await this.guardarRol(
-                dialog,
-                rol
-            );
-
+            await this.guardarRol(dialog, rol);
         });
 
         dialog.addEventListener('close', () => {
@@ -1777,14 +1185,8 @@ class RolesComponent extends HTMLElement {
 
     // GUARDAR ROL
     async guardarRol(dialog, rol) {
-
-        const nombre =
-            dialog.querySelector('#rol-nombre').value.trim();
-
-        const duracionToken =
-            Number(
-                dialog.querySelector('#rol-token').value
-            );
+        const nombre = dialog.querySelector('#rol-nombre').value.trim();
+        const duracionToken = Number(dialog.querySelector('#rol-token').value);
 
         if (!nombre) {
             alert('Debe ingresar el nombre del rol.');
@@ -1799,14 +1201,12 @@ class RolesComponent extends HTMLElement {
         const esEdicion = rol !== null;
 
         try {
-
             let idRol;
 
             // ==========================================
             // 1. CREAR / ACTUALIZAR ROL
             // ==========================================
             if (!esEdicion) {
-
                 const respuesta = await ApiClient.post(
                     '/roles',
                     {
@@ -1818,13 +1218,9 @@ class RolesComponent extends HTMLElement {
                 idRol = respuesta.id;
 
                 if (!idRol) {
-                    throw new Error(
-                        'La API no devolvió el ID del rol creado.'
-                    );
+                    throw new Error('La API no devolvió el ID del rol creado.');
                 }
-
             } else {
-
                 idRol = rol.id;
 
                 await ApiClient.put(
@@ -1836,20 +1232,11 @@ class RolesComponent extends HTMLElement {
                 );
             }
 
-
             // ==========================================
             // 2. OBTENER PERMISOS SELECCIONADOS
             // ==========================================
-            const filasModulos =
-                [...dialog.querySelectorAll(
-                    'tr[data-modulo-id]'
-                )];
-
-            const filasPaneles =
-                [...dialog.querySelectorAll(
-                    'tr[data-panel-id]'
-                )];
-
+            const filasModulos = [...dialog.querySelectorAll('tr[data-modulo-id]')];
+            const filasPaneles = [...dialog.querySelectorAll('tr[data-panel-id]')];
 
             // ==========================================
             // 3. MÓDULOS
@@ -1857,53 +1244,26 @@ class RolesComponent extends HTMLElement {
             let modulosActuales = [];
 
             if (esEdicion) {
-
                 modulosActuales =
                     await ApiClient.get(
                         `/roles/${idRol}/modulos`
                     );
-
             }
 
             const modulosActualesMap = new Map();
 
             modulosActuales.forEach(modulo => {
-
-                modulosActualesMap.set(
-                    Number(modulo.id_modulo),
-                    modulo
-                );
-
+                modulosActualesMap.set(Number(modulo.id_modulo), modulo);
             });
 
-
             for (const fila of filasModulos) {
-
-                const idModulo =
-                    Number(
-                        fila.dataset.moduloId
-                    );
-
-                const leer =
-                    fila.querySelector(
-                        '[data-permiso="leer"]'
-                    ).checked;
-
-                const escribir =
-                    fila.querySelector(
-                        '[data-permiso="escribir"]'
-                    ).checked;
-
-                const editar =
-                    fila.querySelector(
-                        '[data-permiso="editar"]'
-                    ).checked;
-
+                const idModulo = Number(fila.dataset.moduloId);
+                const leer = fila.querySelector('[data-permiso="leer"]').checked;
+                const escribir = fila.querySelector('[data-permiso="escribir"]').checked;
+                const editar = fila.querySelector('[data-permiso="editar"]').checked;
                 const existente = modulosActualesMap.get(idModulo);
 
-
                 if (existente) {
-
                     // Ya existe → actualizar permisos
 
                     await ApiClient.put(
@@ -1914,9 +1274,7 @@ class RolesComponent extends HTMLElement {
                             editar: editar
                         }
                     );
-
                 } else {
-
                     // No existe → crear asociación
 
                     await ApiClient.post(
@@ -1931,19 +1289,16 @@ class RolesComponent extends HTMLElement {
                 }
             }
 
-
             // ==========================================
             // 4. PANELES
             // ==========================================
             let panelesActuales = [];
 
             if (esEdicion) {
-
                 panelesActuales =
                     await ApiClient.get(
                         `/roles/${idRol}/paneles`
                     );
-
             }
 
             const panelesActualesSet =
@@ -1953,25 +1308,12 @@ class RolesComponent extends HTMLElement {
                     )
                 );
 
-
             for (const fila of filasPaneles) {
-
-                const idPanel =
-                    Number(
-                        fila.dataset.panelId
-                    );
-
-                const seleccionado =
-                    fila.querySelector(
-                        '[data-permiso="ver"]'
-                    ).checked;
-
-                const estabaAsignado =
-                    panelesActualesSet.has(idPanel);
-
+                const idPanel = Number(fila.dataset.panelId);
+                const seleccionado = fila.querySelector('[data-permiso="ver"]').checked;
+                const estabaAsignado = panelesActualesSet.has(idPanel);
 
                 if (seleccionado && !estabaAsignado) {
-
                     // Marcar VER
                     await ApiClient.post(
                         `/roles/${idRol}/paneles`,
@@ -1979,16 +1321,13 @@ class RolesComponent extends HTMLElement {
                             id_panel: idPanel
                         }
                     );
-
                 } else if (!seleccionado && estabaAsignado) {
-
                     // Quitar VER
                     await ApiClient.delete(
                         `/roles/${idRol}/paneles/${idPanel}`
                     );
                 }
             }
-
 
             // ==========================================
             // 5. FINALIZAR
@@ -2002,13 +1341,8 @@ class RolesComponent extends HTMLElement {
                     ? 'Rol actualizado correctamente.'
                     : 'Rol creado correctamente.'
             );
-
         } catch (error) {
-
-            console.error(
-                'Error guardando rol:',
-                error
-            );
+            console.error('Error guardando rol:', error);
 
             this.mostrarSnackbar(
                 'No se pudo guardar el rol. Verificá los datos e intentá nuevamente.',
@@ -2021,26 +1355,21 @@ class RolesComponent extends HTMLElement {
     // ELIMINAR ROL
     // =========================================================
     async abrirDialogoEliminarRol(rol) {
-
         const dialog = this.crearDialogoBase();
 
         dialog.innerHTML = `
-
             <div class="dialog-header">
                 <h2>Eliminar rol</h2>
             </div>
 
             <div class="dialog-content">
-
                 <p>
                     ¿Desea eliminar el rol
                     <strong>${this.escapeHtml(rol.nombre)}</strong>?
                 </p>
-
             </div>
 
             <div class="dialog-actions">
-
                 <button
                     type="button"
                     class="btn btn-secondary dialog-cancel"
@@ -2054,65 +1383,40 @@ class RolesComponent extends HTMLElement {
                     id="btn-confirmar-eliminar-rol">
                     Eliminar
                 </button>
-
             </div>
         `;
 
         document.body.appendChild(dialog);
 
         // CANCELAR
-        const btnCancelar =
-            dialog.querySelector(
-                '#btn-cancelar-eliminar-rol'
-            );
+        const btnCancelar = dialog.querySelector('#btn-cancelar-eliminar-rol');
 
-        btnCancelar.addEventListener(
-            'click',
-            () => {
-                dialog.close();
-            }
-        );
+        btnCancelar.addEventListener('click', () => {
+            dialog.close();
+        });
 
         // CONFIRMAR ELIMINACIÓN
-        const btnConfirmar =
-            dialog.querySelector(
-                '#btn-confirmar-eliminar-rol'
-            );
+        const btnConfirmar = dialog.querySelector('#btn-confirmar-eliminar-rol');
 
-        btnConfirmar.addEventListener(
-            'click',
-            async () => {
+        btnConfirmar.addEventListener('click', async () => {
+            try {
+                await ApiClient.delete(
+                    `/roles/${rol.id}`
+                );
 
-                try {
+                dialog.close();
 
-                    await ApiClient.delete(
-                        `/roles/${rol.id}`
-                    );
+                this.selectedRolId = null;
 
-                    dialog.close();
+                await this.recargarTodo();
 
-                    this.selectedRolId = null;
+                this.mostrarSnackbar('Rol eliminado correctamente.');
+            } catch (error) {
+                console.error('Error eliminando rol:', error);
 
-                    await this.recargarTodo();
-
-                    this.mostrarSnackbar(
-                        'Rol eliminado correctamente.'
-                    );
-
-                } catch (error) {
-
-                    console.error(
-                        'Error eliminando rol:',
-                        error
-                    );
-
-                    this.mostrarSnackbar(
-                        'No se pudo eliminar el rol.',
-                        'error'
-                    );
-                }
+                this.mostrarSnackbar('No se pudo eliminar el rol.', 'error');
             }
-        );
+        });
 
         dialog.addEventListener(
             'close',
@@ -2134,7 +1438,6 @@ class RolesComponent extends HTMLElement {
         return dialog;
     }
 
-
     // =========================================================
     // ESCAPAR HTML
     // =========================================================
@@ -2148,7 +1451,6 @@ class RolesComponent extends HTMLElement {
     // SNACKBAR
     // =========================================================
     mostrarSnackbar(mensaje, tipo = 'success') {
-
         const anterior = document.querySelector('.app-snackbar');
 
         if (anterior) {
@@ -2177,22 +1479,16 @@ class RolesComponent extends HTMLElement {
         });
 
         setTimeout(() => {
-
             snackbar.classList.remove('show');
 
             setTimeout(() => {
                 snackbar.remove();
             }, 300);
-
         }, 3000);
     }
-
 }
 
 // =========================================================
 // REGISTRAR COMPONENTE
 // =========================================================
-customElements.define(
-    'app-roles',
-    RolesComponent
-);
+customElements.define('app-roles', RolesComponent);

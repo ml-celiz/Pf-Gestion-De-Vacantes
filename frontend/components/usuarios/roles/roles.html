@@ -1,51 +1,33 @@
 <!-- NAVBAR -->
 <app-navbar></app-navbar>
 
-<div class="roles-container">
-
+<div class="panel-container">
     <!-- LEYENDA Y RUTA (BREADCRUMB) -->
     <div class="breadcrumb-bar">
-        <span class="breadcrumb-path">
-            MENÚ PRINCIPAL / USUARIOS / ROLES
-        </span>
+        <span class="breadcrumb-path">MENÚ PRINCIPAL / USUARIOS / ROLES</span>
     </div>
 
     <!-- ENCABEZADO DE GESTIÓN -->
-    <header class="roles-header">
-
+    <header class="panel-header">
         <h1>Gestión de roles</h1>
 
         <div class="header-actions">
-
-            <button
-                id="btn-refresh"
-                class="btn-icon"
-                title="Recargar">
+            <button id="btn-refresh" class="btn-icon" title="Recargar">
                 <i class="bi bi-arrow-counterclockwise"></i>
             </button>
 
-            <button
-                id="btn-add-rol"
-                class="btn-icon btn-add"
-                title="Agregar"
-                type="button">
+            <button id="btn-add-rol" class="btn-icon btn-add" title="Agregar" type="button">
                 <i class="bi bi-plus-circle-fill"></i>
             </button>
-
         </div>
-
     </header>
 
     <!-- GRID DE TABLAS -->
-    <div class="roles-grid">
-
+    <div class="panel-grid">
         <!-- SECCIÓN IZQUIERDA: ROLES -->
-        <section class="card-table main-roles-card">
-
+        <section class="card-table panel-main-card">
             <div class="table-responsive">
-
                 <table class="custom-table">
-
                     <thead>
                         <tr>
                             <th>Rol</th>
@@ -56,64 +38,38 @@
 
                     <tbody id="tb-roles">
                         <tr>
-                            <td colspan="3" class="text-center">
-                                Cargando roles...
-                            </td>
+                            <td colspan="3" class="text-center">Cargando roles...</td>
                         </tr>
                     </tbody>
-
                 </table>
-
             </div>
 
             <!-- PAGINACIÓN ROLES -->
             <div class="table-footer">
-
-                <div class="pagination-info" id="roles-page-info">
-                    0 - 0 de 0
-                </div>
+                <div class="pagination-info" id="roles-page-info">0 - 0 de 0</div>
 
                 <div class="pagination-buttons">
-
-                    <button
-                        id="roles-prev"
-                        class="pagination-btn"
-                        type="button"
-                        disabled>
+                    <button id="roles-prev" class="pagination-btn" type="button" disabled>
                         <i class="bi bi-chevron-left"></i>
                     </button>
 
-                    <span id="roles-page-number">
-                        Página 1
-                    </span>
+                    <span id="roles-page-number">Página 1</span>
 
-                    <button
-                        id="roles-next"
-                        class="pagination-btn"
-                        type="button"
-                        disabled>
+                    <button id="roles-next" class="pagination-btn" type="button" disabled>
                         <i class="bi bi-chevron-right"></i>
                     </button>
-
                 </div>
-
             </div>
-
         </section>
-
 
         <!-- SECCIÓN DERECHA: MÓDULOS Y PANELES -->
         <aside class="side-tables-container">
-
             <!-- TABLA MÓDULOS -->
             <section class="card-table side-card">
-
                 <div class="side-header">
-
                     <span>Módulo</span>
 
                     <div class="side-title-actions">
-
                         <span>Acción</span>
 
                         <button
@@ -123,76 +79,45 @@
                             type="button">
                             <i class="bi bi-plus-circle-fill"></i>
                         </button>
-
                     </div>
-
                 </div>
 
                 <div class="side-table-body">
-
                     <table class="custom-table compact">
-
                         <tbody id="tb-modulos">
-
                             <tr>
-                                <td
-                                    colspan="2"
-                                    class="text-center text-muted">
+                                <td colspan="2" class="text-center text-muted">
                                     Seleccione un rol
                                 </td>
                             </tr>
-
                         </tbody>
-
                     </table>
-
                 </div>
 
                 <!-- PAGINACIÓN MÓDULOS -->
                 <div class="table-footer compact">
-
-                    <span id="modulos-page-info">
-                        0 - 0 de 0
-                    </span>
+                    <span id="modulos-page-info">0 - 0 de 0</span>
 
                     <div class="pagination-buttons">
-
-                        <button
-                            id="modulos-prev"
-                            class="pagination-btn"
-                            type="button"
-                            disabled>
+                        <button id="modulos-prev" class="pagination-btn" type="button" disabled>
                             <i class="bi bi-chevron-left"></i>
                         </button>
 
-                        <span id="modulos-page-number">
-                            Página 1
-                        </span>
+                        <span id="modulos-page-number">Página 1</span>
 
-                        <button
-                            id="modulos-next"
-                            class="pagination-btn"
-                            type="button"
-                            disabled>
+                        <button id="modulos-next" class="pagination-btn" type="button" disabled>
                             <i class="bi bi-chevron-right"></i>
                         </button>
-
                     </div>
-
                 </div>
-
             </section>
-
 
             <!-- TABLA PANELES -->
             <section class="card-table side-card">
-
                 <div class="side-header">
-
                     <span>Paneles</span>
 
                     <div class="side-title-actions">
-
                         <span>Acción</span>
 
                         <button
@@ -202,70 +127,40 @@
                             type="button">
                             <i class="bi bi-plus-circle-fill"></i>
                         </button>
-
                     </div>
-
                 </div>
 
                 <div class="side-table-body">
-
                     <table class="custom-table compact">
-
                         <tbody id="tb-paneles">
-
                             <tr>
-                                <td
-                                    colspan="2"
-                                    class="text-center text-muted">
+                                <td colspan="2" class="text-center text-muted">
                                     Seleccione un rol
                                 </td>
                             </tr>
-
                         </tbody>
-
                     </table>
-
                 </div>
 
                 <!-- PAGINACIÓN PANELES -->
                 <div class="table-footer compact">
-
-                    <span id="paneles-page-info">
-                        0 - 0 de 0
-                    </span>
+                    <span id="paneles-page-info">0 - 0 de 0</span>
 
                     <div class="pagination-buttons">
-
-                        <button
-                            id="paneles-prev"
-                            class="pagination-btn"
-                            type="button"
-                            disabled>
+                        <button id="paneles-prev" class="pagination-btn" type="button" disabled>
                             <i class="bi bi-chevron-left"></i>
                         </button>
 
-                        <span id="paneles-page-number">
-                            Página 1
-                        </span>
+                        <span id="paneles-page-number">Página 1</span>
 
-                        <button
-                            id="paneles-next"
-                            class="pagination-btn"
-                            type="button"
-                            disabled>
+                        <button id="paneles-next" class="pagination-btn" type="button" disabled>
                             <i class="bi bi-chevron-right"></i>
                         </button>
-
                     </div>
-
                 </div>
-
             </section>
-
         </aside>
-
     </div>
-
 </div>
 
 <!-- FOOTER -->

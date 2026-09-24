@@ -15,6 +15,9 @@ class UsuarioModel {
     public ?string $rol;
     public int $cantidad_sesiones;
 
+    // Solo si tiene CV cargado: la ruta del archivo no sale del servidor
+    public bool $tiene_cv;
+
     public function __construct(array $data = []) {
 
         $this->id = isset($data['id']) ? (int)$data['id'] : null;
@@ -29,6 +32,7 @@ class UsuarioModel {
         $this->fecha_baja = $data['fecha_baja'] ?? null;
         $this->rol = $data['rol'] ?? null;
         $this->cantidad_sesiones = isset($data['cantidad_sesiones']) ? (int)$data['cantidad_sesiones']: 0;
+        $this->tiene_cv = !empty($data['cv_path']);
     }
 
 
@@ -45,7 +49,8 @@ class UsuarioModel {
             'fecha_actualizacion' => $this->fecha_actualizacion,
             'fecha_baja' => $this->fecha_baja,
             'rol' => $this->rol,
-            'cantidad_sesiones' => $this->cantidad_sesiones
+            'cantidad_sesiones' => $this->cantidad_sesiones,
+            'tiene_cv' => $this->tiene_cv
         ];
     }
 }

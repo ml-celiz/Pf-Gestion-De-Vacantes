@@ -1,687 +1,229 @@
-.vacantes-container {
-
-    width: 100%;
-
-    padding: 1.5rem 2.5rem;
-
-}
-
-
 /* =========================================================
-   ALTO DE LA PANTALLA
-   La pantalla ocupa como mínimo todo el alto disponible y la
-   tarjeta de la tabla se estira para llenarlo, así no se achica
-   según la cantidad de vacantes de la página.
-   (Acotado a app-vacantes: gestión de vacantes reutiliza
-   estas mismas clases.)
+   AVISO DE MODO INVITADO
+   Tarjeta blanca como las del resto del panel, con la línea
+   de color de la marca a la izquierda.
    ========================================================= */
 
-app-vacantes {
-
+.guest-notice {
+    position: relative;
     display: flex;
-
-    flex-direction: column;
-
-    min-height: 100vh;
-
-}
-
-app-vacantes .vacantes-container {
-
-    flex: 1;
-
-    display: flex;
-
-    flex-direction: column;
-
-}
-
-app-vacantes .main-vacantes-card {
-
-    flex: 1;
-
-}
-
-app-vacantes .main-vacantes-card .table-responsive {
-
-    flex: 1;
-
-}
-
-
-/* =========================================================
-   BREADCRUMB
-   ========================================================= */
-
-.breadcrumb-bar {
-
+    align-items: center;
+    gap: 1rem;
     margin-bottom: 0.75rem;
-
-}
-
-.breadcrumb-path {
-
-    font-size: 0.8rem;
-
-    font-weight: 700;
-
-    color: var(--text-muted, #64748b);
-
-    letter-spacing: 0.5px;
-
-}
-
-
-/* =========================================================
-   ENCABEZADO
-   ========================================================= */
-
-.vacantes-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    background: #e2e8f0;
-
-    padding: 0.75rem 1.25rem;
-
-    border-radius: 0.5rem;
-
-    margin-bottom: 0.75rem;
-
-}
-
-.vacantes-header h1 {
-
-    margin: 0;
-
-    font-size: 0.95rem;
-
-    font-weight: 700;
-
-    color: var(--brand-dark, #1e293b);
-
-}
-
-.header-actions {
-
-    display: flex;
-
-    gap: 0.75rem;
-
-}
-
-
-/* =========================================================
-   BOTÓN SUPERIOR
-   ========================================================= */
-
-.btn-icon {
-
-    background: transparent;
-
-    border: none;
-
-    cursor: pointer;
-
-    color: var(--brand-dark, #1e293b);
-
-    font-size: 1.1rem;
-
-    display: inline-flex;
-
-    align-items: center;
-
-    transition:
-        transform 0.15s ease,
-        color 0.15s ease;
-
-}
-
-.btn-icon:hover {
-
-    transform: scale(1.1);
-
-    color: var(--brand-primary, #0056b3);
-
-}
-
-
-/* =========================================================
-   FILTRO
-   ========================================================= */
-
-.filter-bar {
-
-    height: 34px;
-
-    border: 1px solid #cbd5e1;
-
-    border-radius: 0.35rem;
-
-    margin-bottom: 1.25rem;
-
-    display: flex;
-
-    align-items: center;
-
-    background: #ffffff;
-
-}
-
-.filter-input {
-
-    width: 100%;
-
-    height: 100%;
-
-    border: none;
-
-    outline: none;
-
-    background: transparent;
-
-    padding: 0 0.75rem;
-
-    font-size: 0.85rem;
-
-    color: var(--brand-dark, #1e293b);
-
-}
-
-.filter-input::placeholder {
-
-    color: #64748b;
-
-}
-
-
-/* =========================================================
-   CARD PRINCIPAL
-   ========================================================= */
-
-.card-table {
-
-    background: #ffffff;
-
-    border: 1px solid rgba(226, 232, 240, 0.9);
-
-    border-radius: 0.75rem;
-
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.03);
-
+    padding: 1rem 1.25rem 1rem 1.5rem;
     overflow: hidden;
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px var(--color-shadow-xs);
+    animation: guestNoticeIn 0.35s ease-out;
+}
 
+/* Línea de acento */
+.guest-notice::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(
+        180deg,
+        var(--color-primary),
+        var(--color-accent)
+    );
+}
+
+.guest-notice-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
     display: flex;
-
-    flex-direction: column;
-
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary-soft);
+    border-radius: 0.8rem;
+    color: var(--color-primary);
+    font-size: 1.3rem;
 }
 
-.main-vacantes-card {
-
+.guest-notice-text {
+    flex: 1;
     min-width: 0;
-
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    color: var(--color-gray-500);
+    font-size: 0.85rem;
+    line-height: 1.45;
 }
 
-
-/* =========================================================
-   TABLA
-   ========================================================= */
-
-.main-vacantes-card .table-responsive {
-
-    overflow-x: auto;
-
+.guest-notice-label {
+    color: var(--color-accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
-.custom-table {
-
-    width: 100%;
-
-    border-collapse: collapse;
-
-    font-size: 0.875rem;
-
+.guest-notice-text strong {
+    color: var(--color-dark);
+    font-size: 0.95rem;
+    font-weight: 700;
 }
 
-.custom-table th {
+.guest-notice-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    background: #e2e8f0;
-
-    color: var(--brand-dark, #1e293b);
-
-    font-weight: 600;
-
-    padding: 0.85rem 1rem;
-
-    text-align: left;
-
+.guest-notice-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    border-radius: 0.7rem;
+    font-size: 0.82rem;
+    font-weight: 700;
     white-space: nowrap;
-
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
 }
 
-.custom-table td {
-
-    padding: 0.85rem 1rem;
-
-    border-bottom: 1px solid #f1f5f9;
-
-    color: var(--brand-dark, #1e293b);
-
+.guest-notice-btn-primary {
+    background: var(--color-primary);
+    border: none;
+    color: var(--color-white);
+    box-shadow: 0 3px 8px var(--color-primary-shadow);
 }
 
-.custom-table tbody tr:hover {
-
-    background: #f8fafc;
-
+.guest-notice-btn-primary:hover {
+    background: var(--color-primary-hover);
+    box-shadow: 0 5px 12px var(--color-primary-shadow-strong);
+    transform: translateY(-1px);
 }
 
+.guest-notice-btn-secondary {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    color: var(--color-gray-600);
+}
+
+.guest-notice-btn-secondary:hover {
+    background: var(--color-gray-50);
+    border-color: var(--color-accent-border);
+    color: var(--color-primary);
+}
+
+@keyframes guestNoticeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 700px) {
+    .guest-notice {
+        flex-wrap: wrap;
+    }
+
+    .guest-notice-actions {
+        width: 100%;
+    }
+
+    .guest-notice-btn {
+        flex: 1;
+    }
+}
 
 /* =========================================================
    DESCRIPCIÓN
    ========================================================= */
 
 .descripcion-cell {
-
     max-width: 260px;
-
     white-space: nowrap;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
-
 }
-
 
 /* =========================================================
-   REQUISITOS
+   ACCIONES PROPIAS DEL PANEL
+   (ver / editar / eliminar están en global.css)
    ========================================================= */
-
-.btn-requisitos {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 0.35rem;
-
-    border: none;
-
-    background: transparent;
-
-    color: var(--brand-primary, #0056b3);
-
-    font-size: 0.8rem;
-
-    font-weight: 600;
-
-    cursor: pointer;
-
-    padding: 0.25rem 0.4rem;
-
-}
-
-.btn-requisitos:hover {
-
-    color: #003f80;
-
-    text-decoration: underline;
-
-}
-
-
-/* =========================================================
-   ESTADO
-   ========================================================= */
-
-.estado-badge {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding: 0.25rem 0.55rem;
-
-    border-radius: 999px;
-
-    font-size: 0.72rem;
-
-    font-weight: 600;
-
-    white-space: nowrap;
-
-}
-
-
-/* =========================================================
-   ACCIONES
-   ========================================================= */
-
-.action-btn-group {
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-    gap: 0.65rem;
-
-}
-
-.btn-action {
-
-    background: none;
-
-    border: none;
-
-    cursor: pointer;
-
-    font-size: 0.95rem;
-
-    padding: 0.25rem;
-
-    transition:
-        transform 0.15s ease,
-        color 0.15s ease;
-
-}
-
-.btn-action:hover:not(:disabled) {
-
-    transform: scale(1.12);
-
-}
-
-.btn-action:disabled {
-
-    opacity: 0.4;
-
-    cursor: not-allowed;
-
-}
-
-
-/* Publicar resultados */
 
 .btn-action.publicar {
-    color: #334155;
+    color: var(--color-gray-700);
 }
-
-.btn-action.view {
-    color: #16a34a;
-}
-
-
-/* Postularse */
 
 .btn-action.postularse {
-
-    color: #0d9488;
-
+    color: var(--color-teal-bright);
 }
-
-
-/* Ver postulados */
 
 .btn-action.postulados {
-
-    color: #2563eb;
-
+    color: var(--color-info);
 }
-
-
-/* Resultados generales */
 
 .btn-action.resultados {
-
-    color: #16a34a;
-
+    color: var(--color-success);
 }
-
-
-/* =========================================================
-   FOOTER / PAGINACIÓN
-   ========================================================= */
-
-.table-footer {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    padding: 0.75rem 1rem;
-
-    gap: 1rem;
-
-    font-size: 0.8rem;
-
-    color: var(--text-muted, #64748b);
-
-    margin-top: auto;
-
-}
-
-.pagination-buttons {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 0.5rem;
-
-}
-
-.pagination-btn {
-
-    width: 28px;
-
-    height: 28px;
-
-    border: 1px solid #cbd5e1;
-
-    background: #ffffff;
-
-    border-radius: 0.35rem;
-
-    cursor: pointer;
-
-    color: #334155;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    transition:
-        background 0.15s ease,
-        color 0.15s ease;
-
-}
-
-.pagination-btn:hover:not(:disabled) {
-
-    background: #e2e8f0;
-
-}
-
-.pagination-btn:disabled {
-
-    opacity: 0.4;
-
-    cursor: not-allowed;
-
-}
-
-#vacantes-page-number {
-
-    min-width: 65px;
-
-    text-align: center;
-
-}
-
-
-/* =========================================================
-   CERRAR DIALOG
-   ========================================================= */
-
-.btn-close-dialog {
-
-    border: none;
-
-    background: transparent;
-
-    color: #475569;
-
-    font-size: 1rem;
-
-    cursor: pointer;
-
-    padding: 0.25rem;
-
-}
-
-.btn-close-dialog:hover {
-
-    color: #1e293b;
-
-    transform: scale(1.1);
-
-}
-
 
 /* =========================================================
    REQUISITOS
    ========================================================= */
 
 .requisito-group {
-
     margin-bottom: 1.25rem;
-
 }
 
 .requisito-group:last-child {
-
     margin-bottom: 0;
-
 }
 
 .requisito-group h3 {
-
     margin: 0 0 0.45rem;
-
     font-size: 0.85rem;
-
     font-weight: 700;
-
-    color: var(--brand-dark, #1e293b);
-
+    color: var(--color-dark);
 }
 
 .requisito-text {
-
     margin: 0;
-
     font-size: 0.85rem;
-
     line-height: 1.5;
-
-    color: #475569;
-
+    color: var(--color-gray-600);
 }
 
 .requisitos-list {
-
     margin: 0;
-
     padding-left: 1.25rem;
-
-    color: #475569;
-
+    color: var(--color-gray-600);
 }
 
 .requisitos-list li {
-
     font-size: 0.85rem;
-
     line-height: 1.5;
-
     margin-bottom: 0.3rem;
-
 }
 
 .requisitos-list li:last-child {
-
     margin-bottom: 0;
-
 }
 
 .requisitos-empty {
-
     margin: 0;
-
     text-align: center;
-
-    color: var(--text-muted, #64748b);
-
+    color: var(--color-gray-500);
     font-size: 0.85rem;
-
-}
-
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 992px) {
-
-    .vacantes-container {
-
-        padding: 1.25rem;
-
-    }
-
-}
-
-@media (max-width: 576px) {
-
-    .vacantes-container {
-
-        padding: 1rem;
-
-    }
-
-    .custom-table {
-
-        font-size: 0.8rem;
-
-    }
-
-    .custom-table th,
-    .custom-table td {
-
-        padding: 0.65rem 0.5rem;
-
-    }
-
-    .table-footer {
-
-        flex-wrap: wrap;
-
-    }
-
 }
 
 /* =========================================================
@@ -690,10 +232,8 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .postulados-table-wrapper {
     width: 100%;
-
     overflow-x: auto;
 }
-
 
 /* =========================================================
    TABLA
@@ -701,44 +241,31 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .postulados-table {
     width: 100%;
-
     min-width: 900px;
-
     border-collapse: collapse;
-
     font-size: 0.84rem;
 }
 
 .postulados-table th {
-    background: #f1f5f9;
-
-    color: var(--brand-dark, #1e293b);
-
+    background: var(--color-gray-100);
+    color: var(--color-dark);
     font-weight: 600;
-
     padding: 0.75rem 0.8rem;
-
     text-align: left;
-
     white-space: nowrap;
-
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-gray-200);
 }
 
 .postulados-table td {
     padding: 0.75rem 0.8rem;
-
-    color: var(--brand-dark, #1e293b);
-
-    border-bottom: 1px solid #f1f5f9;
-
+    color: var(--color-dark);
+    border-bottom: 1px solid var(--color-gray-100);
     white-space: nowrap;
 }
 
 .postulados-table tbody tr:hover {
-    background: #f8fafc;
+    background: var(--color-gray-50);
 }
-
 
 /* =========================================================
    ACCIONES DE CADA POSTULADO
@@ -746,10 +273,8 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .postulado-actions {
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     gap: 0.5rem;
 }
 
@@ -757,57 +282,43 @@ app-vacantes .main-vacantes-card .table-responsive {
 .btn-postulado-resultado {
     width: 30px;
     height: 30px;
-
     padding: 0;
-
     border: none;
-
     background: transparent;
-
     border-radius: 0.4rem;
-
     cursor: pointer;
-
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
-
     font-size: 0.95rem;
-
     transition:
         background-color 0.15s ease,
         transform 0.15s ease;
 }
 
-
 /* VER CV */
 
 .btn-postulado-cv {
-    color: #2563eb;
+    color: var(--color-info);
 }
-
 
 /* PUBLICAR RESULTADO */
 
 .btn-postulado-resultado {
-    color: #16a34a;
+    color: var(--color-success);
 }
 
-
+.btn-postulado-cv:disabled,
 .btn-postulado-resultado:disabled {
     opacity: 0.35;
-
     cursor: not-allowed;
 }
 
-.btn-postulado-cv:hover,
+.btn-postulado-cv:hover:not(:disabled),
 .btn-postulado-resultado:hover:not(:disabled) {
-    background: #f1f5f9;
-
+    background: var(--color-gray-100);
     transform: scale(1.08);
 }
-
 
 /* =========================================================
    CARGANDO
@@ -815,21 +326,14 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .postulados-loading {
     min-height: 220px;
-
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
-
     gap: 0.75rem;
-
-    color: #64748b;
-
+    color: var(--color-gray-500);
     font-size: 0.85rem;
 }
-
 
 /* =========================================================
    SIN POSTULADOS / ERROR
@@ -837,33 +341,23 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .postulados-empty {
     min-height: 220px;
-
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
-
-    color: #64748b;
-
+    color: var(--color-gray-500);
     text-align: center;
 }
 
 .postulados-empty i {
     font-size: 2rem;
-
     margin-bottom: 0.65rem;
 }
 
 .postulados-empty p {
     margin: 0;
-
     font-size: 0.85rem;
 }
-
-
-
 
 /* =========================================================
    DIALOGS DEL PANEL DE VACANTES
@@ -878,19 +372,13 @@ app-vacantes .main-vacantes-card .table-responsive {
 .custom-dialog.panel-dialog {
     width: 460px;
     max-width: calc(100% - 40px);
-
     padding: 0;
-
     overflow: hidden;
-
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
     border-radius: 1.1rem;
-
-    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
-
-    color: var(--brand-dark);
-
+    box-shadow: 0 12px 35px var(--color-shadow-dialog);
+    color: var(--color-dark);
     animation: dialogFadeIn 0.18s ease-out;
 }
 
@@ -901,20 +389,16 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .custom-dialog.panel-dialog::before {
     content: "";
-
     display: block;
     flex-shrink: 0;
-
     width: 100%;
     height: 3px;
-
-    background: var(--brand-primary);
+    background: var(--color-primary);
 }
 
 .custom-dialog.panel-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.32);
+    background: var(--color-overlay);
 }
-
 
 /* =========================================================
    DIALOGS - TAMAÑOS
@@ -948,27 +432,22 @@ app-vacantes .main-vacantes-card .table-responsive {
     min-width: 0;
 }
 
-
 /* =========================================================
    DIALOG - ENCABEZADO
    ========================================================= */
 
 .custom-dialog.panel-dialog .dialog-header {
     flex-shrink: 0;
-
     display: flex;
     align-items: center;
-
     padding: 18px 20px;
-
-    background: #f1f5f9;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--color-gray-100);
+    border-bottom: 1px solid var(--color-gray-200);
 }
 
 .custom-dialog.panel-dialog .dialog-header h2 {
     margin: 0;
-
-    color: var(--brand-dark);
+    color: var(--color-dark);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: -0.2px;
@@ -976,13 +455,10 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .custom-dialog.panel-dialog .dialog-subtitle {
     display: block;
-
     margin-top: 0.2rem;
-
-    color: #64748b;
+    color: var(--color-gray-500);
     font-size: 0.78rem;
 }
-
 
 /* =========================================================
    DIALOG - CONTENIDO
@@ -990,18 +466,13 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .custom-dialog.panel-dialog .dialog-content {
     flex: 1;
-
     min-height: 0;
-
     padding: 1.5rem;
-
     overflow-y: auto;
-
-    color: #334155;
+    color: var(--color-gray-700);
     font-size: 0.9rem;
     line-height: 1.6;
 }
-
 
 /* =========================================================
    DIALOG - FORMULARIO
@@ -1010,9 +481,7 @@ app-vacantes .main-vacantes-card .table-responsive {
 .custom-dialog.panel-dialog .dialog-form {
     display: flex;
     flex-direction: column;
-
     padding: 22px 20px 20px;
-
     gap: 1rem;
 }
 
@@ -1024,25 +493,19 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .custom-dialog.panel-dialog .form-group label {
     margin-bottom: 0.25rem;
-
-    color: var(--brand-dark);
-
+    color: var(--color-dark);
     font-size: 0.875rem;
     font-weight: 600;
 }
 
 .custom-dialog.panel-dialog .form-control {
     width: 100%;
-
     padding: 0.75rem 1rem;
-
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-200);
     border-radius: 0.75rem;
-
-    color: var(--brand-dark);
+    color: var(--color-dark);
     font-size: 0.9rem;
-
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -1050,14 +513,12 @@ app-vacantes .main-vacantes-card .table-responsive {
 }
 
 .custom-dialog.panel-dialog .form-control:hover {
-    border-color: #cbd5e1;
+    border-color: var(--color-gray-300);
 }
 
 .custom-dialog.panel-dialog .form-control:focus {
     outline: none !important;
-
-    border-color: var(--brand-accent);
-
+    border-color: var(--color-accent);
     box-shadow: none !important;
 }
 
@@ -1067,20 +528,18 @@ app-vacantes .main-vacantes-card .table-responsive {
 
 .custom-dialog.panel-dialog .orden-merito-postulante {
     margin: 0;
-
-    color: #334155;
+    color: var(--color-gray-700);
     font-size: 0.9rem;
 }
 
 .custom-dialog.panel-dialog .orden-merito-postulante strong {
-    color: var(--brand-dark);
+    color: var(--color-dark);
     font-weight: 600;
 }
 
 .custom-dialog.panel-dialog .dialog-error {
     margin: 0;
-
-    color: #dc3545;
+    color: var(--color-danger);
     font-size: 0.82rem;
 }
 
@@ -1088,40 +547,31 @@ app-vacantes .main-vacantes-card .table-responsive {
     display: none;
 }
 
-
 /* =========================================================
    DIALOG - BOTONES
    ========================================================= */
 
 .custom-dialog.panel-dialog .dialog-actions {
     flex-shrink: 0;
-
     display: flex;
     align-items: center;
     justify-content: flex-end;
-
     gap: 10px;
     margin-top: auto;
     padding: 18px 20px 20px;
-
-    background: #ffffff;
-    border-top: 1px solid #f1f5f9;
+    background: var(--color-white);
+    border-top: 1px solid var(--color-gray-100);
 }
 
 .custom-dialog.panel-dialog .dialog-actions .dialog-cancel {
     padding: 0.65rem 1.1rem;
-
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
     border-radius: 0.7rem;
-
-    color: #475569;
-
+    color: var(--color-gray-600);
     font-size: 0.85rem;
     font-weight: 600;
-
     cursor: pointer;
-
     transition:
         background-color 0.2s ease,
         border-color 0.2s ease,
@@ -1129,27 +579,21 @@ app-vacantes .main-vacantes-card .table-responsive {
 }
 
 .custom-dialog.panel-dialog .dialog-actions .dialog-cancel:hover:not(:disabled) {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: var(--brand-dark);
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-300);
+    color: var(--color-dark);
 }
 
 .custom-dialog.panel-dialog .dialog-actions .btn-primary {
     padding: 0.65rem 1.15rem;
-
-    background: var(--brand-primary);
+    background: var(--color-primary);
     border: none;
     border-radius: 0.7rem;
-
-    color: #ffffff !important;
-
+    color: var(--color-white) !important;
     font-size: 0.85rem;
     font-weight: 700;
-
     cursor: pointer;
-
-    box-shadow: 0 3px 8px rgba(0, 86, 179, 0.14);
-
+    box-shadow: 0 3px 8px var(--color-primary-shadow);
     transition:
         background-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -1157,10 +601,8 @@ app-vacantes .main-vacantes-card .table-responsive {
 }
 
 .custom-dialog.panel-dialog .dialog-actions .btn-primary:hover:not(:disabled) {
-    background: var(--brand-primary-hover);
-
-    box-shadow: 0 5px 12px rgba(0, 86, 179, 0.18);
-
+    background: var(--color-primary-hover);
+    box-shadow: 0 5px 12px var(--color-primary-shadow-strong);
     transform: translateY(-1px);
 }
 
@@ -1169,7 +611,6 @@ app-vacantes .main-vacantes-card .table-responsive {
     opacity: 0.6;
     cursor: not-allowed;
 }
-
 
 /* =========================================================
    ANIMACIÓN
@@ -1187,7 +628,6 @@ app-vacantes .main-vacantes-card .table-responsive {
     }
 }
 
-
 /* =========================================================
    SNACKBAR
    Es un popover para quedar por encima de los <dialog> modales.
@@ -1196,34 +636,22 @@ app-vacantes .main-vacantes-card .table-responsive {
 .app-snackbar.panel-snackbar {
     position: fixed;
     inset: auto auto 28px 50%;
-
     margin: 0;
-
     display: flex;
     align-items: center;
-
     min-width: 280px;
     max-width: 450px;
-
     padding: 13px 18px;
-
     gap: 10px;
-
-    background: #ffffff;
-    border: 1px solid #e2e5e8;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
     border-radius: 8px;
-
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
-
-    color: #495057;
-
+    box-shadow: 0 5px 18px var(--color-shadow-md);
+    color: var(--color-gray-600);
     font-size: 14px;
     font-weight: 500;
-
     opacity: 0;
-
     transform: translate(-50%, 20px);
-
     transition:
         opacity 0.3s ease,
         transform 0.3s ease;
@@ -1239,20 +667,18 @@ app-vacantes .main-vacantes-card .table-responsive {
 }
 
 .app-snackbar.panel-snackbar.app-snackbar-success i {
-    color: #6c9f7d;
+    color: var(--color-success-muted);
 }
 
 .app-snackbar.panel-snackbar.app-snackbar-error i {
-    color: #c97979;
+    color: var(--color-danger-muted);
 }
-
 
 /* =========================================================
    RESPONSIVE DIALOG
    ========================================================= */
 
 @media (max-width: 576px) {
-
     .custom-dialog.panel-dialog {
         width: calc(100% - 24px);
         max-width: none;
@@ -1273,5 +699,4 @@ app-vacantes .main-vacantes-card .table-responsive {
     .custom-dialog.panel-dialog .dialog-actions {
         padding: 16px;
     }
-
 }

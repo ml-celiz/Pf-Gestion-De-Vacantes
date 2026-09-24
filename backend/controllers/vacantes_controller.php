@@ -12,26 +12,21 @@ class VacantesController {
 
     // --- VACANTES ---
 
+    /*
+    * Público (lo ve también el invitado). Si consulta un jefe de
+    * cátedra, solo recibe las vacantes de sus cátedras.
+    */
     public function listarVacantes(): void {
-        $idUsuario = isset($_GET['id_usuario']) && is_numeric($_GET['id_usuario']) 
-            ? (int)$_GET['id_usuario'] 
-            : null;
-        echo json_encode($this->service->obtenerVacantes($idUsuario));
-    }
+        $idJefe = idJefeDeCatedraParaFiltrar(obtenerSesionOpcional());
 
-    public function obtenerVacantePorId(int $id): void {
-        $vacante = $this->service->obtenerVacantePorId($id);
-        if ($vacante) {
-            echo json_encode($vacante);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Vacante no encontrada."]);
-        }
+        echo json_encode($this->service->obtenerVacantes($idJefe));
     }
 
     public function crearVacante(): void {
 
         $sesionActual = verificarAutenticacion();
+
+        exigirRol($sesionActual, ['admin', 'ra']);
 
         $idUsuario =
             isset($sesionActual['id_usuario'])
@@ -80,6 +75,8 @@ class VacantesController {
     }
 
     public function actualizarVacante(int $id): void {
+        exigirRol(verificarAutenticacion(), ['admin', 'ra']);
+
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         if ($this->service->actualizarVacante($id, $input)) {
             echo json_encode(["message" => "Vacante actualizada correctamente."]);
@@ -90,6 +87,8 @@ class VacantesController {
     }
 
     public function eliminarVacante(int $id): void {
+        exigirRol(verificarAutenticacion(), ['admin', 'ra']);
+
         if ($this->service->eliminarVacante($id)) {
             echo json_encode(["message" => "Vacante eliminada correctamente."]);
         } else {
@@ -102,25 +101,34 @@ class VacantesController {
 
     public function listarSolicitudes(): void
     {
+        $sesionActual = verificarAutenticacion();
+
         $idVacante =
             isset($_GET['id_vacante']) &&
             is_numeric($_GET['id_vacante'])
                 ? (int)$_GET['id_vacante']
                 : null;
 
-        echo json_encode(
-            $this->service->obtenerSolicitudes($idVacante)
-        );
-    }
+        $idUsuario =
+            isset($_GET['id_usuario']) &&
+            is_numeric($_GET['id_usuario'])
+                ? (int)$_GET['id_usuario']
+                : null;
 
-    public function obtenerSolicitudPorId(int $id): void {
-        $solicitud = $this->service->obtenerSolicitudPorId($id);
-        if ($solicitud) {
-            echo json_encode($solicitud);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Solicitud no encontrada."]);
+        /*
+        * admin y ra ven las postulaciones de cualquiera; el jefe de
+        * cátedra, solo las de vacantes de sus cátedras; el resto solo
+        * las propias, pida lo que pida en la URL.
+        */
+        $idJefe = idJefeDeCatedraParaFiltrar($sesionActual);
+
+        if ($idJefe === null && !usuarioTieneAlgunRol((int)$sesionActual['id_usuario'], ['admin', 'ra', 'jfc'])) {
+            $idUsuario = (int)$sesionActual['id_usuario'];
         }
+
+        echo json_encode(
+            $this->service->obtenerSolicitudes($idVacante, $idUsuario, $idJefe)
+        );
     }
 
     public function crearSolicitud(): void {
@@ -156,28 +164,27 @@ class VacantesController {
         }
     }
 
-    public function actualizarEstadoSolicitud(int $id): void {
-        $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        if (!isset($input['id_estado'])) {
-            http_response_code(400);
-            echo json_encode(["message" => "El id_estado es obligatorio."]);
+    public function eliminarSolicitud(int $id): void {
+
+        $sesionActual = verificarAutenticacion();
+
+        $solicitud = $this->service->obtenerSolicitudPorId($id);
+
+        if (!$solicitud) {
+            http_response_code(404);
+            echo json_encode(["message" => "Solicitud no encontrada."]);
             return;
         }
 
-        if ($this->service->actualizarEstadoSolicitud($id, (int)$input['id_estado'])) {
-            echo json_encode(["message" => "Estado de la postulación actualizado."]);
-        } else {
-            http_response_code(400);
-            echo json_encode(["message" => "No se pudo actualizar la postulación."]);
-        }
-    }
+        // Solo el postulante (o un admin) puede dar de baja su postulación
+        exigirSelfOAdmin($sesionActual, (int)$solicitud['id_usuario']);
 
-    public function eliminarSolicitud(int $id): void {
-        if ($this->service->eliminarSolicitud($id)) {
+        try {
+            $this->service->eliminarSolicitud($id);
             echo json_encode(["message" => "Postulación cancelada correctamente."]);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Solicitud no encontrada."]);
+        } catch (RuntimeException $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode(["message" => $e->getMessage()]);
         }
     }
 
@@ -198,8 +205,8 @@ class VacantesController {
 
     public function crearOrdenMerito(): void {
 
-        // Publican resultados los mismos roles que ven los postulados
-        exigirRol(verificarAutenticacion(), ['jfc', 'admin', 'ra']);
+        // `ra` ve los postulados y su CV, pero no evalúa
+        exigirRol(verificarAutenticacion(), ['jfc', 'admin']);
 
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
 

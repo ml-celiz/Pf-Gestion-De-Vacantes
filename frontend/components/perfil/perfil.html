@@ -1,0 +1,26 @@
+<dialog class="app-dialog perfil-dialog" aria-labelledby="perfil-dialog-titulo">
+    <!-- ENCABEZADO -->
+    <div class="app-dialog-header">
+        <h2 id="perfil-dialog-titulo">Mi perfil</h2>
+
+        <button
+            type="button"
+            class="app-dialog-close"
+            id="btn-perfil-cerrar"
+            title="Cerrar"
+            aria-label="Cerrar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <!-- CONTENIDO (datos o formulario de edición) -->
+    <div class="app-dialog-body" id="perfil-contenido">
+        <div class="perfil-loading">
+            <div class="spinner-border" role="status"></div>
+            <span>Cargando tus datos...</span>
+        </div>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="app-dialog-actions" id="perfil-acciones" hidden></div>
+</dialog>

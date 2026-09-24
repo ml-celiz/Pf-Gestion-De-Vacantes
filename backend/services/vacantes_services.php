@@ -22,7 +22,11 @@ class VacanteService {
     // 1. VACANTES
     // ==========================================
 
-    public function obtenerVacantes(?int $idUsuario = null): array
+    /**
+     * Vacantes abiertas y cerradas. Con `$idJefe`, solo las de las
+     * cátedras de ese jefe de cátedra (catedras.id_usuario).
+     */
+    public function obtenerVacantes(?int $idJefe = null): array
     {
         $sql = "SELECT
                     v.id,
@@ -48,23 +52,17 @@ class VacanteService {
 
                 WHERE v.id_estado IN (1, 2)";
 
-        // Si se recibe un usuario, además se filtran
-        // únicamente sus propias vacantes.
-        if ($idUsuario !== null) {
-            $sql .= " AND v.id_usuario = :id_usuario";
+        $params = [];
+
+        if ($idJefe !== null) {
+            $sql .= " AND c.id_usuario = :id_jefe";
+            $params['id_jefe'] = $idJefe;
         }
 
         $sql .= " ORDER BY v.id ASC";
 
         $stmt = $this->db->prepare($sql);
-
-        if ($idUsuario !== null) {
-            $stmt->execute([
-                'id_usuario' => $idUsuario
-            ]);
-        } else {
-            $stmt->execute();
-        }
+        $stmt->execute($params);
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -292,12 +290,12 @@ class VacanteService {
     // 2. SOLICITUDES / POSTULACIONES
     // ==========================================
 
-    public function obtenerSolicitudes(?int $idVacante = null): array
+    public function obtenerSolicitudes(?int $idVacante = null, ?int $idUsuario = null, ?int $idJefe = null): array
     {
         $sql = "SELECT
                     s.id,
                     s.fecha_postulacion,
-                    u.cv AS cv,
+                    (u.cv_path IS NOT NULL) AS tiene_cv,
                     s.id_estado,
 
                     e.nombre AS estado_nombre,
@@ -311,7 +309,18 @@ class VacanteService {
                     u.apellido AS usuario_apellido,
                     u.email AS usuario_email,
                     u.dni AS usuario_dni,
-                    u.telefono AS usuario_telefono
+                    u.telefono AS usuario_telefono,
+
+                    om.id AS orden_merito_id,
+                    om.puntaje AS orden_merito_puntaje,
+                    om.posicion AS orden_merito_posicion,
+                    om.observaciones AS orden_merito_observaciones,
+                    -- En ISO 8601 UTC ('2026-07-23T21:20:49Z'): el navegador
+                    -- lo interpreta sin ambigüedad y lo muestra en su hora local
+                    to_char(
+                        om.fecha_publicacion AT TIME ZONE 'UTC',
+                        'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'
+                    ) AS orden_merito_fecha_publicacion
 
                 FROM public.solicitudes_vacantes s
 
@@ -322,23 +331,39 @@ class VacanteService {
                     ON s.id_vacante = v.id
 
                 JOIN public.usuarios u
-                    ON s.id_usuario = u.id";
+                    ON s.id_usuario = u.id
+
+                -- Resultado de la postulación (si ya fue evaluada)
+                LEFT JOIN public.ordenes_merito om
+                    ON om.id_solicitud = s.id";
+
+        // Las postulaciones dadas de baja no se listan
+        $condiciones = ["s.fecha_baja IS NULL"];
+        $params = [];
 
         if ($idVacante !== null) {
-            $sql .= " WHERE s.id_vacante = :id_vacante";
+            $condiciones[] = "s.id_vacante = :id_vacante";
+            $params['id_vacante'] = $idVacante;
         }
+
+        if ($idUsuario !== null) {
+            $condiciones[] = "s.id_usuario = :id_usuario";
+            $params['id_usuario'] = $idUsuario;
+        }
+
+        // Jefe de cátedra: solo postulaciones a vacantes de sus cátedras
+        if ($idJefe !== null) {
+            $condiciones[] = "v.id_catedra IN (SELECT id FROM public.catedras WHERE id_usuario = :id_jefe)";
+            $params['id_jefe'] = $idJefe;
+        }
+
+        $sql .= " WHERE " . implode(' AND ', $condiciones);
 
         $sql .= " ORDER BY s.id ASC";
 
         $stmt = $this->db->prepare($sql);
 
-        if ($idVacante !== null) {
-            $stmt->execute([
-                'id_vacante' => $idVacante
-            ]);
-        } else {
-            $stmt->execute();
-        }
+        $stmt->execute($params);
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -350,12 +375,12 @@ class VacanteService {
     }
 
     public function obtenerSolicitudPorId(int $id): ?array {
-        $sql = "SELECT s.*, u.cv AS cv, e.nombre as estado_nombre, v.titulo as vacante_titulo
+        $sql = "SELECT s.*, (u.cv_path IS NOT NULL) AS tiene_cv, e.nombre as estado_nombre, v.titulo as vacante_titulo
                 FROM public.solicitudes_vacantes s
                 JOIN public.estados e ON s.id_estado = e.id
                 JOIN public.vacantes v ON s.id_vacante = v.id
                 JOIN public.usuarios u ON s.id_usuario = u.id
-                WHERE s.id = :id";
+                WHERE s.id = :id AND s.fecha_baja IS NULL";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -386,17 +411,34 @@ class VacanteService {
         }
 
         $stmt = $this->db->prepare(
-            "SELECT 1 FROM public.solicitudes_vacantes
+            "SELECT id, fecha_baja FROM public.solicitudes_vacantes
              WHERE id_vacante = :id_vacante AND id_usuario = :id_usuario
              LIMIT 1"
         );
         $stmt->execute(['id_vacante' => $idVacante, 'id_usuario' => $idUsuario]);
+        $anterior = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($stmt->fetchColumn() !== false) {
+        if ($anterior && $anterior['fecha_baja'] === null) {
             throw new RuntimeException("Ya se encuentra postulado a esta vacante.", 409);
         }
 
         try {
+            // Se había dado de baja: se reactiva la misma solicitud
+            // como una postulación nueva (fecha actual y PENDIENTE)
+            if ($anterior) {
+                $stmt = $this->db->prepare(
+                    "UPDATE public.solicitudes_vacantes
+                     SET fecha_baja = NULL, fecha_postulacion = NOW(), id_estado = :id_estado
+                     WHERE id = :id"
+                );
+                $stmt->execute([
+                    'id_estado' => self::ESTADO_SOLICITUD_PENDIENTE,
+                    'id'        => (int)$anterior['id']
+                ]);
+
+                return (int)$anterior['id'];
+            }
+
             $stmt = $this->db->prepare(
                 "INSERT INTO public.solicitudes_vacantes (fecha_postulacion, id_estado, id_vacante, id_usuario)
                  VALUES (NOW(), :id_estado, :id_vacante, :id_usuario)
@@ -415,18 +457,25 @@ class VacanteService {
         }
     }
 
-    public function actualizarEstadoSolicitud(int $id, int $idEstado): bool {
-        try {
-            $stmt = $this->db->prepare("UPDATE public.solicitudes_vacantes SET id_estado = :id_estado WHERE id = :id");
-            return $stmt->execute(['id' => $id, 'id_estado' => $idEstado]);
-        } catch (PDOException $e) {
-            error_log("Error PDO al actualizar solicitud: " . $e->getMessage());
-            return false;
-        }
-    }
-
+    /**
+     * Da de baja una postulación (baja lógica: se completa fecha_baja
+     * y deja de listarse). Si ya tiene orden de mérito publicada no se
+     * puede: el resultado forma parte del registro de la convocatoria
+     * (RuntimeException 409).
+     */
     public function eliminarSolicitud(int $id): bool {
-        $stmt = $this->db->prepare("DELETE FROM public.solicitudes_vacantes WHERE id = :id");
+        if ($this->existeOrdenMeritoDeSolicitud($id)) {
+            throw new RuntimeException(
+                "La postulación ya fue evaluada y no se puede dar de baja.",
+                409
+            );
+        }
+
+        $stmt = $this->db->prepare(
+            "UPDATE public.solicitudes_vacantes
+             SET fecha_baja = NOW()
+             WHERE id = :id AND fecha_baja IS NULL"
+        );
         $stmt->execute(['id' => $id]);
         return $stmt->rowCount() > 0;
     }
@@ -511,7 +560,9 @@ class VacanteService {
             return false;
         }
 
-        $stmt = $this->db->prepare("SELECT 1 FROM public.solicitudes_vacantes WHERE id = :id");
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM public.solicitudes_vacantes WHERE id = :id AND fecha_baja IS NULL"
+        );
         $stmt->execute(['id' => $om->idSolicitud]);
 
         if ($stmt->fetchColumn() === false) {
@@ -529,17 +580,19 @@ class VacanteService {
         try {
             $this->db->beginTransaction();
 
+            // La fecha de publicación es el momento actual según la base
+            // (NOW() guarda fecha, hora y zona horaria; no depende de la
+            // zona configurada en PHP ni de lo que mande el cliente).
             $stmt = $this->db->prepare(
                 "INSERT INTO public.ordenes_merito (puntaje, posicion, observaciones, fecha_publicacion, id_solicitud)
-                 VALUES (:puntaje, :posicion, :observaciones, :fecha_publicacion, :id_solicitud)
+                 VALUES (:puntaje, :posicion, :observaciones, NOW(), :id_solicitud)
                  RETURNING id"
             );
             $stmt->execute([
-                'puntaje'           => $om->puntaje,
-                'posicion'          => $om->posicion,
-                'observaciones'     => $observaciones !== '' ? $observaciones : null,
-                'fecha_publicacion' => $om->fechaPublicacion ?? date('H:i:sP'),
-                'id_solicitud'      => $om->idSolicitud
+                'puntaje'       => $om->puntaje,
+                'posicion'      => $om->posicion,
+                'observaciones' => $observaciones !== '' ? $observaciones : null,
+                'id_solicitud'  => $om->idSolicitud
             ]);
 
             $id = $stmt->fetchColumn();

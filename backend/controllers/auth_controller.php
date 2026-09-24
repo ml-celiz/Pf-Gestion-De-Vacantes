@@ -1,10 +1,40 @@
 <?php
 
 require_once __DIR__ . '/../services/auth_services.php';
+require_once __DIR__ . '/../services/usuario_services.php';
 require_once __DIR__ . '/../models/Sesion.php';
 
 class AuthController {
-    
+
+    /*
+    * Registro público: cualquiera puede crear su cuenta desde el login.
+    * El rol lo fija el servicio (siempre `pos`), nunca el cuerpo del pedido.
+    */
+    public function registro(): void {
+
+        $input = json_decode(file_get_contents("php://input"), true) ?? [];
+
+        $service = new UsuarioService();
+
+        try {
+
+            $id = $service->registrar($input);
+
+        } catch (RuntimeException $e) {
+
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode(["message" => $e->getMessage()]);
+            return;
+        }
+
+        http_response_code(201);
+        echo json_encode([
+            "message" => "Cuenta creada correctamente. Ya podés iniciar sesión.",
+            "id"      => $id
+        ]);
+    }
+
+
     public function login(): void {
         $data = json_decode(file_get_contents("php://input"), true);
         

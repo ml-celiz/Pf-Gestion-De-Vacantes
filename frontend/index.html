@@ -12,27 +12,30 @@
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
-
     <!-- Bootstrap Icons -->
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
     >
-
-    <!-- Google Fonts -->
+    <!-- Google Fonts (preconnect: la fuente llega antes y la letra no "salta") -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
-
     <!-- CSS global -->
     <link rel="stylesheet" href="assets/css/global.css">
 </head>
 
 <body>
+    <!-- CARGA INICIAL: se ve hasta saber si hay sesión guardada -->
+    <div class="app-loader" id="app-loader" role="status" aria-label="Cargando">
+        <div class="spinner-border"></div>
+    </div>
 
-    <!-- LOGIN -->
-    <div id="login-view">
+    <!-- LOGIN (se muestra recién si no hay sesión válida) -->
+    <div id="login-view" style="display: none;">
         <app-login></app-login>
     </div>
 
@@ -56,129 +59,120 @@
     <!-- USUARIOS -->
     <div id="usuarios-view" style="display: none;"></div>
 
+    <!-- Mi perfil y Preguntas frecuentes son dialogs: los abre el navbar -->
 
     <!-- Bootstrap JS -->
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
     </script>
 
-
     <!-- Servicios -->
+    <script src="services/estilos.js"></script>
     <script src="services/api.js"></script>
     <script src="services/auth.service.js"></script>
-
 
     <!-- Componentes -->
     <script type="module" src="components/navbar/navbar.js"></script>
     <script type="module" src="components/login/login.js"></script>
     <script type="module" src="components/menu/menu.js"></script>
     <script type="module" src="components/footer/footer.js"></script>
+    <script type="module" src="components/datepicker/datepicker.js"></script>
     <script type="module" src="components/usuarios/roles/roles.js"></script>
     <script type="module" src="components/usuarios/usuarios/usuarios.js"></script>
     <script type="module" src="components/configuraciones/gestion-vacantes/gestion-vacantes.js"></script>
     <script type="module" src="components/paneles/vacantes/vacantes.js"></script>
     <script type="module" src="components/paneles/postulaciones/postulaciones.js"></script>
-
+    <script type="module" src="components/perfil/perfil.js"></script>
+    <script type="module" src="components/faq/faq.js"></script>
 
     <!-- NAVEGACIÓN ENTRE VISTAS -->
     <script>
-
         // ==========================================
         // OBTENER RUTA DESDE LA URL
         // ==========================================
-
+        /*
+        * Los paneles se construyen una sola vez y arman sus botones
+        * según el rol. Al cambiar de usuario (login, logout, modo
+        * invitado) hay que descartarlos para que se rearmen.
+        */
+        function limpiarVistasDinamicas() {
+            document
+                .querySelectorAll('[id$="-view"]')
+                .forEach(vista => {
+                    // login-view y menu-view tienen su contenido fijo en el HTML
+                    if (
+                        vista.id === 'login-view' ||
+                        vista.id === 'menu-view'
+                    ) {
+                        return;
+                    }
+                    vista.innerHTML = '';
+                });
+            // Dialogs de la cuenta que hayan quedado abiertos
+            document
+                .querySelectorAll('app-perfil, app-faq')
+                .forEach(dialogo => dialogo.remove());
+        }
         function getRouteFromUrl() {
-
             const hash = window.location.hash;
-
             const routes = {
-
                 '#/paneles/vacantes':
                     'vacantes',
-
                 '#/paneles/postulaciones':
                     'postulaciones',
-
                 '#/configuraciones/gestion-vacantes':
                     'gestion-vacantes',
-
                 '#/usuarios/roles':
                     'roles',
-
                 '#/usuarios/usuarios':
                     'usuarios'
-
             };
-
             return routes[hash] || 'menu';
         }
-
-
         // ==========================================
         // NAVEGACIÓN
         // ==========================================
-
         document.addEventListener(
             'navigate',
             async (event) => {
-
                 let route =
                     event.detail.route;
-
                 // Sin permiso para esa pantalla (por ejemplo, una URL
                 // escrita a mano): volver al menú
                 if (!AuthService.puedeAcceder(route)) {
-
                     console.warn(
                         'Sin permiso para la ruta:',
                         route
                     );
-
                     route = 'menu';
                 }
-
                 console.log(
                     'Ruta recibida:',
                     route
                 );
-
-
                 // ==========================================
                 // ACTUALIZAR URL
                 // ==========================================
-
                 const routes = {
-
                     menu:
                         '',
-
                     vacantes:
                         '#/paneles/vacantes',
-
                     postulaciones:
                         '#/paneles/postulaciones',
-
                     'gestion-vacantes':
                         '#/configuraciones/gestion-vacantes',
-
                     roles:
                         '#/usuarios/roles',
-
                     usuarios:
                         '#/usuarios/usuarios'
-
                 };
-
-
                 const newHash =
                     routes[route];
-
-
                 if (
                     newHash !== undefined &&
                     window.location.hash !== newHash
                 ) {
-
                     window.history.pushState(
                         {
                             route: route
@@ -187,204 +181,122 @@
                         newHash ||
                         window.location.pathname
                     );
-
                 }
-
-
                 const loginView =
                     document.getElementById(
                         'login-view'
                     );
-
                 const menuView =
                     document.getElementById(
                         'menu-view'
                     );
-
                 const vacantesView =
                     document.getElementById(
                         'vacantes-view'
                     );
-
                 const postulacionesView =
                     document.getElementById(
                         'postulaciones-view'
                     );
-
                 const gestionVacantesView =
                     document.getElementById(
                         'gestion-vacantes-view'
                     );
-
                 const rolesView =
                     document.getElementById(
                         'roles-view'
                     );
-
                 const usuariosView =
                     document.getElementById(
                         'usuarios-view'
                     );
-
-
                 // ==========================================
                 // OCULTAR TODAS LAS VISTAS
                 // ==========================================
-
-                if (loginView) {
-                    loginView.style.display = 'none';
-                }
-
-                if (menuView) {
-                    menuView.style.display = 'none';
-                }
-
-                if (vacantesView) {
-                    vacantesView.style.display = 'none';
-                }
-
-                if (postulacionesView) {
-                    postulacionesView.style.display = 'none';
-                }
-
-                if (gestionVacantesView) {
-                    gestionVacantesView.style.display = 'none';
-                }
-
-                if (rolesView) {
-                    rolesView.style.display = 'none';
-                }
-
-                if (usuariosView) {
-                    usuariosView.style.display = 'none';
-                }
-
-
+                document
+                    .querySelectorAll('[id$="-view"]')
+                    .forEach(vista => {
+                        vista.style.display = 'none';
+                    });
                 // ==========================================
                 // MOSTRAR LA VISTA CORRESPONDIENTE
                 // ==========================================
-
                 switch (route) {
-
                     case 'menu':
-
                         if (menuView) {
                             menuView.style.display = 'block';
-
                             const menu = menuView.querySelector('app-menu');
-
                             if (menu && menu.aplicarPermisos) {
                                 menu.aplicarPermisos();
                             }
                         }
-
                         break;
-
-
                     case 'vacantes':
-
                         if (vacantesView) {
-
                             if (!vacantesView.querySelector('app-vacantes')) {
                                 vacantesView.innerHTML = `
                                     <app-vacantes></app-vacantes>
                                 `;
                             }
-
                             vacantesView.style.display = 'block';
                         }
-
                         break;
-
-
                     case 'postulaciones':
-
                         if (postulacionesView) {
-
                             if (!postulacionesView.querySelector('app-postulaciones')) {
                                 postulacionesView.innerHTML = `
                                     <app-postulaciones></app-postulaciones>
                                 `;
                             }
-
                             postulacionesView.style.display = 'block';
                         }
-
                         break;
-
-
                     case 'gestion-vacantes':
-
                         if (gestionVacantesView) {
-
                             if (!gestionVacantesView.querySelector('app-gestion-vacantes')) {
                                 gestionVacantesView.innerHTML = `
                                     <app-gestion-vacantes></app-gestion-vacantes>
                                 `;
                             }
-
                             gestionVacantesView.style.display = 'block';
                         }
-
                         break;
-
-
                     case 'roles':
-
                         if (rolesView) {
-
                             if (!rolesView.querySelector('app-roles')) {
                                 rolesView.innerHTML = `
                                     <app-roles></app-roles>
                                 `;
                             }
-
                             rolesView.style.display = 'block';
                         }
-
                         break;
-
-
                     case 'usuarios':
-
                         if (usuariosView) {
-
                             if (!usuariosView.querySelector('app-usuarios')) {
                                 usuariosView.innerHTML = `
                                     <app-usuarios></app-usuarios>
                                 `;
                             }
-
                             usuariosView.style.display = 'block';
                         }
-
                         break;
-
-
                     default:
-
                         console.warn(
                             'Ruta no implementada:',
                             route
                         );
-
                 }
-
             }
         );
-
-
         // ==========================================
         // BOTÓN ATRÁS / ADELANTE DEL NAVEGADOR
         // ==========================================
-
         window.addEventListener(
             'popstate',
             () => {
-
                 const route =
                     getRouteFromUrl();
-
                 document.dispatchEvent(
                     new CustomEvent(
                         'navigate',
@@ -395,42 +307,45 @@
                         }
                     )
                 );
-
             }
         );
-
-
     </script>
-
 
     <!-- RESTAURAR SESIÓN -->
     <script>
-
         document.addEventListener(
             'DOMContentLoaded',
             async () => {
-
                 console.log(
                     'Verificando sesión...'
                 );
-
-
                 const tieneSesion =
                     await AuthService.restoreSession();
-
-
-                if (tieneSesion) {
-
+                // Recién ahora se sabe qué mostrar: hasta acá solo se
+                // vio el indicador de carga (así el login no aparece
+                // un instante antes que el menú al recargar).
+                document
+                    .getElementById('app-loader')
+                    .hidden = true;
+                if (!tieneSesion) {
+                    // Si quedó un hash de una pantalla interna, limpiarlo
+                    if (window.location.hash) {
+                        window.history.replaceState(
+                            {},
+                            '',
+                            window.location.pathname
+                        );
+                    }
+                    document
+                        .getElementById('login-view')
+                        .style.display = 'block';
+                } else {
                     const route =
                         getRouteFromUrl();
-
-
                     console.log(
                         'Sesión válida. Ruta:',
                         route
                     );
-
-
                     document.dispatchEvent(
                         new CustomEvent(
                             'navigate',
@@ -441,109 +356,101 @@
                             }
                         )
                     );
-
                 }
-
             }
         );
-
-
         // ==========================================
         // SESIÓN EXPIRADA
         // ==========================================
-
         document.addEventListener(
             'auth-expired',
             () => {
-
                 console.log(
                     'La sesión ha expirado.'
                 );
-
-
+                // Ocultar todas las vistas
+                document
+                    .querySelectorAll('[id$="-view"]')
+                    .forEach(vista => {
+                        vista.style.display = 'none';
+                    });
+                limpiarVistasDinamicas();
+                // Mostrar login
                 const loginView =
                     document.getElementById(
                         'login-view'
                     );
-
-                const menuView =
-                    document.getElementById(
-                        'menu-view'
-                    );
-
-                const vacantesView =
-                    document.getElementById(
-                        'vacantes-view'
-                    );
-
-                const postulacionesView =
-                    document.getElementById(
-                        'postulaciones-view'
-                    );
-
-                const gestionVacantesView =
-                    document.getElementById(
-                        'gestion-vacantes-view'
-                    );
-
-                const rolesView =
-                    document.getElementById(
-                        'roles-view'
-                    );
-
-                const usuariosView =
-                    document.getElementById(
-                        'usuarios-view'
-                    );
-
-
-                // Ocultar vistas autenticadas
-
-                if (menuView) {
-                    menuView.style.display = 'none';
-                }
-
-                if (vacantesView) {
-                    vacantesView.style.display = 'none';
-                }
-
-                if (postulacionesView) {
-                    postulacionesView.style.display = 'none';
-                }
-
-                if (gestionVacantesView) {
-                    gestionVacantesView.style.display = 'none';
-                }
-
-                if (rolesView) {
-                    rolesView.style.display = 'none';
-                }
-
-                if (usuariosView) {
-                    usuariosView.style.display = 'none';
-                }
-
-
-                // Mostrar login
-
                 if (loginView) {
                     loginView.style.display = 'block';
                 }
-
-
                 // Volver a la URL principal
-
                 window.history.pushState(
                     {},
                     '',
                     window.location.pathname
                 );
-
             }
         );
-
+        // ==========================================
+        // MODO INVITADO
+        // Navegación sin cuenta: solo el panel de vacantes,
+        // que se sirve sin autenticación.
+        // ==========================================
+        document.addEventListener(
+            'modo-invitado',
+            () => {
+                AuthService.entrarModoInvitado();
+                limpiarVistasDinamicas();
+                document.dispatchEvent(
+                    new CustomEvent(
+                        'navigate',
+                        {
+                            detail: {
+                                route: 'vacantes'
+                            }
+                        }
+                    )
+                );
+            }
+        );
+        // ==========================================
+        // CREAR CUENTA DESDE EL MODO INVITADO
+        // ==========================================
+        document.addEventListener(
+            'crear-cuenta',
+            (event) => {
+                // modo: 'registro' (por defecto) o 'login'
+                const modo =
+                    (event.detail && event.detail.modo) || 'registro';
+                // Salir del modo invitado y volver al login
+                AuthService.clearSession();
+                limpiarVistasDinamicas();
+                document
+                    .querySelectorAll('[id$="-view"]')
+                    .forEach(vista => {
+                        vista.style.display = 'none';
+                    });
+                const loginView =
+                    document.getElementById('login-view');
+                if (loginView) {
+                    loginView.style.display = 'block';
+                    const login =
+                        loginView.querySelector('app-login');
+                    if (login) {
+                        if (modo === 'login' && login.mostrarLogin) {
+                            login.mostrarLogin();
+                        } else if (login.mostrarRegistro) {
+                            login.mostrarRegistro();
+                        }
+                    }
+                }
+                window.history.pushState(
+                    {},
+                    '',
+                    window.location.pathname
+                );
+            }
+        );
     </script>
-
 </body>
-
 </html>

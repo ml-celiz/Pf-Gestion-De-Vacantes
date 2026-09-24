@@ -1,0 +1,131 @@
+/* =========================================================
+   PREGUNTAS FRECUENTES (dialog)
+   La base del dialog (.app-dialog, .app-btn) está en
+   global.css; acá solo lo propio de la FAQ.
+   ========================================================= */
+
+.app-dialog.faq-dialog {
+    width: min(680px, calc(100% - 32px));
+    max-width: 680px;
+}
+
+.faq-intro {
+    margin: 0 0 1.5rem;
+    color: var(--color-gray-600);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.faq-intro a,
+.faq-answer a {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* =========================================================
+   SECCIONES
+   ========================================================= */
+
+.faq-section {
+    margin-bottom: 1.5rem;
+}
+
+.faq-section:last-child {
+    margin-bottom: 0;
+}
+
+.faq-section-title {
+    margin: 0 0 0.75rem;
+    color: var(--color-dark);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   PREGUNTA / RESPUESTA
+   ========================================================= */
+
+.faq-item {
+    margin-bottom: 0.6rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px var(--color-shadow-xs);
+    overflow: hidden;
+}
+
+.faq-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color 0.15s ease;
+}
+
+/* Quitar el triángulo nativo */
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-item summary:hover {
+    background: var(--color-gray-50);
+}
+
+/* Flecha propia */
+.faq-item summary::after {
+    content: "\F282"; /* bi-chevron-down */
+    flex-shrink: 0;
+    font-family: "bootstrap-icons";
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    transition: transform 0.2s ease;
+}
+
+.faq-item[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.faq-item[open] summary {
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.faq-answer {
+    padding: 0.9rem 1.1rem 1.1rem;
+    color: var(--color-gray-600);
+    font-size: 0.875rem;
+    line-height: 1.65;
+}
+
+.faq-answer p {
+    margin: 0 0 0.75rem;
+}
+
+.faq-answer p:last-child {
+    margin-bottom: 0;
+}
+
+.faq-answer ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.faq-answer li {
+    margin-bottom: 0.4rem;
+}
+
+.faq-answer li:last-child {
+    margin-bottom: 0;
+}
+
+.faq-answer strong {
+    color: var(--color-dark);
+    font-weight: 600;
+}

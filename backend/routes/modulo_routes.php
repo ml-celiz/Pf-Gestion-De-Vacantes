@@ -1,20 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../controllers/modulo_controller.php';
+require_once __DIR__ . '/../services/auth_services.php';
 
+// Los modulos se administran desde la pantalla de roles: solo admin
 function handleModuloRoutes(string $method, array $uriParts): void {
+    exigirRol(verificarAutenticacion(), ['admin']);
+
     $controller = new ModuloController();
     $id = isset($uriParts[2]) && is_numeric($uriParts[2]) ? (int)$uriParts[2] : null;
 
     // GET /api/modulos
     if ($method === 'GET' && $id === null) {
         $controller->listar();
-        return;
-    }
-
-    // GET /api/modulos/{id}
-    if ($method === 'GET' && $id !== null) {
-        $controller->obtenerPorId($id);
         return;
     }
 

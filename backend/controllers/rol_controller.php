@@ -15,16 +15,6 @@ class RolController {
         echo json_encode($this->rolService->obtenerTodos());
     }
 
-    public function obtenerPorId(int $id): void {
-        $rol = $this->rolService->obtenerPorId($id);
-        if ($rol) {
-            echo json_encode($rol);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Rol no encontrado."]);
-        }
-    }
-
     public function crear(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
@@ -121,20 +111,7 @@ class RolController {
         }
     }
 
-    public function desasignarModulo(int $idRol, int $idModulo): void {
-        if ($this->rolService->desasignarModulo($idRol, $idModulo)) {
-            echo json_encode(["message" => "Módulo desasignado del rol."]);
-        } else {
-            http_response_code(400);
-            echo json_encode(["message" => "Error al desasignar módulo."]);
-        }
-    }
-
     // --- ASOCIACIONES: USUARIOS ---
-
-    public function listarUsuarios(int $idRol): void {
-        echo json_encode($this->rolService->obtenerUsuariosPorRol($idRol));
-    }
 
     public function asignarUsuario(int $idRol): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];

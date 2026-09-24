@@ -1,0 +1,362 @@
+/* =========================================================
+   MI PERFIL (dialog)
+   La base del dialog (.app-dialog, .app-btn) está en
+   global.css; acá solo lo propio del perfil.
+   ========================================================= */
+
+.app-dialog.perfil-dialog .app-dialog-body {
+    padding: 0;
+}
+
+/* =========================================================
+   CABECERA DEL USUARIO
+   ========================================================= */
+
+.perfil-identidad {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.5rem 20px;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.perfil-avatar {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary-soft);
+    border-radius: 50%;
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.perfil-identidad-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.perfil-nombre {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.perfil-email {
+    color: var(--color-gray-500);
+    font-size: 0.85rem;
+    word-break: break-all;
+}
+
+.perfil-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+.perfil-rol-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    background: var(--color-gray-100);
+    border-radius: 999px;
+    color: var(--color-gray-600);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   DATOS
+   ========================================================= */
+
+.perfil-datos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    padding: 1.5rem 20px;
+}
+
+.perfil-dato {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.perfil-dato-label {
+    color: var(--color-gray-500);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.perfil-dato-valor {
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/* =========================================================
+   CV (solo postulantes)
+   ========================================================= */
+
+.perfil-cv {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 20px 1.5rem;
+    padding: 1rem;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.75rem;
+}
+
+.perfil-cv-info {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+}
+
+.perfil-cv-icono {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-gray-100);
+    border-radius: 0.7rem;
+    color: var(--color-gray-500);
+    font-size: 1.25rem;
+}
+
+.perfil-cv-icono.cargado {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.perfil-cv-estado {
+    margin: 0.15rem 0 0;
+    color: var(--color-gray-600);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.perfil-cv-acciones {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+}
+
+.perfil-cv-acciones .app-btn {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.8rem;
+}
+
+/* =========================================================
+   FORMULARIO DE EDICIÓN
+   ========================================================= */
+
+.perfil-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem 20px;
+}
+
+.perfil-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.perfil-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.perfil-form label {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.perfil-form .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.75rem;
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.perfil-form .form-control:hover {
+    border-color: var(--color-gray-300);
+}
+
+.perfil-form .form-control:focus {
+    outline: none !important;
+    border-color: var(--color-accent);
+    box-shadow: none !important;
+}
+
+.perfil-form .form-help {
+    color: var(--color-gray-500);
+    font-size: 0.82rem;
+}
+
+/* Ayuda debajo de los dos campos de contraseña */
+.perfil-form .perfil-form-ayuda {
+    margin-top: -0.5rem;
+    line-height: 1.4;
+}
+
+/* =========================================================
+   CARGANDO / ERROR
+   ========================================================= */
+
+.perfil-loading,
+.perfil-error {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    color: var(--color-gray-500);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.perfil-loading .spinner-border {
+    color: var(--color-primary);
+}
+
+.perfil-error i {
+    font-size: 2rem;
+}
+
+.perfil-error p {
+    margin: 0;
+}
+
+/* =========================================================
+   CONFIRMACIÓN DE BAJA
+   ========================================================= */
+
+.app-dialog.perfil-confirm-dialog {
+    width: min(460px, calc(100% - 32px));
+}
+
+.app-dialog.perfil-confirm-dialog::before {
+    background: var(--color-danger);
+}
+
+.perfil-confirm-dialog .app-dialog-body p {
+    margin: 0 0 0.75rem;
+}
+
+.perfil-confirm-dialog .app-dialog-body p:last-child {
+    margin-bottom: 0;
+}
+
+.perfil-confirm-dialog .app-dialog-body strong {
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+/* =========================================================
+   SNACKBAR
+   ========================================================= */
+
+.app-snackbar.perfil-snackbar {
+    position: fixed;
+    inset: auto auto 28px 50%;
+    z-index: 9999;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 280px;
+    max-width: 450px;
+    padding: 13px 18px;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    box-shadow: 0 5px 18px var(--color-shadow-md);
+    color: var(--color-gray-600);
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+}
+
+.app-snackbar.perfil-snackbar.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.app-snackbar.perfil-snackbar i {
+    font-size: 18px;
+}
+
+.app-snackbar.perfil-snackbar.app-snackbar-success i {
+    color: var(--color-success-muted);
+}
+
+.app-snackbar.perfil-snackbar.app-snackbar-error i {
+    color: var(--color-danger-muted);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 576px) {
+    .perfil-datos,
+    .perfil-form .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .perfil-identidad {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .perfil-identidad-datos {
+        align-items: center;
+    }
+
+    .perfil-cv {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .perfil-cv-acciones .app-btn {
+        flex: 1;
+    }
+}

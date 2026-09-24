@@ -14,17 +14,6 @@ class ModuloController {
         echo json_encode($modulos);
     }
 
-    public function obtenerPorId(int $id): void {
-        $modulo = $this->moduloService->obtenerPorId($id);
-
-        if ($modulo) {
-            echo json_encode($modulo);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Módulo no encontrado."]);
-        }
-    }
-
     public function crear(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         $exito = $this->moduloService->crear($input);

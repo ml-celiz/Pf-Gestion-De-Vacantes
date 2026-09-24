@@ -1,37 +1,6 @@
-/* CONTENEDOR PRINCIPAL */
-.app-viewport {
-    background-color: #f8fafc;
-    background-image:
-        radial-gradient(
-            at 0% 0%,
-            hsla(210, 100%, 93%, 1) 0px,
-            transparent 50%
-        ),
-        radial-gradient(
-            at 100% 100%,
-            hsla(204, 100%, 86%, 0.5) 0px,
-            transparent 50%
-        );
-    background-attachment: fixed;
-}
-
-/* LEYENDA DE RUTA */
-
-.breadcrumb-bar {
-    margin-bottom: 0.75rem;
-}
-
-.breadcrumb-path {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted, #64748b);
-    letter-spacing: 0.5px;
-}
-
-/* MAIN */
 .menu-main {
     width: 100%;
-    padding: 2rem 2.5rem 1rem;
+    padding: 1.25rem 2.5rem 0.5rem;
 }
 
 /* CONTENEDOR */
@@ -41,30 +10,10 @@
     margin: 0 auto;
 }
 
-/* ENCABEZADO */
-.menu-header {
-    width: 100%;
-    margin-bottom: 1.0rem;
-}
-
-.menu-header h1 {
-    margin: 0 0 0.4rem;
-    color: var(--brand-dark, #1e293b);
-    font-size: 1.8rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-}
-
-.menu-header p {
-    margin: 0;
-    color: var(--text-muted, #64748b);
-    font-size: 0.95rem;
-}
-
 /* SECCIONES */
 .menu-section {
     width: 100%;
-    margin-bottom: 2.75rem;
+    margin-bottom: 1.5rem;
 }
 
 /* Ocultas por permisos del rol (display: flex de .menu-card pisa a [hidden]) */
@@ -76,25 +25,24 @@
 /* CABECERA DE SECCIÓN */
 .section-header {
     width: 100%;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.85rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--color-shadow-sm);
 }
 
 .section-header h2 {
-    margin: 0 0 0.25rem;
-    color: var(--brand-dark, #1e293b);
-    font-size: 1.15rem;
+    margin: 0 0 0.15rem;
+    color: var(--color-dark);
+    font-size: 1.05rem;
     font-weight: 800;
     letter-spacing: 0.2px;
 }
 
 .section-header p {
     margin: 0;
-    color: var(--text-muted, #64748b);
-    font-size: 0.85rem;
+    color: var(--color-gray-500);
+    font-size: 0.8rem;
 }
-
 
 /* GRID DE TARJETAS */
 .menu-grid {
@@ -103,23 +51,23 @@
     justify-content: center;
     align-items: stretch;
     flex-wrap: wrap;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
-/* TARJETAS */
+/* TARJETAS: ancho flexible (hasta 360px) para que no haya scroll horizontal */
 .menu-card {
     position: relative;
-    width: 400px;
-    min-width: 400px;
-    height: 170px;
+    flex: 0 1 360px;
+    min-width: 0;
+    height: 120px;
     display: flex;
     align-items: flex-start;
-    padding: 1.5rem;
+    padding: 1.1rem 1.25rem;
     text-align: left;
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(226, 232, 240, 0.9);
+    background: var(--color-white-translucent);
+    border: 1px solid var(--color-border-soft);
     border-radius: 1.1rem;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 8px 25px var(--color-shadow-xs);
     backdrop-filter: blur(10px);
     cursor: pointer;
     transition:
@@ -131,59 +79,59 @@
 /* HOVER */
 .menu-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(14, 165, 233, 0.35);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-accent-border);
+    box-shadow: 0 15px 35px var(--color-shadow-sm);
 }
 
 /* FOCUS */
 .menu-card:focus-visible {
     outline: none;
-    border-color: var(--brand-accent, #0ea5e9);
-    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-ring);
 }
 
 /* ICONOS */
 .menu-card-icon {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 1rem;
-    border-radius: 0.8rem;
-    font-size: 1.25rem;
+    margin-right: 0.9rem;
+    border-radius: 0.75rem;
+    font-size: 1.15rem;
 }
 
 /* COLORES DE ICONOS */
 .icon-blue {
-    color: #2563eb;
-    background-color: #eff6ff;
+    color: var(--color-info);
+    background-color: var(--color-info-soft);
 }
 
 .icon-green {
-    color: #16a34a;
-    background-color: #f0fdf4;
+    color: var(--color-success);
+    background-color: var(--color-success-soft);
 }
 
 .icon-orange {
-    color: #ea580c;
-    background-color: #fff7ed;
+    color: var(--color-orange);
+    background-color: var(--color-orange-soft);
 }
 
 .icon-purple {
-    color: #9333ea;
-    background-color: #faf5ff;
+    color: var(--color-purple);
+    background-color: var(--color-purple-soft);
 }
 
 .icon-indigo {
-    color: #4f46e5;
-    background-color: #eef2ff;
+    color: var(--color-indigo);
+    background-color: var(--color-indigo-soft);
 }
 
 .icon-teal {
-    color: #0f766e;
-    background-color: #f0fdfa;
+    color: var(--color-teal);
+    background-color: var(--color-teal-soft);
 }
 
 /* CONTENIDO */
@@ -192,26 +140,26 @@
 }
 
 .menu-card-content h3 {
-    margin: 0 0 0.45rem;
-    color: var(--brand-dark, #1e293b);
-    font-size: 1rem;
+    margin: 0 0 0.3rem;
+    color: var(--color-dark);
+    font-size: 0.95rem;
     font-weight: 700;
 }
 
 .menu-card-content p {
     margin: 0;
-    color: var(--text-muted, #64748b);
-    font-size: 0.875rem;
-    line-height: 1.5;
+    color: var(--color-gray-500);
+    font-size: 0.8rem;
+    line-height: 1.45;
 }
 
 /* FLECHA */
 .menu-card-arrow {
     position: absolute;
-    right: 1.25rem;
-    bottom: 1.15rem;
-    color: #2563eb;
-    font-size: 1.2rem;
+    right: 1rem;
+    bottom: 0.8rem;
+    color: var(--color-info);
+    font-size: 1.1rem;
     transition: transform 0.2s ease;
 }
 
@@ -222,48 +170,19 @@
 /* RESPONSIVE */
 @media (max-width: 900px) {
     .menu-main {
-        padding: 1.75rem 1.5rem 2.5rem;
+        padding: 1.25rem 1.5rem 1.5rem;
     }
-
-    .menu-card {
-        width: 380px;
-        min-width: 380px;
-    }
-
 }
 
-
+/* Celular: una tarjeta por fila, con el alto que necesite el texto */
 @media (max-width: 600px) {
     .menu-main {
-        padding: 1.5rem 1rem 2rem;
-    }
-
-    .menu-header h1 {
-        font-size: 1.5rem;
+        padding: 1rem 1rem 1.5rem;
     }
 
     .menu-card {
-        width: 100%;
-        min-width: 0;
-        height: 160px;
-    }
-
-}
-
-@media (max-width: 400px) {
-    .menu-card {
+        flex-basis: 100%;
         height: auto;
-        min-height: 155px;
-
-        padding: 1.25rem;
-    }
-
-    .menu-card-icon {
-        width: 42px;
-        height: 42px;
-
-        margin-right: 0.8rem;
-
-        font-size: 1.1rem;
+        min-height: 110px;
     }
 }

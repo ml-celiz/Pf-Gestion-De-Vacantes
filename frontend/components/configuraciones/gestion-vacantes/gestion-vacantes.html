@@ -1,32 +1,19 @@
 <!-- NAVBAR -->
 <app-navbar></app-navbar>
 
-<div class="vacantes-container">
-
+<div class="panel-container">
     <!-- BREADCRUMB -->
     <div class="breadcrumb-bar">
-        <span class="breadcrumb-path">
-            MENÚ PRINCIPAL / CONFIGURACIONES / VACANTES
-        </span>
+        <span class="breadcrumb-path">MENÚ PRINCIPAL / CONFIGURACIONES / VACANTES</span>
     </div>
 
     <!-- ENCABEZADO -->
-    <header class="vacantes-header">
-
-        <h1>
-            Gestión de vacantes
-        </h1>
+    <header class="panel-header">
+        <h1>Gestión de vacantes</h1>
 
         <div class="header-actions">
-
-            <button
-                id="btn-refresh"
-                class="btn-icon"
-                title="Recargar"
-                type="button">
-
+            <button id="btn-refresh" class="btn-icon" title="Recargar" type="button">
                 <i class="bi bi-arrow-counterclockwise"></i>
-
             </button>
 
             <button
@@ -34,141 +21,70 @@
                 class="btn-icon btn-add"
                 title="Añadir Vacante"
                 type="button">
-
                 <i class="bi bi-plus-circle-fill"></i>
-
             </button>
-
         </div>
-
     </header>
 
     <!-- GRID PRINCIPAL -->
-    <div class="vacantes-grid">
-
+    <div class="panel-grid">
         <!-- TABLA PRINCIPAL: VACANTES -->
-        <section class="card-table main-vacantes-card">
-
+        <section class="card-table panel-main-card">
             <div class="table-responsive">
-
                 <table class="custom-table">
-
                     <thead>
-
                         <tr>
-
                             <th>Vacante</th>
-
                             <th>Descripción</th>
-
                             <th>Requisitos</th>
-
                             <th>Inicio</th>
-
                             <th>Fin</th>
-
                             <th>Estado</th>
-
                             <th>Cátedra</th>
-
-                            <th class="text-center">
-                                Acciones
-                            </th>
-
+                            <th class="text-center">Acciones</th>
                         </tr>
-
                     </thead>
 
                     <tbody id="tb-vacantes">
-
                         <tr>
-
-                            <td
-                                colspan="9"
-                                class="text-center">
-
-                                Cargando vacantes...
-
-                            </td>
-
+                            <td colspan="9" class="text-center">Cargando vacantes...</td>
                         </tr>
-
                     </tbody>
-
                 </table>
-
             </div>
 
             <!-- PAGINACIÓN -->
             <div class="table-footer">
-
-                <div
-                    class="pagination-info"
-                    id="vacantes-page-info">
-
-                    0 - 0 de 0
-
-                </div>
+                <div class="pagination-info" id="vacantes-page-info">0 - 0 de 0</div>
 
                 <div class="pagination-buttons">
-
-                    <button
-                        id="vacantes-prev"
-                        class="pagination-btn"
-                        type="button"
-                        disabled>
-
+                    <button id="vacantes-prev" class="pagination-btn" type="button" disabled>
                         <i class="bi bi-chevron-left"></i>
-
                     </button>
 
-                    <span id="vacantes-page-number">
-                        Página 1
-                    </span>
+                    <span id="vacantes-page-number">Página 1</span>
 
-                    <button
-                        id="vacantes-next"
-                        class="pagination-btn"
-                        type="button"
-                        disabled>
-
+                    <button id="vacantes-next" class="pagination-btn" type="button" disabled>
                         <i class="bi bi-chevron-right"></i>
-
                     </button>
-
                 </div>
-
             </div>
-
         </section>
 
         <!-- TABLAS LATERALES -->
         <aside class="side-tables-container">
-
             <!-- CÁTEDRAS -->
             <section class="card-table side-card">
-
                 <div class="side-header">
-                    <span>
-                        Cátedras
-                    </span>
+                    <span>Cátedras</span>
                 </div>
 
                 <div class="side-table-body">
-
                     <table class="custom-table compact">
-
                         <thead>
-
                             <tr>
-
-                                <th>
-                                    Nombre
-                                </th>
-
-                                <th>
-                                    Departamento
-                                </th>
+                                <th>Nombre</th>
+                                <th>Departamento</th>
 
                                 <th class="text-center">
                                     <div class="action-header">
@@ -179,96 +95,50 @@
                                             class="btn-action add"
                                             title="Añadir Cátedra"
                                             type="button">
-
                                             <i class="bi bi-plus-circle-fill"></i>
-
                                         </button>
                                     </div>
                                 </th>
-
                             </tr>
-
                         </thead>
 
                         <tbody id="tb-catedras">
-
                             <tr>
-
-                                <td
-                                    colspan="3"
-                                    class="text-center text-muted">
-
-                                    Cargando...
-
-                                </td>
-
+                                <td colspan="3" class="text-center text-muted">Cargando...</td>
                             </tr>
-
                         </tbody>
-
                     </table>
-
                 </div>
 
                 <!-- PAGINACIÓN -->
                 <div class="table-footer compact">
-
-                    <span id="catedras-page-info">
-                        0 - 0 de 0
-                    </span>
+                    <span id="catedras-page-info">0 - 0 de 0</span>
 
                     <div class="pagination-buttons">
-
-                        <button
-                            id="catedras-prev"
-                            class="pagination-btn"
-                            type="button"
-                            disabled>
-
+                        <button id="catedras-prev" class="pagination-btn" type="button" disabled>
                             <i class="bi bi-chevron-left"></i>
-
                         </button>
 
-                        <span id="catedras-page-number">
-                            Página 1
-                        </span>
+                        <span id="catedras-page-number">Página 1</span>
 
-                        <button
-                            id="catedras-next"
-                            class="pagination-btn"
-                            type="button"
-                            disabled>
-
+                        <button id="catedras-next" class="pagination-btn" type="button" disabled>
                             <i class="bi bi-chevron-right"></i>
-
                         </button>
-
                     </div>
-
                 </div>
-
             </section>
 
             <!-- DEPARTAMENTOS -->
             <section class="card-table side-card">
-
                 <div class="side-header">
-                    <span>
-                        Departamentos
-                    </span>
+                    <span>Departamentos</span>
                 </div>
 
                 <div class="side-table-body">
-
                     <table class="custom-table compact">
-
                         <thead>
-
                             <tr>
-
-                                <th>
-                                    Nombre
-                                </th>
+                                <th>Nombre</th>
 
                                 <th class="text-center">
                                     <div class="action-header">
@@ -279,81 +149,48 @@
                                             class="btn-action add"
                                             title="Añadir Departamento"
                                             type="button">
-
                                             <i class="bi bi-plus-circle-fill"></i>
-
                                         </button>
-
                                     </div>
                                 </th>
-
                             </tr>
-
                         </thead>
 
                         <tbody id="tb-departamentos">
-
                             <tr>
-
-                                <td
-                                    colspan="2"
-                                    class="text-center text-muted">
-
-                                    Cargando...
-
-                                </td>
-
+                                <td colspan="2" class="text-center text-muted">Cargando...</td>
                             </tr>
-
                         </tbody>
-
                     </table>
-
                 </div>
 
                 <!-- PAGINACIÓN -->
                 <div class="table-footer compact">
-
-                    <span id="departamentos-page-info">
-                        0 - 0 de 0
-                    </span>
+                    <span id="departamentos-page-info">0 - 0 de 0</span>
 
                     <div class="pagination-buttons">
-
                         <button
                             id="departamentos-prev"
                             class="pagination-btn"
                             type="button"
                             disabled>
-
                             <i class="bi bi-chevron-left"></i>
-
                         </button>
 
-                        <span id="departamentos-page-number">
-                            Página 1
-                        </span>
+                        <span id="departamentos-page-number">Página 1</span>
 
                         <button
                             id="departamentos-next"
                             class="pagination-btn"
                             type="button"
                             disabled>
-
                             <i class="bi bi-chevron-right"></i>
-
                         </button>
-
                     </div>
-
                 </div>
-
             </section>
-
         </aside>
-
     </div>
-
 </div>
 
 <!-- FOOTER -->

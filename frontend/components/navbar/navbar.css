@@ -7,10 +7,10 @@ app-navbar {
 /* Barra superior */
 .app-navbar {
     height: 64px;
-    background: rgba(239, 247, 255, 0.95) !important;
+    background: var(--color-navbar-bg) !important;
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(14, 165, 233, 0.12) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid var(--color-accent-ring) !important;
+    box-shadow: 0 4px 20px var(--color-shadow-xs);
 }
 
 /* BRAND */
@@ -24,21 +24,15 @@ app-navbar {
     height: 46px;
     flex-shrink: 0;
     overflow: hidden;
-
-    background-color: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.9);
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border-soft);
     border-radius: 50%;
-
-    box-shadow: 0 4px 10px rgba(0, 86, 179, 0.15);
-
+    box-shadow: 0 4px 10px var(--color-primary-shadow);
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 0;
-
     cursor: pointer;
-
     transition:
         transform 0.15s ease,
         box-shadow 0.15s ease,
@@ -47,8 +41,8 @@ app-navbar {
 
 .brand-badge:hover {
     transform: scale(1.05);
-    border-color: rgba(14, 165, 233, 0.35);
-    box-shadow: 0 5px 14px rgba(0, 86, 179, 0.20);
+    border-color: var(--color-accent-border);
+    box-shadow: 0 5px 14px var(--color-primary-shadow-strong);
 }
 
 .brand-badge:focus {
@@ -56,7 +50,7 @@ app-navbar {
 }
 
 .brand-badge:focus-visible {
-    outline: 2px solid var(--brand-primary, #0056b3);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
@@ -71,27 +65,68 @@ app-navbar {
 /* Nombre de la facultad */
 .brand-title {
     font-size: 1.05rem;
-    color: var(--brand-dark, #1e293b);
+    color: var(--color-dark);
     line-height: 1.2;
 }
 
 /* Subtítulo */
 .brand-subtitle {
     font-size: 0.8rem;
-    color: var(--text-muted, #64748b);
+    color: var(--color-gray-500);
     font-weight: 500;
 }
 
 /* MENÚ DE USUARIO */
+/* BOTÓN MODO INVITADO (login) */
+.guest-access-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-accent-border);
+    border-radius: 2rem;
+    background-color: var(--color-white-translucent);
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.guest-access-button:hover {
+    background-color: var(--color-white);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px var(--color-shadow-sm);
+    transform: translateY(-1px);
+}
+
+.guest-access-button[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 575.98px) {
+    .guest-access-button span {
+        display: none;
+    }
+
+    .guest-access-button {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
 .user-menu-button {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     padding: 0.3rem 0.65rem 0.3rem 0.35rem;
-    border: 1px solid rgba(226, 232, 240, 0.9);
+    border: 1px solid var(--color-border-soft);
     border-radius: 2rem;
-    background-color: rgba(255, 255, 255, 0.85);
-    color: var(--brand-dark, #1e293b);
+    background-color: var(--color-white-translucent);
+    color: var(--color-dark);
     font-size: 0.9rem;
     font-weight: 600;
     transition:
@@ -102,9 +137,9 @@ app-navbar {
 
 .user-menu-button:hover,
 .user-menu-button:focus {
-    background-color: #ffffff;
-    border-color: rgba(14, 165, 233, 0.35);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    background-color: var(--color-white);
+    border-color: var(--color-accent-border);
+    box-shadow: 0 4px 12px var(--color-shadow-sm);
 }
 
 /* Flecha del dropdown */
@@ -120,8 +155,8 @@ app-navbar {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: #eff6ff;
-    color: var(--brand-primary, #0056b3);
+    background-color: var(--color-info-soft);
+    color: var(--color-primary);
     font-size: 1rem;
 }
 
@@ -130,10 +165,10 @@ app-navbar {
     min-width: 230px;
     margin-top: 0.6rem !important;
     padding: 0.5rem;
-    border: 1px solid rgba(226, 232, 240, 0.9);
+    border: 1px solid var(--color-border-soft);
     border-radius: 0.9rem;
-    background-color: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.10);
+    background-color: var(--color-white-glass);
+    box-shadow: 0 15px 35px var(--color-shadow-md);
     backdrop-filter: blur(12px);
 }
 
@@ -144,7 +179,7 @@ app-navbar {
     width: 100%;
     padding: 0.65rem 0.75rem;
     border-radius: 0.6rem;
-    color: var(--brand-dark, #1e293b);
+    color: var(--color-dark);
     font-size: 0.875rem;
     transition:
         background-color 0.2s ease,
@@ -153,33 +188,33 @@ app-navbar {
 
 .user-dropdown-item:hover,
 .user-dropdown-item:focus {
-    background-color: #f1f7fd;
-    color: var(--brand-primary, #0056b3);
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary);
 }
 
 /* Iconos */
 .user-dropdown-item i {
     width: 20px;
-    color: #64748b;
+    color: var(--color-gray-500);
     font-size: 1rem;
 }
 
 .user-dropdown-item:hover i {
-    color: var(--brand-primary, #0056b3);
+    color: var(--color-primary);
 }
 
 /* CERRAR SESIÓN */
 .user-dropdown-item.logout-item {
-    color: #dc2626;
+    color: var(--color-danger);
 }
 
 .user-dropdown-item.logout-item i {
-    color: #dc2626;
+    color: var(--color-danger);
 }
 
 .user-dropdown-item.logout-item:hover {
-    background-color: #fef2f2;
-    color: #b91c1c;
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger-hover);
 }
 
 /* RESPONSIVE */

@@ -1,50 +1,29 @@
 <div class="app-viewport d-flex flex-column min-vh-100">
-
     <!-- NAVBAR -->
     <app-navbar data-public="true"></app-navbar>
 
     <div class="app-workspace d-flex flex-grow-1">
-
         <main class="app-main-content flex-grow-1 d-flex align-items-center justify-content-center p-3 p-md-5">
-
-            <div class="login-card-container">
-
+            <div class="login-card-container" id="seccion-login">
                 <header class="text-center mb-4">
-                    <h1 class="h3 fw-extrabold tracking-tight mb-2">
-                        ¡Bienvenido!
-                    </h1>
-
-                    <p class="text-muted fs-6">
-                        Ingresa tus credenciales para acceder
-                    </p>
+                    <h1 class="h3 fw-extrabold tracking-tight mb-2">¡Bienvenido!</h1>
+                    <p class="text-muted fs-6">Ingresa tus credenciales para acceder</p>
                 </header>
 
                 <section class="card login-card border-0">
-
                     <div class="card-body p-4 p-sm-5">
-
-                        <div
-                            id="alert-container"
-                            aria-live="polite"
-                            aria-atomic="true">
+                        <div id="alert-container" aria-live="polite" aria-atomic="true">
                         </div>
 
                         <form id="login-form" novalidate>
-
                             <!-- Correo / Usuario -->
                             <div class="form-group mb-4">
-
-                                <label
-                                    for="email"
-                                    class="form-label fw-semibold mb-2">
+                                <label for="email" class="form-label fw-semibold mb-2">
                                     Correo Electrónico o Usuario
                                 </label>
 
                                 <div class="input-group-custom">
-
-                                    <i
-                                        class="bi bi-person input-icon"
-                                        aria-hidden="true">
+                                    <i class="bi bi-person input-icon" aria-hidden="true">
                                     </i>
 
                                     <input
@@ -57,49 +36,35 @@
                                         required
                                         aria-describedby="email-help"
                                     >
-
                                 </div>
 
-                                <div
-                                    id="email-help"
-                                    class="form-text visually-hidden-sr">
+                                <div id="email-help" class="form-text visually-hidden-sr">
                                     Ingrese su usuario o correo institucional.
                                 </div>
 
-                                <div
-                                    id="email-error"
-                                    class="invalid-feedback">
+                                <div id="email-error" class="invalid-feedback">
                                     Por favor, ingrese un correo válido.
                                 </div>
-
                             </div>
 
                             <!-- Contraseña -->
                             <div class="form-group mb-4">
-
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-
-                                    <label
-                                        for="contrasenea"
-                                        class="form-label fw-semibold mb-0">
+                                    <label for="contrasenea" class="form-label fw-semibold mb-0">
                                         Contraseña
                                     </label>
 
-                                    <!-- 
+                                    <!--
                                     <a
                                         href="#recuperar"
                                         class="link-forgot text-decoration-none fw-medium fs-7">
                                         ¿Olvidaste tu contraseña?
                                     </a>
                                     -->
-
                                 </div>
 
                                 <div class="input-group-custom">
-
-                                    <i
-                                        class="bi bi-lock input-icon"
-                                        aria-hidden="true">
+                                    <i class="bi bi-lock input-icon" aria-hidden="true">
                                     </i>
 
                                     <input
@@ -112,15 +77,11 @@
                                         required
                                         aria-describedby="password-error"
                                     >
-
                                 </div>
 
-                                <div
-                                    id="password-error"
-                                    class="invalid-feedback">
+                                <div id="password-error" class="invalid-feedback">
                                     La contraseña es obligatoria.
                                 </div>
-
                             </div>
 
                             <!-- Botón -->
@@ -128,10 +89,7 @@
                                 type="submit"
                                 id="btn-submit"
                                 class="btn btn-primary-custom w-100 fw-bold text-uppercase mt-2">
-
-                                <span id="btn-text">
-                                    Iniciar Sesión
-                                </span>
+                                <span id="btn-text">Iniciar Sesión</span>
 
                                 <span
                                     id="btn-spinner"
@@ -139,22 +97,209 @@
                                     role="status"
                                     aria-hidden="true">
                                 </span>
-
                             </button>
-
                         </form>
 
+                        <!-- CREAR CUENTA -->
+                        <p class="auth-switch-text text-center mt-4 mb-0">
+                            ¿No tenés cuenta?
+                            <button type="button" class="auth-switch-link" id="btn-ir-registro">
+                                Creá una
+                            </button>
+                        </p>
                     </div>
-
                 </section>
-
             </div>
 
-        </main>
+            <!-- ============================================= -->
+            <!-- REGISTRO                                      -->
+            <!-- ============================================= -->
 
+            <div class="login-card-container" id="seccion-registro" hidden>
+                <header class="text-center mb-4">
+                    <h1 class="h3 fw-extrabold tracking-tight mb-2">Creá tu cuenta</h1>
+                    <p class="text-muted fs-6">Registrate para postularte a las vacantes</p>
+                </header>
+
+                <section class="card login-card border-0">
+                    <div class="card-body p-4 p-sm-5">
+                        <div id="registro-alert-container" aria-live="polite" aria-atomic="true">
+                        </div>
+
+                        <form id="registro-form" novalidate>
+                            <!-- Nombre + Apellido -->
+                            <div class="registro-row">
+                                <div class="form-group mb-4">
+                                    <label
+                                        for="registro-nombre"
+                                        class="form-label fw-semibold mb-2">
+                                        Nombre
+                                    </label>
+
+                                    <div class="input-group-custom">
+                                        <i class="bi bi-person input-icon" aria-hidden="true"></i>
+
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-custom"
+                                            id="registro-nombre"
+                                            autocomplete="given-name"
+                                            placeholder="Juan"
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label
+                                        for="registro-apellido"
+                                        class="form-label fw-semibold mb-2">
+                                        Apellido
+                                    </label>
+
+                                    <div class="input-group-custom">
+                                        <i class="bi bi-person input-icon" aria-hidden="true"></i>
+
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-custom"
+                                            id="registro-apellido"
+                                            autocomplete="family-name"
+                                            placeholder="Pérez"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="form-group mb-4">
+                                <label for="registro-email" class="form-label fw-semibold mb-2">
+                                    Correo electrónico
+                                </label>
+
+                                <div class="input-group-custom">
+                                    <i class="bi bi-envelope input-icon" aria-hidden="true"></i>
+
+                                    <input
+                                        type="email"
+                                        class="form-control form-control-custom"
+                                        id="registro-email"
+                                        autocomplete="email"
+                                        placeholder="usuario@utn.edu.ar"
+                                        required>
+                                </div>
+                            </div>
+
+                            <!-- DNI + Teléfono -->
+                            <div class="registro-row">
+                                <div class="form-group mb-4">
+                                    <label for="registro-dni" class="form-label fw-semibold mb-2">
+                                        DNI
+                                    </label>
+
+                                    <div class="input-group-custom">
+                                        <i class="bi bi-card-text input-icon" aria-hidden="true"></i>
+
+                                        <input
+                                            type="text"
+                                            inputmode="numeric"
+                                            class="form-control form-control-custom"
+                                            id="registro-dni"
+                                            placeholder="40123456">
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label
+                                        for="registro-telefono"
+                                        class="form-label fw-semibold mb-2">
+                                        Teléfono
+                                    </label>
+
+                                    <div class="input-group-custom">
+                                        <i class="bi bi-telephone input-icon" aria-hidden="true"></i>
+
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-custom"
+                                            id="registro-telefono"
+                                            autocomplete="tel"
+                                            placeholder="341 555 5555">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contraseña -->
+                            <div class="form-group mb-4">
+                                <label
+                                    for="registro-contrasena"
+                                    class="form-label fw-semibold mb-2">
+                                    Contraseña
+                                </label>
+
+                                <div class="input-group-custom">
+                                    <i class="bi bi-lock input-icon" aria-hidden="true"></i>
+
+                                    <input
+                                        type="password"
+                                        class="form-control form-control-custom"
+                                        id="registro-contrasena"
+                                        autocomplete="new-password"
+                                        placeholder="••••••••"
+                                        required>
+                                </div>
+
+                                <small class="auth-help">Al menos 8 caracteres.</small>
+                            </div>
+
+                            <!-- Repetir contraseña -->
+                            <div class="form-group mb-4">
+                                <label
+                                    for="registro-contrasena-2"
+                                    class="form-label fw-semibold mb-2">
+                                    Repetir contraseña
+                                </label>
+
+                                <div class="input-group-custom">
+                                    <i class="bi bi-lock input-icon" aria-hidden="true"></i>
+
+                                    <input
+                                        type="password"
+                                        class="form-control form-control-custom"
+                                        id="registro-contrasena-2"
+                                        autocomplete="new-password"
+                                        placeholder="••••••••"
+                                        required>
+                                </div>
+                            </div>
+
+                            <!-- Botón -->
+                            <button
+                                type="submit"
+                                id="btn-registro-submit"
+                                class="btn btn-primary-custom w-100 fw-bold text-uppercase mt-2">
+                                <span id="btn-registro-text">Crear cuenta</span>
+
+                                <span
+                                    id="btn-registro-spinner"
+                                    class="spinner-border spinner-border-sm ms-2 d-none"
+                                    role="status"
+                                    aria-hidden="true">
+                                </span>
+                            </button>
+                        </form>
+
+                        <p class="auth-switch-text text-center mt-4 mb-0">
+                            ¿Ya tenés cuenta?
+                            <button type="button" class="auth-switch-link" id="btn-volver-login">
+                                Iniciá sesión
+                            </button>
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
 
     <!--FOOTER -->
     <app-footer></app-footer>
-
 </div>

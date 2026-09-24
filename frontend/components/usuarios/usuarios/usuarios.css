@@ -1,202 +1,8 @@
-.usuarios-container {
-    width: 100%;
-    padding: 1.5rem 2.5rem;
-}
-
-/* LEYENDA DE RUTA */
-.breadcrumb-bar {
-    margin-bottom: 0.75rem;
-}
-
-.breadcrumb-path {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted, #64748b);
-    letter-spacing: 0.5px;
-}
-
-/* ENCABEZADO */
-.usuarios-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #e2e8f0;
-    padding: 0.75rem 1.25rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1.25rem;
-}
-
-.usuarios-header h1 {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--brand-dark, #1e293b);
-}
-
-.header-actions {
-    display: flex;
-    gap: 0.75rem;
-}
-
-/* BOTONES SUPERIORES */
-.btn-icon {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--brand-dark, #1e293b);
-    font-size: 1.1rem;
-    display: inline-flex;
-    align-items: center;
-    transition:
-        transform 0.15s ease,
-        color 0.15s ease;
-}
-
-.btn-icon:hover {
-    transform: scale(1.1);
-    color: var(--brand-primary, #0056b3);
-}
-
-/* CARD DE TABLA */
-.card-table {
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.usuarios-card {
-    min-width: 0;
-}
-
-/* TABLA */
-.table-responsive {
-    min-height: 510px;
-}
-
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-}
-
-.custom-table th {
-    background: #e2e8f0;
-    color: var(--brand-dark, #1e293b);
-    font-weight: 600;
-    padding: 0.85rem 1rem;
-    text-align: left;
-    white-space: nowrap;
-}
-
-.custom-table td {
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: var(--brand-dark, #1e293b);
-}
-
-
-/* ACCIONES */
-.action-btn-group {
-    display: flex;
-    justify-content: center;
-    gap: 0.6rem;
-}
-
-.btn-action {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.95rem;
-    padding: 0.2rem;
-}
-
-.btn-action.edit {
-    color: #2563eb;
-}
-
-.btn-action.delete {
-    color: #ef4444;
-}
-
-/* PIE DE TABLA Y PAGINACIÓN */
-.table-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    gap: 1rem;
-    font-size: 0.8rem;
-    color: var(--text-muted, #64748b);
-    margin-top: auto;
-}
-
-.pagination-buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    border-radius: 0.35rem;
-    cursor: pointer;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-        background 0.15s ease,
-        color 0.15s ease;
-}
-
-.pagination-btn:hover:not(:disabled) {
-    background: #e2e8f0;
-}
-
-.pagination-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-#usuarios-page-number {
-    min-width: 65px;
-    text-align: center;
-}
-
-/* RESPONSIVE */
-@media (max-width: 992px) {
-    .usuarios-container {
-        padding: 1.25rem;
-    }
-
-}
-
-@media (max-width: 576px) {
-    .usuarios-container {
-        padding: 1rem;
-    }
-
-    .custom-table {
-        font-size: 0.8rem;
-    }
-
-    .custom-table th,
-    .custom-table td {
-        padding: 0.65rem 0.5rem;
-    }
-
-    .table-footer {
-        flex-wrap: wrap;
-    }
-
-}
+/* =========================================================
+   USUARIOS
+   La estructura del panel y la tabla está en global.css;
+   acá solo los dialogs y el snackbar propios del panel.
+   ========================================================= */
 
 /* =========================================================
    DIALOGS DE USUARIOS
@@ -205,43 +11,31 @@
 .custom-dialog {
     width: 520px;
     max-width: calc(100% - 40px);
-
     padding: 0;
-
     overflow: hidden;
-
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
     border-radius: 1.1rem;
-
-    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
-
-    color: var(--brand-dark);
-
+    box-shadow: 0 12px 35px var(--color-shadow-dialog);
+    color: var(--color-dark);
     animation: dialogFadeIn 0.18s ease-out;
 }
-
 
 /* Línea superior */
 
 .custom-dialog::before {
     content: "";
-
     display: block;
-
     width: 100%;
     height: 3px;
-
-    background: var(--brand-primary);
+    background: var(--color-primary);
 }
-
 
 /* Fondo */
 
 .custom-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.32);
+    background: var(--color-overlay);
 }
-
 
 /* =========================================================
    ENCABEZADO
@@ -250,22 +44,18 @@
 .dialog-header {
     display: flex;
     align-items: center;
-
     padding: 18px 20px;
-
-    background: #f1f5f9;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--color-gray-100);
+    border-bottom: 1px solid var(--color-gray-200);
 }
 
 .dialog-header h2 {
     margin: 0;
-
-    color: var(--brand-dark);
+    color: var(--color-dark);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: -0.2px;
 }
-
 
 /* =========================================================
    FORMULARIO
@@ -273,10 +63,8 @@
 
 .usuario-dialog-form {
     min-height: 0;
-
     padding: 22px 20px 20px;
 }
-
 
 /* =========================================================
    CAMPOS
@@ -284,30 +72,22 @@
 
 .usuario-dialog-fields {
     display: grid;
-
     grid-template-columns: 1fr 1fr;
-
     gap: 16px 18px;
 }
-
 
 .form-group {
     display: flex;
     flex-direction: column;
-
     gap: 7px;
 }
 
-
 .form-group label {
     margin-bottom: 0.25rem;
-
-    color: var(--brand-dark);
-
+    color: var(--color-dark);
     font-size: 0.875rem;
     font-weight: 600;
 }
-
 
 /* =========================================================
    INPUTS
@@ -315,39 +95,27 @@
 
 .usuario-dialog-form .form-control {
     width: 100%;
-
     padding: 0.75rem 1rem;
-
-    background-color: #ffffff;
-
-    border: 1px solid var(--border-color);
-
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-200);
     border-radius: 0.75rem;
-
-    color: var(--brand-dark);
-
+    color: var(--color-dark);
     font-size: 0.9rem;
-
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
         background-color 0.2s ease;
 }
 
-
 .usuario-dialog-form .form-control:hover {
-    border-color: #cbd5e1;
+    border-color: var(--color-gray-300);
 }
-
 
 .usuario-dialog-form .form-control:focus {
     outline: none !important;
-
-    border-color: var(--brand-accent);
-
+    border-color: var(--color-accent);
     box-shadow: none !important;
 }
-
 
 /* =========================================================
    SELECT
@@ -357,13 +125,10 @@
     cursor: pointer;
 }
 
-
 .usuario-dialog-form select.form-control:focus {
     outline: none !important;
-
     box-shadow: none !important;
 }
-
 
 /* =========================================================
    AYUDA DE CONTRASEÑA
@@ -371,13 +136,10 @@
 
 .usuario-field-help {
     margin-top: -2px;
-
-    color: #64748b;
-
+    color: var(--color-gray-500);
     font-size: 0.75rem;
     line-height: 1.4;
 }
-
 
 /* =========================================================
    BOTONES
@@ -385,91 +147,60 @@
 
 .usuario-dialog-form .dialog-actions {
     display: flex;
-
     align-items: center;
     justify-content: flex-end;
-
     gap: 10px;
-
     margin-top: 20px;
-
     padding: 18px 0 0;
-
-    background: #ffffff;
-
-    border-top: 1px solid #f1f5f9;
+    background: var(--color-white);
+    border-top: 1px solid var(--color-gray-100);
 }
-
 
 .usuario-dialog-form .dialog-cancel {
     padding: 0.65rem 1.1rem;
-
-    background: #f8fafc;
-
-    border: 1px solid #e2e8f0;
-
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
     border-radius: 0.7rem;
-
-    color: #475569;
-
+    color: var(--color-gray-600);
     font-size: 0.85rem;
     font-weight: 600;
-
     cursor: pointer;
-
     transition:
         background-color 0.2s ease,
         border-color 0.2s ease,
         color 0.2s ease;
 }
 
-
 .usuario-dialog-form .dialog-cancel:hover {
-    background: #f1f5f9;
-
-    border-color: #cbd5e1;
-
-    color: var(--brand-dark);
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-300);
+    color: var(--color-dark);
 }
-
 
 .usuario-dialog-form .btn-primary {
     padding: 0.65rem 1.15rem;
-
-    background: var(--brand-primary);
-
+    background: var(--color-primary);
     border: none;
-
     border-radius: 0.7rem;
-
-    color: #ffffff !important;
-
+    color: var(--color-white) !important;
     font-size: 0.85rem;
     font-weight: 700;
-
     cursor: pointer;
-
     box-shadow:
-        0 3px 8px rgba(0, 86, 179, 0.14);
-
+        0 3px 8px var(--color-primary-shadow);
     transition:
         background-color 0.2s ease,
         box-shadow 0.2s ease,
         transform 0.2s ease;
 }
 
-
 .usuario-dialog-form .btn-primary:hover {
-    background: var(--brand-primary-hover);
-
-    color: #ffffff !important;
-
+    background: var(--color-primary-hover);
+    color: var(--color-white) !important;
     box-shadow:
-        0 5px 12px rgba(0, 86, 179, 0.18);
-
+        0 5px 12px var(--color-primary-shadow-strong);
     transform: translateY(-1px);
 }
-
 
 /* =========================================================
    DIALOG ELIMINAR
@@ -477,87 +208,60 @@
 
 .custom-dialog .dialog-content {
     padding: 1.5rem;
-
-    color: #334155;
-
+    color: var(--color-gray-700);
     font-size: 0.9rem;
-
     line-height: 1.6;
 }
-
 
 .custom-dialog .dialog-content p {
     margin: 0;
 }
 
-
 .custom-dialog .dialog-content strong {
-    color: var(--brand-dark);
-
+    color: var(--color-dark);
     font-weight: 600;
 }
 
-
 .custom-dialog .dialog-actions {
     display: flex;
-
     align-items: center;
     justify-content: flex-end;
-
     gap: 10px;
-
     padding: 18px 20px 20px;
-
-    background: #ffffff;
-
-    border-top: 1px solid #f1f5f9;
+    background: var(--color-white);
+    border-top: 1px solid var(--color-gray-100);
 }
-
 
 .custom-dialog .dialog-confirm-delete {
     padding: 0.65rem 1.15rem;
-
-    background: #dc3545;
-
+    background: var(--color-danger);
     border: none;
-
     border-radius: 0.7rem;
-
-    color: #ffffff !important;
-
+    color: var(--color-white) !important;
     font-size: 0.85rem;
     font-weight: 700;
-
     cursor: pointer;
-
     transition:
         background-color 0.2s ease,
         box-shadow 0.2s ease,
         transform 0.2s ease;
 }
 
-
 .custom-dialog .dialog-confirm-delete:hover {
-    background: #c82333;
-
-    color: #ffffff !important;
-
+    background: var(--color-danger-hover);
+    color: var(--color-white) !important;
     box-shadow:
-        0 4px 10px rgba(220, 53, 69, 0.18);
-
+        0 4px 10px var(--color-danger-shadow);
     transform: translateY(-1px);
 }
-
 
 /* =========================================================
    ANIMACIÓN
    ========================================================= */
 
 @keyframes dialogFadeIn {
-
     from {
         opacity: 0;
-
         transform:
             translateY(8px)
             scale(0.98);
@@ -565,14 +269,11 @@
 
     to {
         opacity: 1;
-
         transform:
             translateY(0)
             scale(1);
     }
-
 }
-
 
 /* =========================================================
    SNACKBAR
@@ -580,109 +281,79 @@
 
 .app-snackbar {
     position: fixed;
-
     left: 50%;
     bottom: 28px;
-
     z-index: 9999;
-
     display: flex;
     align-items: center;
-
     min-width: 280px;
     max-width: 450px;
-
     padding: 13px 18px;
-
     gap: 10px;
-
-    background: #ffffff;
-
-    border: 1px solid #e2e5e8;
-
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
     border-radius: 8px;
-
     box-shadow:
-        0 5px 18px rgba(0, 0, 0, 0.12);
-
-    color: #495057;
-
+        0 5px 18px var(--color-shadow-md);
+    color: var(--color-gray-600);
     font-size: 14px;
     font-weight: 500;
-
     opacity: 0;
-
     transform:
         translate(-50%, 20px);
-
     transition:
         opacity 0.3s ease,
         transform 0.3s ease;
 }
 
-
 .app-snackbar.show {
     opacity: 1;
-
     transform:
         translate(-50%, 0);
 }
-
 
 .app-snackbar i {
     font-size: 18px;
 }
 
-
 .app-snackbar-success i {
-    color: #6c9f7d;
+    color: var(--color-success-muted);
 }
-
 
 .app-snackbar-error i {
-    color: #c97979;
+    color: var(--color-danger-muted);
 }
-
 
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 650px) {
-
     .custom-dialog {
         width: calc(100% - 24px);
         max-width: none;
     }
 
-
     .usuario-dialog-fields {
         grid-template-columns: 1fr;
     }
-
 }
 
-
 @media (max-width: 480px) {
-
     .dialog-header {
         padding: 16px;
     }
-
 
     .usuario-dialog-form {
         padding: 18px 16px 16px;
     }
 
-
     .custom-dialog .dialog-content {
         padding: 18px 16px;
     }
-
 
     .usuario-dialog-form .dialog-actions,
     .custom-dialog .dialog-actions {
         padding: 16px;
     }
-
 }

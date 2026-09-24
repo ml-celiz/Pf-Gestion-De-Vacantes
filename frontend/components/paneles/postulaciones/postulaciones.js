@@ -1,47 +1,30 @@
 class PostulacionesComponent extends HTMLElement {
-
     constructor() {
-
         super();
 
-        // CANTIDAD POR PÁGINA
-        this.postulacionesPerPage = 5;
-
-        // DATOS
-        this.postulaciones = [];
-        this.postulacionesFiltradas = [];
-
-        // PAGINACIÓN
+        this.postulacionesPerPage = 10;
         this.postulacionesCurrentPage = 1;
+        this.postulaciones = [];
     }
 
-
     async connectedCallback() {
-
         try {
-
-            const response =
-                await fetch(
-                    'components/paneles/postulaciones/postulaciones.html'
-                );
+            // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
+            const estilos = cargarEstilos('components/paneles/postulaciones/postulaciones.css');
+            const response = await fetch('components/paneles/postulaciones/postulaciones.html');
 
             if (!response.ok) {
-                throw new Error(
-                    'No se pudo cargar postulaciones.html'
-                );
+                throw new Error('No se pudo cargar postulaciones.html');
             }
 
-            this.innerHTML =
-                await response.text();
+            await estilos;
 
-            await this.inicializar();
+            this.innerHTML = await response.text();
 
+            this.configurarEventos();
+            await this.cargarPostulaciones();
         } catch (error) {
-
-            console.error(
-                'Error al cargar el componente de postulaciones:',
-                error
-            );
+            console.error('Error al cargar el componente de postulaciones:', error);
 
             this.innerHTML = `
                 <div class="alert alert-danger m-3">
@@ -51,788 +34,392 @@ class PostulacionesComponent extends HTMLElement {
         }
     }
 
-
-    async inicializar() {
-
-        this.configurarEventos();
-        await this.cargarPostulaciones();
-    }
-
-
     /* =====================================================
        EVENTOS
        ===================================================== */
 
     configurarEventos() {
+        this.querySelector('#btn-refresh-postulaciones')
+            .addEventListener('click', () => this.cargarPostulaciones());
 
-        // ACTUALIZAR
-        const btnRefresh =
-            this.querySelector(
-                '#btn-refresh-postulaciones'
-            );
+        this.querySelector('#postulaciones-prev').addEventListener('click', () => {
+            if (this.postulacionesCurrentPage > 1) {
+                this.postulacionesCurrentPage--;
+                this.renderPostulaciones();
+            }
+        });
 
-        if (btnRefresh) {
-
-            btnRefresh.addEventListener(
-                'click',
-                () => this.cargarPostulaciones()
-            );
-        }
-
-
-        // FILTRO
-        const inputFiltro =
-            this.querySelector(
-                '#postulaciones-filter'
-            );
-
-        if (inputFiltro) {
-
-            inputFiltro.addEventListener(
-                'input',
-                () => this.filtrarPostulaciones(
-                    inputFiltro.value
-                )
-            );
-        }
-
-
-        // PAGINACIÓN ANTERIOR
-        const btnPrev =
-            this.querySelector(
-                '#postulaciones-prev'
-            );
-
-        if (btnPrev) {
-
-            btnPrev.addEventListener(
-                'click',
-                () => {
-
-                    if (
-                        this.postulacionesCurrentPage > 1
-                    ) {
-
-                        this.postulacionesCurrentPage--;
-
-                        this.renderPostulaciones();
-                    }
-                }
-            );
-        }
-
-
-        // PAGINACIÓN SIGUIENTE
-        const btnNext =
-            this.querySelector(
-                '#postulaciones-next'
-            );
-
-        if (btnNext) {
-
-            btnNext.addEventListener(
-                'click',
-                () => {
-
-                    const totalPages =
-                        Math.ceil(
-                            this.postulacionesFiltradas.length /
-                            this.postulacionesPerPage
-                        );
-
-                    if (
-                        this.postulacionesCurrentPage <
-                        totalPages
-                    ) {
-
-                        this.postulacionesCurrentPage++;
-
-                        this.renderPostulaciones();
-                    }
-                }
-            );
-        }
+        this.querySelector('#postulaciones-next').addEventListener('click', () => {
+            if (this.postulacionesCurrentPage < this.totalPaginas()) {
+                this.postulacionesCurrentPage++;
+                this.renderPostulaciones();
+            }
+        });
     }
-
 
     /* =====================================================
        CARGAR POSTULACIONES
+       GET /api/vacantes/solicitudes
+       El backend ya limita la lista: un postulante solo recibe
+       las suyas (sin las dadas de baja); admin y ra ven todas.
        ===================================================== */
 
     async cargarPostulaciones() {
+        const usuario = AuthService.getUser();
+        const roles = AuthService.getRoles();
+        const veTodas = roles.includes('admin') || roles.includes('ra');
+
+        const endpoint = veTodas
+            ? '/vacantes/solicitudes'
+            : `/vacantes/solicitudes?id_usuario=${usuario?.id}`;
+
         try {
-            const usuario = AuthService.getUser();
-
-            if (!usuario) {
-                console.error('No se pudo obtener el usuario logueado.');
-                this.postulaciones = [];
-                this.postulacionesFiltradas = [];
-                this.renderPostulaciones();
-                return;
-            }
-
-            // Verificamos si tiene roles 'admin' o 'ra'
-            const roles = Array.isArray(usuario.roles) 
-                ? usuario.roles.map(r => (typeof r === 'object' ? r.rol : r).toLowerCase()) 
-                : [];
-
-            const esAdminORa = roles.includes('admin') || roles.includes('ra');
-
-            // Si es admin o ra trae todas las solicitudes; de lo contrario filtra por usuario
-            const endpoint = esAdminORa 
-                ? '/vacantes/solicitudes' 
-                : `/vacantes/solicitudes?id_usuario=${usuario.id}`;
-
-            console.log(`Cargando postulaciones con endpoint: ${endpoint}`);
-
-            const response = await ApiClient.get(endpoint);
-
-            // Validamos la respuesta por si viene directa [ ] o envuelta en un objeto { solicitudes: [ ] }
-            if (Array.isArray(response)) {
-                this.postulaciones = response;
-            } else if (response && Array.isArray(response.solicitudes_vacantes)) {
-                this.postulaciones = response.solicitudes_vacantes;
-            } else if (response && Array.isArray(response.data)) {
-                this.postulaciones = response.data;
-            } else {
-                this.postulaciones = [];
-            }
-
-            this.postulacionesFiltradas = [...this.postulaciones];
-            this.postulacionesCurrentPage = 1;
-
-            this.renderPostulaciones();
-
+            const respuesta = await ApiClient.get(endpoint);
+            this.postulaciones = Array.isArray(respuesta) ? respuesta : [];
         } catch (error) {
             console.error('Error al cargar las postulaciones:', error);
             this.postulaciones = [];
-            this.postulacionesFiltradas = [];
-            this.renderPostulaciones();
         }
-    }
 
+        this.postulacionesCurrentPage = 1;
+        this.renderPostulaciones();
+    }
 
     /* =====================================================
        RENDER
        ===================================================== */
 
     renderPostulaciones() {
-
         const tbody = this.querySelector('#tb-postulaciones');
 
-            if (!tbody) return;
+        if (!tbody) return;
 
-            if (this.postulacionesFiltradas.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-4">
-                            No se encontraron postulaciones.
-                        </td>
-                    </tr>
-                `;
-                this.actualizarPaginacion();
-                return;
-            }
+        if (this.postulaciones.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        No se encontraron postulaciones.
+                    </td>
+                </tr>
+            `;
+            this.actualizarPaginacion();
+            return;
+        }
 
-        const inicio =
-            (
-                this.postulacionesCurrentPage - 1
-            ) *
-            this.postulacionesPerPage;
-
-
-        const fin =
-            inicio +
-            this.postulacionesPerPage;
-
-
-        const postulacionesPagina =
-            this.postulacionesFiltradas.slice(
-                inicio,
-                fin
-            );
-
+        const inicio = (this.postulacionesCurrentPage - 1) * this.postulacionesPerPage;
+        const pagina = this.postulaciones.slice(inicio, inicio + this.postulacionesPerPage);
 
         tbody.innerHTML = '';
 
+        pagina.forEach(postulacion => {
+            // Tiene resultado publicado (orden de mérito)
+            const evaluada = Boolean(postulacion.orden_merito);
+            const tr = document.createElement('tr');
 
-        postulacionesPagina.forEach(
-            postulacion => {
+            tr.innerHTML = `
+                <td>${this.escapeHtml(postulacion.vacante_titulo || 'Sin título')}</td>
+                <td>${this.formatearFecha(postulacion.fecha_postulacion)}</td>
+                <td>
+                    <span class="estado-badge">
+                        ${this.escapeHtml(postulacion.estado_nombre || 'Sin estado')}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-btn-group">
+                        <!-- Ver resultado: solo si hay orden de mérito -->
+                        <button
+                            class="btn-action view"
+                            type="button"
+                            title="${evaluada
+                                ? 'Ver resultado de la postulación'
+                                : 'El resultado todavía no fue publicado'}"
+                            ${evaluada ? '' : 'disabled'}>
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
 
-                const tr =
-                    document.createElement('tr');
+                        <!-- Dar de baja: solo mientras no fue evaluada -->
+                        <button
+                            class="btn-action delete"
+                            type="button"
+                            title="${evaluada
+                                ? 'La postulación ya fue evaluada'
+                                : 'Dar de baja la postulación'}"
+                            ${evaluada ? 'disabled' : ''}>
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
 
+            tr.querySelector('.btn-action.view')
+                .addEventListener('click', () => this.mostrarResultado(postulacion));
 
-                tr.innerHTML = `
+            tr.querySelector('.btn-action.delete')
+                .addEventListener('click', () => this.confirmarBaja(postulacion));
 
-                    <!-- VACANTE -->
-
-                    <td class="vacante-cell">
-
-                        ${this.escapeHtml(
-                            postulacion.vacante_titulo ||
-                            'Sin título'
-                        )}
-
-                    </td>
-
-
-                    <!-- FECHA -->
-
-                    <td class="fecha-cell">
-
-                        ${this.formatearFecha(
-                            postulacion.fecha_postulacion
-                        )}
-
-                    </td>
-
-
-                    <!-- ESTADO -->
-
-                    <td>
-
-                        <span
-                            class="estado-badge">
-
-                            ${this.escapeHtml(
-                                postulacion.estado_nombre ||
-                                'Sin estado'
-                            )}
-
-                        </span>
-
-                    </td>
-
-
-                    <!-- ACCIONES -->
-
-                    <td>
-
-                        <div class="action-btn-group">
-
-                            <!-- VER -->
-
-                            <button
-                                class="btn-action view"
-                                title="Ver postulación"
-                                type="button">
-
-                                <i class="bi bi-eye-fill"></i>
-
-                            </button>
-
-
-                            <!-- EDITAR -->
-
-                            <button
-                                class="btn-action edit"
-                                title="Editar postulación"
-                                type="button">
-
-                                <i class="bi bi-pencil-fill"></i>
-
-                            </button>
-
-
-                            <!-- DAR DE BAJA -->
-
-                            <button
-                                class="btn-action delete"
-                                title="Dar de baja postulación"
-                                type="button">
-
-                                <i class="bi bi-trash-fill"></i>
-
-                            </button>
-
-                        </div>
-
-                    </td>
-                `;
-
-
-                /* =============================
-                   VER
-                   ============================= */
-
-                const btnVer =
-                    tr.querySelector(
-                        '.btn-action.view'
-                    );
-
-                if (btnVer) {
-
-                    btnVer.addEventListener(
-                        'click',
-                        () =>
-                            this.mostrarPostulacion(
-                                postulacion
-                            )
-                    );
-                }
-
-
-                /* =============================
-                   EDITAR
-                   ============================= */
-
-                const btnEditar =
-                    tr.querySelector(
-                        '.btn-action.edit'
-                    );
-
-                if (btnEditar) {
-
-                    btnEditar.addEventListener(
-                        'click',
-                        () =>
-                            this.editarPostulacion(
-                                postulacion
-                            )
-                    );
-                }
-
-
-                /* =============================
-                   DAR DE BAJA
-                   ============================= */
-
-                const btnEliminar =
-                    tr.querySelector(
-                        '.btn-action.delete'
-                    );
-
-                if (btnEliminar) {
-
-                    btnEliminar.addEventListener(
-                        'click',
-                        () =>
-                            this.eliminarPostulacion(
-                                postulacion
-                            )
-                    );
-                }
-
-
-                tbody.appendChild(tr);
-            }
-        );
-
+            tbody.appendChild(tr);
+        });
 
         this.actualizarPaginacion();
     }
-
-
-    /* =====================================================
-       FILTRO
-       ===================================================== */
-
-    filtrarPostulaciones(texto) {
-
-        const termino =
-            texto
-                .trim()
-                .toLowerCase();
-
-
-        this.postulacionesFiltradas =
-            this.postulaciones.filter(
-                postulacion => {
-
-                    const vacante =
-                        (
-                            postulacion.vacante_titulo ||
-                            ''
-                        ).toLowerCase();
-
-
-                    const estado =
-                        (
-                            postulacion.estado_nombre ||
-                            ''
-                        ).toLowerCase();
-
-
-                    return (
-                        vacante.includes(termino) ||
-                        estado.includes(termino)
-                    );
-                }
-            );
-
-
-        this.postulacionesCurrentPage = 1;
-
-        this.renderPostulaciones();
-    }
-
 
     /* =====================================================
        PAGINACIÓN
        ===================================================== */
 
-    actualizarPaginacion() {
-
-        const total =
-            this.postulacionesFiltradas.length;
-
-
-        const totalPages =
-            Math.max(
-                1,
-                Math.ceil(
-                    total /
-                    this.postulacionesPerPage
-                )
-            );
-
-
-        const pageInfo =
-            this.querySelector(
-                '#postulaciones-page-info'
-            );
-
-        if (pageInfo) {
-
-            pageInfo.textContent =
-                `${total} postulaciones`;
-        }
-
-
-        const pageNumber =
-            this.querySelector(
-                '#postulaciones-page-number'
-            );
-
-        if (pageNumber) {
-
-            pageNumber.textContent =
-                `${this.postulacionesCurrentPage} / ${totalPages}`;
-        }
-
-
-        const btnPrev =
-            this.querySelector(
-                '#postulaciones-prev'
-            );
-
-        if (btnPrev) {
-
-            btnPrev.disabled =
-                this.postulacionesCurrentPage <= 1;
-        }
-
-
-        const btnNext =
-            this.querySelector(
-                '#postulaciones-next'
-            );
-
-        if (btnNext) {
-
-            btnNext.disabled =
-                this.postulacionesCurrentPage >=
-                totalPages;
-        }
+    totalPaginas() {
+        return Math.max(1, Math.ceil(this.postulaciones.length / this.postulacionesPerPage));
     }
 
+    actualizarPaginacion() {
+        const totalPaginas = this.totalPaginas();
+
+        this.querySelector('#postulaciones-page-info').textContent =
+            `${this.postulaciones.length} postulaciones`;
+
+        this.querySelector('#postulaciones-page-number').textContent =
+            `${this.postulacionesCurrentPage} / ${totalPaginas}`;
+
+        this.querySelector('#postulaciones-prev').disabled = this.postulacionesCurrentPage <= 1;
+        this.querySelector('#postulaciones-next').disabled =
+            this.postulacionesCurrentPage >= totalPaginas;
+    }
 
     /* =====================================================
-       VER POSTULACIÓN
+       VER RESULTADO
+       Muestra la orden de mérito publicada para la
+       postulación. Solo se llega si ya existe.
        ===================================================== */
 
-    mostrarPostulacion(postulacion) {
+    mostrarResultado(postulacion) {
+        const orden = postulacion.orden_merito;
 
-        this.cerrarDialogo();
+        if (!orden) return;
 
-
-        const overlay =
-            document.createElement('div');
-
-        overlay.className =
-            'postulacion-dialog-overlay';
-
-
-        const dialog =
-            document.createElement('div');
-
-        dialog.className =
-            'postulacion-dialog';
-
+        const observaciones = (orden.observaciones || '').trim();
+        const posicion = orden.posicion != null ? `${this.escapeHtml(orden.posicion)}°` : '-';
+        const dialog = this.crearDialogo('postulacion-resultado-dialog');
 
         dialog.innerHTML = `
+            <div class="app-dialog-header">
+                <h2>Resultado de la postulación</h2>
 
-            <div class="postulacion-dialog-header">
-
-                <h2>
-                    Postulación
-                </h2>
-
-                <button
-                    class="btn-close-dialog"
-                    type="button"
-                    title="Cerrar">
-
+                <button type="button" class="app-dialog-close" title="Cerrar" aria-label="Cerrar">
                     <i class="bi bi-x-lg"></i>
-
                 </button>
-
             </div>
 
-
-            <div class="postulacion-dialog-body">
-
-                <div class="postulacion-detail">
-
-                    <span class="postulacion-detail-label">
-                        Vacante
-                    </span>
-
-                    <p class="postulacion-detail-value">
-                        ${this.escapeHtml(
-                            postulacion.vacante_titulo ||
-                            'Sin título'
-                        )}
+            <div class="app-dialog-body">
+                <div class="resultado-vacante">
+                    <span class="resultado-label">Vacante</span>
+                    <p class="resultado-vacante-titulo">
+                        ${this.escapeHtml(postulacion.vacante_titulo || 'Sin título')}
                     </p>
-
+                    <span class="resultado-estado">
+                        ${this.escapeHtml(postulacion.estado_nombre || 'Sin estado')}
+                    </span>
                 </div>
 
+                <div class="resultado-metricas">
+                    <div class="resultado-metrica">
+                        <span class="resultado-label">Posición</span>
+                        <span class="resultado-metrica-valor">${posicion}</span>
+                    </div>
 
-                <div class="postulacion-detail">
-
-                    <span class="postulacion-detail-label">
-                        Fecha de postulación
-                    </span>
-
-                    <p class="postulacion-detail-value">
-                        ${this.formatearFecha(
-                            postulacion.fecha_postulacion
-                        )}
-                    </p>
-
+                    <div class="resultado-metrica">
+                        <span class="resultado-label">Puntaje</span>
+                        <span class="resultado-metrica-valor">
+                            ${this.escapeHtml(orden.puntaje ?? '-')}
+                        </span>
+                    </div>
                 </div>
 
-
-                <div class="postulacion-detail">
-
-                    <span class="postulacion-detail-label">
-                        Estado
-                    </span>
-
-                    <p class="postulacion-detail-value">
-                        ${this.escapeHtml(
-                            postulacion.estado_nombre ||
-                            'Sin estado'
-                        )}
-                    </p>
-
+                <div class="resultado-bloque">
+                    <span class="resultado-label">Observaciones</span>
+                    <p class="resultado-observaciones ${observaciones ? '' : 'resultado-vacio'}">${
+                        observaciones ? this.escapeHtml(observaciones) : 'Sin observaciones.'
+                    }</p>
                 </div>
 
-
-                <div class="postulacion-detail">
-
-                    <span class="postulacion-detail-label">
-                        CV
+                <div class="resultado-fecha">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>
+                        Publicado el
+                        <strong>${this.formatearFechaHora(orden.fecha_publicacion)}</strong>
                     </span>
-
-                    <p class="postulacion-detail-value">
-                        ${this.escapeHtml(
-                            postulacion.cv ||
-                            'No especificado'
-                        )}
-                    </p>
-
                 </div>
+            </div>
 
+            <div class="app-dialog-actions">
+                <button type="button" class="app-btn app-btn-primary dialog-cerrar">Cerrar</button>
             </div>
         `;
 
+        dialog.querySelectorAll('.app-dialog-close, .dialog-cerrar').forEach(boton => {
+            boton.addEventListener('click', () => dialog.close());
+        });
 
-        overlay.appendChild(dialog);
+        dialog.showModal();
+    }
 
-        document.body.appendChild(overlay);
+    /* =====================================================
+       DAR DE BAJA
+       DELETE /api/vacantes/solicitudes/{id}
+       Baja lógica: el backend completa la fecha de baja y la
+       postulación deja de listarse.
+       ===================================================== */
 
+    confirmarBaja(postulacion) {
+        const dialog = this.crearDialogo('postulacion-baja-dialog');
 
-        const btnCerrar =
-            dialog.querySelector(
-                '.btn-close-dialog'
-            );
+        dialog.innerHTML = `
+            <div class="app-dialog-header">
+                <h2>Dar de baja la postulación</h2>
+            </div>
 
-        if (btnCerrar) {
+            <div class="app-dialog-body">
+                <p>
+                    ¿Seguro que querés dar de baja tu postulación a
+                    <strong>${this.escapeHtml(postulacion.vacante_titulo || 'esta vacante')}</strong>?
+                </p>
+                <p>Mientras la convocatoria siga abierta vas a poder volver a postularte.</p>
+                <p class="app-dialog-error" role="alert" hidden></p>
+            </div>
 
-            btnCerrar.addEventListener(
-                'click',
-                () => this.cerrarDialogo()
-            );
-        }
+            <div class="app-dialog-actions">
+                <button type="button" class="app-btn app-btn-secondary dialog-cancelar">
+                    Cancelar
+                </button>
+                <button type="button" class="app-btn app-btn-danger dialog-confirmar">
+                    <i class="bi bi-trash-fill"></i>
+                    Dar de baja
+                </button>
+            </div>
+        `;
 
+        const btnCancelar = dialog.querySelector('.dialog-cancelar');
+        const btnConfirmar = dialog.querySelector('.dialog-confirmar');
+        const mensajeError = dialog.querySelector('.app-dialog-error');
 
-        overlay.addEventListener(
-            'click',
-            event => {
+        btnCancelar.addEventListener('click', () => dialog.close());
 
-                if (event.target === overlay) {
+        btnConfirmar.addEventListener('click', async () => {
+            mensajeError.hidden = true;
+            btnConfirmar.disabled = true;
+            btnCancelar.disabled = true;
 
-                    this.cerrarDialogo();
-                }
+            try {
+                await ApiClient.delete(`/vacantes/solicitudes/${postulacion.id}`);
+
+                dialog.close();
+                await this.cargarPostulaciones();
+                this.mostrarSnackbar('La postulación se dio de baja correctamente.');
+            } catch (error) {
+                console.error('Error al dar de baja la postulación:', error);
+
+                mensajeError.textContent = error.message || 'No se pudo dar de baja la postulación.';
+                mensajeError.hidden = false;
+                btnConfirmar.disabled = false;
+                btnCancelar.disabled = false;
             }
-        );
+        });
 
-
-        this._dialogEscapeHandler =
-            event => {
-
-                if (event.key === 'Escape') {
-
-                    this.cerrarDialogo();
-                }
-            };
-
-
-        document.addEventListener(
-            'keydown',
-            this._dialogEscapeHandler
-        );
+        dialog.showModal();
     }
 
-
     /* =====================================================
-       EDITAR
+       DIALOG BASE
+       Usa el estilo común de global.css (.app-dialog).
+       Se elimina del DOM al cerrarse (botones o Esc).
        ===================================================== */
 
-    editarPostulacion(postulacion) {
+    crearDialogo(claseExtra) {
+        const dialog = document.createElement('dialog');
 
-        console.log(
-            'Editar postulación:',
-            postulacion
-        );
+        dialog.className = `app-dialog ${claseExtra}`;
+        dialog.addEventListener('close', () => dialog.remove(), { once: true });
+        document.body.appendChild(dialog);
 
-        /*
-         * Actualmente el backend solamente permite
-         * modificar el estado mediante PUT.
-         *
-         * Cuando definamos qué campos puede editar
-         * el usuario, acá podemos abrir el formulario
-         * correspondiente.
-         */
+        return dialog;
     }
 
-
     /* =====================================================
-       ELIMINAR / DAR DE BAJA
+       SNACKBAR
        ===================================================== */
 
-    async eliminarPostulacion(postulacion) {
+    mostrarSnackbar(mensaje, tipo = 'success') {
+        document.querySelector('.postulaciones-snackbar')?.remove();
 
-        const confirmar =
-            confirm(
-                `¿Desea dar de baja su postulación a "${postulacion.vacante_titulo}"?`
-            );
+        const icono = tipo === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+        const snackbar = document.createElement('div');
 
+        snackbar.className = `app-snackbar postulaciones-snackbar app-snackbar-${tipo}`;
+        snackbar.innerHTML = `
+            <i class="bi ${icono}"></i>
+            <span>${this.escapeHtml(mensaje)}</span>
+        `;
 
-        if (!confirmar) return;
+        document.body.appendChild(snackbar);
+        requestAnimationFrame(() => snackbar.classList.add('show'));
 
-
-        try {
-
-            await ApiClient.delete(
-                `/vacantes/solicitudes/${postulacion.id}`
-            );
-
-
-            await this.cargarPostulaciones();
-
-
-        } catch (error) {
-
-            console.error(
-                'Error al dar de baja la postulación:',
-                error
-            );
-        }
+        setTimeout(() => {
+            snackbar.classList.remove('show');
+            setTimeout(() => snackbar.remove(), 300);
+        }, 3000);
     }
 
-
     /* =====================================================
-       CERRAR DIÁLOGO
-       ===================================================== */
-
-    cerrarDialogo() {
-
-        const overlay =
-            document.querySelector(
-                '.postulacion-dialog-overlay'
-            );
-
-        if (overlay) {
-
-            overlay.remove();
-        }
-
-
-        if (this._dialogEscapeHandler) {
-
-            document.removeEventListener(
-                'keydown',
-                this._dialogEscapeHandler
-            );
-
-            this._dialogEscapeHandler = null;
-        }
-    }
-
-
-    /* =====================================================
-       FECHA
+       FECHAS
        ===================================================== */
 
     formatearFecha(fecha) {
+        if (!fecha) return '-';
 
-        if (!fecha) {
-            return '-';
+        // Fecha sola (YYYY-MM-DD): new Date() la tomaría como UTC y en
+        // Argentina mostraría el día anterior
+        const soloFecha = String(fecha).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+        if (soloFecha) {
+            return `${soloFecha[3]}/${soloFecha[2]}/${soloFecha[1]}`;
         }
 
+        const date = new Date(fecha);
 
-        const date =
-            new Date(fecha);
+        if (Number.isNaN(date.getTime())) return this.escapeHtml(fecha);
 
-
-        if (Number.isNaN(date.getTime())) {
-
-            return fecha;
-        }
-
-
-        return date.toLocaleDateString(
-            'es-AR',
-            {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            }
-        );
+        return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
+    // Recibe un instante ISO ('2026-07-23T21:20:49Z') y lo muestra
+    // en la hora local: '23/07/2026 18:20:49 hs'
+    formatearFechaHora(fecha) {
+        if (!fecha) return '-';
 
-    /* =====================================================
-       ESCAPE HTML
-       ===================================================== */
+        const date = new Date(fecha);
+
+        if (Number.isNaN(date.getTime())) return this.escapeHtml(fecha);
+
+        const dia = date.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        const hora = date.toLocaleTimeString('es-AR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        return `${dia} ${hora} hs`;
+    }
 
     escapeHtml(valor) {
-
-        const div =
-            document.createElement('div');
-
-        div.textContent =
-            valor ?? '';
-
+        const div = document.createElement('div');
+        div.textContent = valor ?? '';
         return div.innerHTML;
     }
 }
 
-
-customElements.define(
-    'app-postulaciones',
-    PostulacionesComponent
-);
+customElements.define('app-postulaciones', PostulacionesComponent);

@@ -1,12 +1,12 @@
 class AppFooter extends HTMLElement {
-
     constructor() {
         super();
     }
 
     async connectedCallback() {
-
         try {
+            // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
+            const estilos = cargarEstilos('components/footer/footer.css');
 
             // 1. Descargar la plantilla HTML
             const response = await fetch('components/footer/footer.html');
@@ -17,19 +17,12 @@ class AppFooter extends HTMLElement {
 
             const htmlContent = await response.text();
 
-            // 2. Insertar estilos y HTML dentro del tag <app-footer>
-            this.innerHTML = `
-                <link rel="stylesheet" href="components/footer/footer.css">
-                ${htmlContent}
-            `;
+            // 2. Insertar el HTML (sus estilos ya están cargados)
+            await estilos;
 
+            this.innerHTML = htmlContent;
         } catch (error) {
-
-            console.error(
-                'Error al inicializar <app-footer>:',
-                error
-            );
-
+            console.error('Error al inicializar <app-footer>:', error);
         }
     }
 }

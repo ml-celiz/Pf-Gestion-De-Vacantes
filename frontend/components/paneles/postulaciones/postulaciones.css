@@ -1,198 +1,195 @@
-.postulaciones-container,
-.vacantes-container {
-    width: 100%;
-    padding: 1.5rem 2.5rem;
-}
-
 /* =========================================================
-   BREADCRUMB
+   PANEL DE POSTULACIONES
+   La estructura del panel y la tabla está en global.css;
+   acá solo los dialogs y el snackbar propios del panel.
    ========================================================= */
 
-.breadcrumb-bar {
-    margin-bottom: 0.75rem;
-}
-
-.breadcrumb-path {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted, #64748b);
-    letter-spacing: 0.5px;
-}
-
 /* =========================================================
-   ENCABEZADO
+   DIALOG: RESULTADO DE LA POSTULACIÓN
+   La base (.app-dialog, .app-btn) está en global.css.
    ========================================================= */
 
-.postulaciones-header,
-.vacantes-header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    background: #e2e8f0;
-    padding: 0.75rem 1.25rem;
-    border-radius: 0.5rem;
-    margin-bottom: 0.75rem;
+.app-dialog.postulacion-resultado-dialog {
+    width: min(500px, calc(100% - 32px));
 }
 
-.postulaciones-header h1,
-.vacantes-header h1 {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--brand-dark, #1e293b);
-}
-
-.header-actions {
+.postulacion-resultado-dialog .app-dialog-body {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.resultado-label {
+    display: block;
+    color: var(--color-gray-500);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+/* Vacante */
+.resultado-vacante {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+}
+
+.resultado-vacante-titulo {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.resultado-estado {
+    display: inline-flex;
+    padding: 0.2rem 0.6rem;
+    background: var(--color-gray-100);
+    border-radius: 999px;
+    color: var(--color-gray-600);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+/* Posición y puntaje */
+.resultado-metricas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
 }
 
-/* =========================================================
-   BOTÓN SUPERIOR
-   ========================================================= */
-
-.btn-icon {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--brand-dark, #1e293b);
-    font-size: 1.1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.15s ease, color 0.15s ease;
-}
-
-.btn-icon:hover {
-    transform: scale(1.1);
-    color: var(--brand-primary, #0056b3);
-}
-
-/* =========================================================
-   CARD PRINCIPAL Y TABLA
-   ========================================================= */
-
-.card-table {
-    background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    overflow: hidden;
+.resultado-metrica {
     display: flex;
     flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.9rem 1rem;
+    background: var(--color-primary-subtle);
+    border: 1px solid var(--color-primary-soft);
+    border-radius: 0.75rem;
 }
 
-.main-postulaciones-card,
-.main-vacantes-card {
-    min-width: 0;
+.resultado-metrica-valor {
+    color: var(--color-primary);
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
 }
 
-.table-responsive {
-    overflow-x: auto;
-}
-
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-}
-
-.custom-table th {
-    background: #e2e8f0;
-    color: var(--brand-dark, #1e293b);
-    font-weight: 600;
-    padding: 0.85rem 1rem;
-    text-align: left;
-    white-space: nowrap;
-}
-
-.custom-table td {
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: var(--brand-dark, #1e293b);
-}
-
-.custom-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-/* =========================================================
-   PAGINACIÓN Y FOOTER
-   ========================================================= */
-
-.table-footer {
+/* Observaciones */
+.resultado-bloque {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    gap: 1rem;
-    font-size: 0.8rem;
-    color: var(--text-muted, #64748b);
-    margin-top: auto;
+    flex-direction: column;
+    gap: 0.4rem;
 }
 
-.pagination-buttons {
+.resultado-observaciones {
+    margin: 0;
+    padding: 0.8rem 1rem;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.75rem;
+    color: var(--color-gray-700);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.resultado-observaciones.resultado-vacio {
+    color: var(--color-gray-400);
+    font-style: italic;
+}
+
+/* Fecha de publicación */
+.resultado-fecha {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: var(--color-gray-500);
+    font-size: 0.82rem;
 }
 
-.pagination-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    border-radius: 0.35rem;
-    cursor: pointer;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s ease, color 0.15s ease;
+.resultado-fecha i {
+    color: var(--color-primary);
 }
 
-.pagination-btn:hover:not(:disabled) {
-    background: #e2e8f0;
-}
-
-.pagination-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-#postulaciones-page-number {
-    min-width: 65px;
-    text-align: center;
+.resultado-fecha strong {
+    color: var(--color-dark);
+    font-weight: 600;
 }
 
 /* =========================================================
-   RESPONSIVE
+   DIALOG: DAR DE BAJA
    ========================================================= */
 
-@media (max-width: 992px) {
-    .postulaciones-container,
-    .vacantes-container {
-        padding: 1.25rem;
-    }
+.app-dialog.postulacion-baja-dialog {
+    width: min(460px, calc(100% - 32px));
 }
 
-@media (max-width: 576px) {
-    .postulaciones-container,
-    .vacantes-container {
-        padding: 1rem;
-    }
+.app-dialog.postulacion-baja-dialog::before {
+    background: var(--color-danger);
+}
 
-    .custom-table {
-        font-size: 0.8rem;
-    }
+.postulacion-baja-dialog .app-dialog-body p {
+    margin: 0 0 0.75rem;
+}
 
-    .custom-table th,
-    .custom-table td {
-        padding: 0.65rem 0.5rem;
-    }
+.postulacion-baja-dialog .app-dialog-body p:last-child {
+    margin-bottom: 0;
+}
 
-    .table-footer {
-        flex-wrap: wrap;
-    }
+.postulacion-baja-dialog .app-dialog-body strong {
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+/* =========================================================
+   SNACKBAR
+   ========================================================= */
+
+.app-snackbar.postulaciones-snackbar {
+    position: fixed;
+    inset: auto auto 28px 50%;
+    z-index: 9999;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 280px;
+    max-width: 450px;
+    padding: 13px 18px;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    box-shadow: 0 5px 18px var(--color-shadow-md);
+    color: var(--color-gray-600);
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+}
+
+.app-snackbar.postulaciones-snackbar.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.app-snackbar.postulaciones-snackbar i {
+    font-size: 18px;
+}
+
+.app-snackbar.postulaciones-snackbar.app-snackbar-success i {
+    color: var(--color-success-muted);
+}
+
+.app-snackbar.postulaciones-snackbar.app-snackbar-error i {
+    color: var(--color-danger-muted);
 }

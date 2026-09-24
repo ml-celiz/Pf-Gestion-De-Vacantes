@@ -1,0 +1,194 @@
+/* =========================================================
+   SELECTOR DE FECHA
+   ========================================================= */
+
+app-datepicker {
+    display: block;
+}
+
+/* Campo: mismo aspecto que los .form-control de los dialogs */
+.datepicker-input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.75rem;
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.datepicker-input:hover {
+    border-color: var(--color-gray-300);
+}
+
+.datepicker-input.abierto,
+.datepicker-input:focus-visible {
+    border-color: var(--color-accent);
+}
+
+.datepicker-input i {
+    color: var(--color-primary);
+}
+
+.datepicker-texto.vacio {
+    color: var(--color-gray-400);
+}
+
+/* =========================================================
+   CALENDARIO
+   ========================================================= */
+
+.datepicker-popup {
+    position: fixed;
+    z-index: 10000;
+    width: 280px;
+    padding: 0.85rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
+    border-top: 3px solid var(--color-primary);
+    border-radius: 0.9rem;
+    box-shadow: 0 12px 35px var(--color-shadow-dialog);
+    animation: datepickerIn 0.15s ease-out;
+}
+
+.datepicker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+}
+
+.datepicker-titulo {
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.datepicker-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--color-gray-600);
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.datepicker-nav:hover {
+    background: var(--color-gray-100);
+    color: var(--color-primary);
+}
+
+.datepicker-semana,
+.datepicker-dias {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.datepicker-semana span {
+    padding: 0.3rem 0;
+    color: var(--color-gray-500);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.datepicker-dia {
+    height: 34px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    color: var(--color-dark);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.datepicker-dia:hover:not(:disabled) {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+}
+
+.datepicker-dia.fuera {
+    color: var(--color-gray-400);
+}
+
+.datepicker-dia.hoy {
+    border-color: var(--color-accent-border);
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.datepicker-dia.seleccionado,
+.datepicker-dia.seleccionado:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-white);
+    font-weight: 700;
+    box-shadow: 0 3px 8px var(--color-primary-shadow);
+}
+
+.datepicker-dia:disabled {
+    color: var(--color-gray-300);
+    cursor: not-allowed;
+}
+
+.datepicker-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.datepicker-link {
+    padding: 0.3rem 0.6rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.datepicker-link:hover:not(:disabled) {
+    background: var(--color-primary-subtle);
+}
+
+.datepicker-link[data-accion="limpiar"] {
+    color: var(--color-gray-500);
+}
+
+.datepicker-link:disabled {
+    color: var(--color-gray-300);
+    cursor: not-allowed;
+}
+
+@keyframes datepickerIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,10 +1,89 @@
-/* Variables de Color y Tema Global */
+/* =========================================================
+   PALETA DE COLORES
+   Todos los colores del frontend se definen acá. Los
+   componentes los usan siempre como var(--color-...), nunca
+   con valores sueltos.
+   ========================================================= */
+
 :root {
-    --color-primary: #0d6efd;
-    --color-primary-dark: #0b5ed7;
-    --color-focus-ring: #0056b3;
-    --color-text-main: #212529;
-    --color-bg-body: #f8f9fa;
+    /* ---------- Marca ---------- */
+    --color-primary: #0056b3;
+    --color-primary-hover: #004494;
+    --color-primary-active: #003f80;
+    --color-primary-soft: #e0f2fe;
+    --color-primary-subtle: #f0f9ff;
+    --color-accent: #0ea5e9;
+    /* ---------- Neutros ---------- */
+    --color-white: #ffffff;
+    --color-dark: #1e293b;
+    --color-gray-700: #334155;
+    --color-gray-600: #475569;
+    --color-gray-500: #64748b;
+    --color-gray-400: #94a3b8;
+    --color-gray-300: #cbd5e1;
+    --color-gray-200: #e2e8f0;
+    --color-gray-100: #f1f5f9;
+    --color-gray-50: #f8fafc;
+    /* ---------- Estados ---------- */
+    --color-success: #16a34a;
+    --color-success-soft: #f0fdf4;
+    --color-success-muted: #6c9f7d;
+    --color-info: #2563eb;
+    --color-info-soft: #eff6ff;
+    --color-danger: #dc3545;
+    --color-danger-hover: #c82333;
+    --color-danger-bright: #ef4444;
+    --color-danger-soft: #fef2f2;
+    --color-danger-border: #fecaca;
+    --color-danger-muted: #c97979;
+    /* ---------- Acentos (iconos y etiquetas) ---------- */
+    --color-orange: #ea580c;
+    --color-orange-soft: #fff7ed;
+    --color-purple: #9333ea;
+    --color-purple-soft: #faf5ff;
+    --color-indigo: #4f46e5;
+    --color-indigo-soft: #eef2ff;
+    --color-teal: #0f766e;
+    --color-teal-bright: #0d9488;
+    --color-teal-soft: #f0fdfa;
+    /* ---------- Transparencias ---------- */
+    --color-border-soft: rgba(226, 232, 240, 0.9);
+    --color-white-translucent: rgba(255, 255, 255, 0.85);
+    --color-white-glass: rgba(255, 255, 255, 0.95);
+    --color-navbar-bg: rgba(239, 247, 255, 0.95);
+    --color-accent-border: rgba(14, 165, 233, 0.35);
+    --color-accent-ring: rgba(14, 165, 233, 0.15);
+    --color-primary-shadow: rgba(0, 86, 179, 0.14);
+    --color-primary-shadow-strong: rgba(0, 86, 179, 0.2);
+    --color-danger-ring: rgba(220, 53, 69, 0.1);
+    --color-danger-shadow: rgba(220, 53, 69, 0.18);
+    --color-shadow-xs: rgba(0, 0, 0, 0.03);
+    --color-shadow-sm: rgba(0, 0, 0, 0.07);
+    --color-shadow-md: rgba(0, 0, 0, 0.12);
+    --color-shadow-lg: rgba(0, 0, 0, 0.18);
+    --color-shadow-dialog: rgba(15, 23, 42, 0.12);
+    --color-overlay: rgba(15, 23, 42, 0.32);
+    --color-overlay-strong: rgba(15, 23, 42, 0.45);
+    /* ---------- Fondo degradado (login / menú) ---------- */
+    --color-bg-gradient-1: hsla(210, 100%, 93%, 1);
+    --color-bg-gradient-2: hsla(204, 100%, 86%, 0.5);
+    /* ---------- Accesibilidad ---------- */
+    --color-focus-ring: var(--color-primary);
+}
+
+/*
+* Fondo y tipografía de toda la aplicación. Están acá (y no en el CSS
+* de un componente) para que se apliquen desde el primer pintado: si no,
+* al recargar la página se ve un instante el fondo blanco.
+*/
+body {
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-gray-50);
+    background-image:
+        radial-gradient(at 0% 0%, var(--color-bg-gradient-1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, var(--color-bg-gradient-2) 0px, transparent 50%);
+    background-attachment: fixed;
 }
 
 /* Indicadores de foco visibles por teclado para Accesibilidad (WCAG) */
@@ -28,4 +107,594 @@ textarea:focus-visible {
     clip: rect(0, 0, 0, 0) !important;
     white-space: nowrap !important;
     border: 0 !important;
+}
+
+/* =========================================================
+   CARGA INICIAL
+   Mientras se valida la sesión guardada no se muestra ninguna
+   vista, así el login no aparece un instante al recargar.
+   ========================================================= */
+
+.app-loader {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+}
+
+.app-loader[hidden] {
+    display: none;
+}
+
+/* =========================================================
+   PANELES
+   Estructura común de las pantallas con tablas (vacantes,
+   postulaciones, gestión de vacantes, roles y usuarios).
+   La pantalla ocupa como mínimo todo el alto de la ventana y
+   la tabla principal se estira para llenarlo, así todas miden
+   lo mismo sin importar cuántas filas tengan.
+   ========================================================= */
+
+app-vacantes,
+app-postulaciones,
+app-gestion-vacantes,
+app-roles,
+app-usuarios {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.panel-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 1.5rem 2.5rem;
+}
+
+.breadcrumb-bar {
+    margin-bottom: 0.75rem;
+}
+
+.breadcrumb-path {
+    color: var(--color-gray-500);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--color-gray-200);
+    border-radius: 0.5rem;
+}
+
+.panel-header h1 {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-icon,
+.btn-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-dark);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition:
+        transform 0.15s ease,
+        color 0.15s ease;
+}
+
+.btn-icon:hover,
+.btn-icon-sm:hover {
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+/* Tabla principal + columna de tablas laterales (roles, gestión) */
+.panel-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 500px;
+    gap: 1.25rem;
+}
+
+.side-tables-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/*
+* Con tablas laterales, la principal mide lo mismo que la suma de
+* las dos laterales: el alto de la fila lo definen ellas
+* (contain: size hace que la principal no empuje la fila) y la
+* principal se estira hasta ese alto.
+*/
+.panel-grid .panel-main-card {
+    contain: size;
+}
+
+.panel-grid .panel-main-card .table-responsive {
+    overflow-y: auto;
+}
+
+/* =========================================================
+   TABLAS
+   ========================================================= */
+
+.card-table {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px var(--color-shadow-xs);
+}
+
+/* La tarjeta principal crece y el pie queda abajo */
+.panel-main-card {
+    flex: 1;
+    min-width: 0;
+}
+
+.panel-main-card .table-responsive {
+    flex: 1;
+    overflow-x: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.custom-table th {
+    padding: 0.85rem 1rem;
+    background: var(--color-gray-200);
+    color: var(--color-dark);
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.custom-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-gray-100);
+    color: var(--color-dark);
+}
+
+.custom-table tbody tr:hover {
+    background: var(--color-gray-50);
+}
+
+.custom-table.compact th,
+.custom-table.compact td {
+    padding: 0.6rem 0.75rem;
+}
+
+/* Tablas laterales (el alto de cada una lo define su panel) */
+.side-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--color-gray-200);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.side-title-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.side-table-body {
+    flex-shrink: 0;
+    overflow-y: auto;
+}
+
+.side-table-body::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.side-table-body::-webkit-scrollbar-track {
+    background: var(--color-gray-100);
+}
+
+.side-table-body::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: 10px;
+}
+
+.side-table-body::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-400);
+}
+
+/* Estado (vacante o postulación) */
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Botones de acción de cada fila */
+.action-btn-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+}
+
+.btn-action {
+    padding: 0.25rem;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition:
+        transform 0.15s ease,
+        color 0.15s ease;
+}
+
+.btn-action:hover:not(:disabled) {
+    transform: scale(1.12);
+}
+
+.btn-action:disabled {
+    color: var(--color-gray-400);
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-action.view {
+    color: var(--color-success);
+}
+
+.btn-action.edit {
+    color: var(--color-info);
+}
+
+.btn-action.delete {
+    color: var(--color-danger-bright);
+}
+
+/* Pie de tabla y paginación */
+.table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+    padding: 0.75rem 1rem;
+    color: var(--color-gray-500);
+    font-size: 0.8rem;
+}
+
+.table-footer.compact {
+    padding: 0.6rem 0.75rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-buttons [id$="-page-number"] {
+    min-width: 65px;
+    text-align: center;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.35rem;
+    color: var(--color-gray-700);
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--color-gray-200);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (max-width: 992px) {
+    .panel-container {
+        padding: 1.25rem;
+    }
+
+    .panel-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Una sola columna: la principal vuelve a su alto natural */
+    .panel-grid .panel-main-card {
+        contain: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .panel-container {
+        padding: 1rem;
+    }
+
+    .panel-grid {
+        gap: 1rem;
+    }
+
+    .custom-table {
+        font-size: 0.8rem;
+    }
+
+    .custom-table th,
+    .custom-table td {
+        padding: 0.65rem 0.5rem;
+    }
+
+    .table-footer {
+        flex-wrap: wrap;
+    }
+}
+
+/* =========================================================
+   DIALOG GENÉRICO (Mi perfil, Preguntas frecuentes)
+   Mismo estilo que los dialogs de los paneles, pero con
+   clases propias para no chocar con .custom-dialog, que cada
+   panel redefine en su hoja.
+   ========================================================= */
+
+.app-dialog {
+    width: min(560px, calc(100% - 32px));
+    max-width: 560px;
+    max-height: 90vh;
+    padding: 0;
+    overflow: hidden;
+    background: var(--color-white);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 1.1rem;
+    box-shadow: 0 12px 35px var(--color-shadow-dialog);
+    color: var(--color-dark);
+    animation: appDialogFadeIn 0.18s ease-out;
+}
+
+.app-dialog[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Línea superior */
+.app-dialog::before {
+    content: "";
+    display: block;
+    flex-shrink: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--color-primary);
+}
+
+.app-dialog::backdrop {
+    background: var(--color-overlay);
+}
+
+.app-dialog-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 16px 20px;
+    background: var(--color-gray-100);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.app-dialog-header h2 {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.app-dialog-close {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--color-gray-500);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.app-dialog-close:hover {
+    background: var(--color-gray-200);
+    color: var(--color-dark);
+}
+
+.app-dialog-body {
+    flex: 1;
+    min-height: 0;
+    padding: 1.5rem 20px;
+    overflow-y: auto;
+    color: var(--color-gray-700);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.app-dialog-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    background: var(--color-white);
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.app-dialog-actions[hidden] {
+    display: none;
+}
+
+/* Empuja lo que sigue hacia la derecha */
+.app-dialog-actions .app-dialog-spacer {
+    flex: 1;
+}
+
+.app-dialog-error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: 0.82rem;
+}
+
+.app-dialog-error[hidden] {
+    display: none;
+}
+
+@keyframes appDialogFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================================================
+   BOTONES DE DIALOG
+   ========================================================= */
+
+.app-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1.15rem;
+    border-radius: 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.app-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.app-btn-primary {
+    background: var(--color-primary);
+    border: none;
+    color: var(--color-white);
+    box-shadow: 0 3px 8px var(--color-primary-shadow);
+}
+
+.app-btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    box-shadow: 0 5px 12px var(--color-primary-shadow-strong);
+    transform: translateY(-1px);
+}
+
+.app-btn-secondary {
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    color: var(--color-gray-600);
+    font-weight: 600;
+}
+
+.app-btn-secondary:hover:not(:disabled) {
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-300);
+}
+
+.app-btn-danger {
+    background: var(--color-danger);
+    border: none;
+    color: var(--color-white);
+}
+
+.app-btn-danger:hover:not(:disabled) {
+    background: var(--color-danger-hover);
+    box-shadow: 0 4px 10px var(--color-danger-shadow);
+    transform: translateY(-1px);
+}
+
+.app-btn-danger-outline {
+    background: var(--color-white);
+    border: 1px solid var(--color-danger-border);
+    color: var(--color-danger);
+}
+
+.app-btn-danger-outline:hover:not(:disabled) {
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 576px) {
+    .app-dialog-actions {
+        flex-wrap: wrap;
+    }
+
+    .app-dialog-actions .app-btn {
+        flex: 1;
+    }
+
+    .app-dialog-actions .app-dialog-spacer {
+        display: none;
+    }
 }

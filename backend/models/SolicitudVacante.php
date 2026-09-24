@@ -4,7 +4,7 @@ class SolicitudVacante {
 
     public ?int $id;
     public ?string $fechaPostulacion;
-    public string $cv;
+    public bool $tieneCv;   // el postulante cargó su CV
     public ?int $idEstado;
     public ?int $idVacante;
     public ?int $idUsuario;
@@ -20,6 +20,9 @@ class SolicitudVacante {
     public ?string $usuarioDni;
     public ?string $usuarioTelefono;
 
+    // RESULTADO - ORDEN DE MÉRITO (null si todavía no fue evaluada)
+    public ?array $ordenMerito;
+
     public function __construct(array $data = []) {
 
         $this->id =
@@ -31,9 +34,8 @@ class SolicitudVacante {
             $data['fecha_postulacion']
                 ?? null;
 
-        $this->cv =
-            $data['cv']
-                ?? '';
+        $this->tieneCv =
+            !empty($data['tiene_cv']);
 
         $this->idEstado =
             isset($data['id_estado'])
@@ -80,6 +82,24 @@ class SolicitudVacante {
         $this->usuarioTelefono =
             $data['usuario_telefono']
                 ?? null;
+
+
+        // ORDEN DE MÉRITO (viene del LEFT JOIN)
+
+        $this->ordenMerito =
+            isset($data['orden_merito_id'])
+                ? [
+                    'id'                => (int)$data['orden_merito_id'],
+                    'puntaje'           => isset($data['orden_merito_puntaje'])
+                                               ? (int)$data['orden_merito_puntaje']
+                                               : null,
+                    'posicion'          => isset($data['orden_merito_posicion'])
+                                               ? (int)$data['orden_merito_posicion']
+                                               : null,
+                    'observaciones'     => $data['orden_merito_observaciones'] ?? null,
+                    'fecha_publicacion' => $data['orden_merito_fecha_publicacion'] ?? null
+                ]
+                : null;
     }
 
     public function toArray(): array {
@@ -93,8 +113,8 @@ class SolicitudVacante {
             'fecha_postulacion' =>
                 $this->fechaPostulacion,
 
-            'cv' =>
-                $this->cv,
+            'tiene_cv' =>
+                $this->tieneCv,
 
             'id_estado' =>
                 $this->idEstado,
@@ -126,7 +146,12 @@ class SolicitudVacante {
                 $this->usuarioDni,
 
             'usuario_telefono' =>
-                $this->usuarioTelefono
+                $this->usuarioTelefono,
+
+
+            // RESULTADO
+            'orden_merito' =>
+                $this->ordenMerito
         ];
     }
 }

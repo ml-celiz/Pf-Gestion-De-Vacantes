@@ -28,21 +28,9 @@ function handleVacantesRoutes(string $method, array $uriParts): void {
             return;
         }
 
-        // GET /api/vacantes/solicitudes/{id}
-        if ($method === 'GET' && $idSolicitud !== null) {
-            $controller->obtenerSolicitudPorId($idSolicitud);
-            return;
-        }
-
         // POST /api/vacantes/solicitudes
         if ($method === 'POST' && $idSolicitud === null) {
             $controller->crearSolicitud();
-            return;
-        }
-
-        // PUT /api/vacantes/solicitudes/{id}
-        if ($method === 'PUT' && $idSolicitud !== null) {
-            $controller->actualizarEstadoSolicitud($idSolicitud);
             return;
         }
 
@@ -82,12 +70,6 @@ function handleVacantesRoutes(string $method, array $uriParts): void {
     // GET /api/vacantes
     if ($method === 'GET' && $idVacante === null) {
         $controller->listarVacantes();
-        return;
-    }
-
-    // GET /api/vacantes/{id}
-    if ($method === 'GET' && $idVacante !== null) {
-        $controller->obtenerVacantePorId($idVacante);
         return;
     }
 

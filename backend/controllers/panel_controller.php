@@ -14,17 +14,6 @@ class PanelController {
         echo json_encode($paneles);
     }
 
-    public function obtenerPorId(int $id): void {
-        $panel = $this->panelService->obtenerPorId($id);
-
-        if ($panel) {
-            echo json_encode($panel);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Panel no encontrado."]);
-        }
-    }
-
     public function crear(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         $exito = $this->panelService->crear($input);

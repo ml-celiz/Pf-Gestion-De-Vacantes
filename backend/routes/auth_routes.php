@@ -18,6 +18,11 @@ function handleAuthRoutes(string $method, array $routeParams): void {
         return;
     }
 
+    if ($method === 'POST' && $action === 'registro') {
+        $authController->registro();
+        return;
+    }
+
     if ($method === 'GET' && $action === 'me') {
         $sesionActual = verificarAutenticacion();
         

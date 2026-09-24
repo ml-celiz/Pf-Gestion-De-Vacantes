@@ -58,6 +58,68 @@ function exigirRol(array $sesion, array $rolesPermitidos): void {
     }
 }
 
+/* Corta la petición con 403 si el usuario de la sesión no es el dueño del recurso ni admin */
+function exigirSelfOAdmin(array $sesion, int $idObjetivo): void {
+    $idUsuario = isset($sesion['id_usuario']) ? (int)$sesion['id_usuario'] : 0;
+
+    if ($idUsuario === $idObjetivo) {
+        return;
+    }
+
+    exigirRol($sesion, ['admin']);
+}
+
+/*
+* Corta la petición con 403 si el usuario de la sesión no puede ver el CV
+* de `$idDuenio`. Pueden verlo:
+*   - el dueño del CV;
+*   - admin;
+*   - ra, si el dueño tiene una postulación activa en alguna vacante;
+*   - jfc, si el dueño tiene una postulación activa en una vacante de una
+*     cátedra de la que es jefe (catedras.id_usuario).
+* Así nadie accede a un CV ajeno solo cambiando el id de la URL.
+*/
+function exigirAccesoCv(array $sesion, int $idDuenio): void {
+    $idUsuario = isset($sesion['id_usuario']) ? (int)$sesion['id_usuario'] : 0;
+
+    if ($idUsuario === $idDuenio || usuarioTieneAlgunRol($idUsuario, ['admin'])) {
+        return;
+    }
+
+    $db = Database::getConnection();
+
+    if (usuarioTieneAlgunRol($idUsuario, ['ra'])) {
+        $stmt = $db->prepare(
+            "SELECT 1 FROM public.solicitudes_vacantes
+             WHERE id_usuario = :duenio AND fecha_baja IS NULL
+             LIMIT 1"
+        );
+        $stmt->execute(['duenio' => $idDuenio]);
+
+        if ($stmt->fetchColumn() !== false) return;
+    }
+
+    if (usuarioTieneAlgunRol($idUsuario, ['jfc'])) {
+        $stmt = $db->prepare(
+            "SELECT 1
+             FROM public.solicitudes_vacantes s
+             JOIN public.vacantes v ON v.id = s.id_vacante
+             JOIN public.catedras c ON c.id = v.id_catedra
+             WHERE s.id_usuario = :duenio
+               AND s.fecha_baja IS NULL
+               AND c.id_usuario = :jefe
+             LIMIT 1"
+        );
+        $stmt->execute(['duenio' => $idDuenio, 'jefe' => $idUsuario]);
+
+        if ($stmt->fetchColumn() !== false) return;
+    }
+
+    http_response_code(403);
+    echo json_encode(["message" => "No tiene permisos para ver este CV."]);
+    exit;
+}
+
 /* Middleware para proteger rutas usando Bearer Token */
 function verificarAutenticacion(): array {
     $headers = function_exists('getallheaders') ? getallheaders() : [];
@@ -81,6 +143,44 @@ function verificarAutenticacion(): array {
     }
 
     return $sesion;
+}
+
+/*
+* Para rutas públicas que cambian según quién consulta (por ejemplo el
+* listado de vacantes, que también ve el invitado): devuelve la sesión
+* si llega un token válido y null si no, sin cortar la petición.
+*/
+function obtenerSesionOpcional(): ?array {
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+
+    if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+        return null;
+    }
+
+    $sesion = (new SesionModel())->obtenerSesionActiva(str_replace('Bearer ', '', $authHeader));
+
+    return $sesion ?: null;
+}
+
+/*
+* Si el usuario es jefe de cátedra (y no tiene un rol que vea todo),
+* devuelve su id para filtrar por sus cátedras (catedras.id_usuario).
+* Devuelve null cuando no corresponde filtrar.
+*/
+function idJefeDeCatedraParaFiltrar(?array $sesion): ?int {
+    $idUsuario = isset($sesion['id_usuario']) ? (int)$sesion['id_usuario'] : 0;
+
+    if (!$idUsuario || !usuarioTieneAlgunRol($idUsuario, ['jfc'])) {
+        return null;
+    }
+
+    // admin y ra ven todo; un pos necesita ver todas para postularse
+    if (usuarioTieneAlgunRol($idUsuario, ['admin', 'ra', 'pos'])) {
+        return null;
+    }
+
+    return $idUsuario;
 }
 
 function obtenerDuracionTokenUsuario(int $idUsuario): int {

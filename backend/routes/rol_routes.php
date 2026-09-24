@@ -1,11 +1,19 @@
 <?php
 
 require_once __DIR__ . '/../controllers/rol_controller.php';
+require_once __DIR__ . '/../services/auth_services.php';
 require_once __DIR__ . '/../utils/helpers.php';
 
 function handleRolRoutes(string $method, array $uriParts): void {
+
+    /*
+    * Solo `admin` administra roles. Sin esto, cualquier usuario autenticado
+    * podría asignarse el rol admin con POST /api/roles/{id}/usuarios.
+    */
+    exigirRol(verificarAutenticacion(), ['admin']);
+
     $controller = new RolController();
-    
+
     $id = isset($uriParts[2]) && is_numeric($uriParts[2]) ? (int)$uriParts[2] : null;
     $subResource = $uriParts[3] ?? null;
     $subId = isset($uriParts[4]) && is_numeric($uriParts[4]) ? (int)$uriParts[4] : null;
@@ -20,17 +28,16 @@ function handleRolRoutes(string $method, array $uriParts): void {
                 else respondMethodNotAllowed();
                 return;
 
+            // Los permisos de un módulo se cambian (y quitan) con PUT
             case 'modulos':
                 if ($method === 'GET') $controller->listarModulos($id);
                 elseif ($method === 'POST') $controller->asignarModulo($id);
                 elseif ($method === 'PUT' && $subId !== null) $controller->actualizarModulo($id, $subId);
-                elseif ($method === 'DELETE' && $subId !== null) $controller->desasignarModulo($id, $subId);
                 else respondMethodNotAllowed();
                 return;
 
             case 'usuarios':
-                if ($method === 'GET') $controller->listarUsuarios($id);
-                elseif ($method === 'POST') $controller->asignarUsuario($id);
+                if ($method === 'POST') $controller->asignarUsuario($id);
                 elseif ($method === 'DELETE' && $subId !== null) $controller->desasignarUsuario($id, $subId);
                 else respondMethodNotAllowed();
                 return;
@@ -40,12 +47,6 @@ function handleRolRoutes(string $method, array $uriParts): void {
     // GET /api/roles
     if ($method === 'GET' && $id === null) {
         $controller->listar();
-        return;
-    }
-
-    // GET /api/roles/{id}
-    if ($method === 'GET' && $id !== null) {
-        $controller->obtenerPorId($id);
         return;
     }
 

@@ -1,88 +1,67 @@
 <header class="app-navbar sticky-top">
-
     <div class="container-fluid px-3 px-md-5 h-100 d-flex align-items-center justify-content-between">
-
         <!-- BRAND -->
         <div class="brand-group d-flex align-items-center gap-3">
-
             <button
                 type="button"
                 class="brand-badge d-flex align-items-center justify-content-center rounded-circle"
                 id="btn-home-navbar"
                 title="Ir al menú principal"
                 aria-label="Ir al menú principal">
-
-                <img 
-                    src="./assets/img/utn.jpg" 
-                    alt="Logo UTN FRRO"
-                    class="navbar-logo">
-
+                <img src="./assets/img/utn.jpg" alt="Logo UTN FRRO" class="navbar-logo">
             </button>
 
             <div class="brand-text">
-
-                <span class="brand-title fw-bold d-block">
-                    Facultad Regional Rosario
-                </span>
+                <span class="brand-title fw-bold d-block">Facultad Regional Rosario</span>
 
                 <span class="brand-subtitle d-none d-sm-block">
                     Universidad Tecnológica Nacional
                 </span>
-
             </div>
-
         </div>
+
+        <!-- MODO INVITADO (solo en el login) -->
+        <button type="button" class="guest-access-button" id="btn-guest-navbar" hidden>
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>Acceder como invitado</span>
+        </button>
 
         <!-- USUARIO -->
         <div class="dropdown">
-
             <button
                 class="user-menu-button dropdown-toggle"
                 type="button"
                 id="user-menu"
                 data-bs-toggle="dropdown"
                 aria-expanded="false">
-
                 <span class="user-icon">
-
                     <i class="bi bi-person"></i>
-
                 </span>
 
-                <span class="user-name d-none d-sm-inline">
-                    Mi cuenta
-                </span>
-
+                <span class="user-name d-none d-sm-inline">Mi cuenta</span>
             </button>
 
-            <ul
-                class="dropdown-menu dropdown-menu-end user-dropdown"
-                aria-labelledby="user-menu">
-
+            <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="user-menu">
                 <!-- Mi perfil -->
                 <li>
-
                     <button
                         type="button"
                         class="dropdown-item user-dropdown-item"
-                        data-route="perfil">
+                        data-dialog="perfil">
                         <i class="bi bi-person me-2"></i>
                         Mi perfil
                     </button>
-
                 </li>
 
                 <!-- Preguntas frecuentes -->
                 <li>
-
                     <button
                         type="button"
                         class="dropdown-item user-dropdown-item"
-                        data-route="faq">
+                        data-dialog="faq">
                         <i class="bi bi-question-circle me-2"></i>
                         Preguntas frecuentes (FAQ)
                     </button>
-
                 </li>
 
                 <li>
@@ -91,7 +70,6 @@
 
                 <!-- Cerrar sesión -->
                 <li>
-
                     <button
                         type="button"
                         class="dropdown-item user-dropdown-item logout-item"
@@ -99,13 +77,8 @@
                         <i class="bi bi-box-arrow-right me-2"></i>
                         Cerrar sesión
                     </button>
-
                 </li>
-
             </ul>
-
         </div>
-
     </div>
-
 </header>
