@@ -95,9 +95,9 @@
         // OBTENER RUTA DESDE LA URL
         // ==========================================
         /*
-        * Los paneles se construyen una sola vez y arman sus botones
-        * según el rol. Al cambiar de usuario (login, logout, modo
-        * invitado) hay que descartarlos para que se rearmen.
+        * Los paneles arman sus botones según el rol. Al cambiar de
+        * usuario (login, logout, modo invitado) se vacían sus vistas
+        * para que no quede nada del usuario anterior.
         */
         function limpiarVistasDinamicas() {
             document
@@ -225,6 +225,9 @@
                 // ==========================================
                 // MOSTRAR LA VISTA CORRESPONDIENTE
                 // ==========================================
+                // Los paneles se crean de nuevo en cada entrada: así vuelven a
+                // pedir los datos a la API y reflejan los cambios hechos en
+                // otras pantallas (sin tener que apretar F5).
                 switch (route) {
                     case 'menu':
                         if (menuView) {
@@ -237,51 +240,31 @@
                         break;
                     case 'vacantes':
                         if (vacantesView) {
-                            if (!vacantesView.querySelector('app-vacantes')) {
-                                vacantesView.innerHTML = `
-                                    <app-vacantes></app-vacantes>
-                                `;
-                            }
+                            vacantesView.innerHTML = `<app-vacantes></app-vacantes>`;
                             vacantesView.style.display = 'block';
                         }
                         break;
                     case 'postulaciones':
                         if (postulacionesView) {
-                            if (!postulacionesView.querySelector('app-postulaciones')) {
-                                postulacionesView.innerHTML = `
-                                    <app-postulaciones></app-postulaciones>
-                                `;
-                            }
+                            postulacionesView.innerHTML = `<app-postulaciones></app-postulaciones>`;
                             postulacionesView.style.display = 'block';
                         }
                         break;
                     case 'gestion-vacantes':
                         if (gestionVacantesView) {
-                            if (!gestionVacantesView.querySelector('app-gestion-vacantes')) {
-                                gestionVacantesView.innerHTML = `
-                                    <app-gestion-vacantes></app-gestion-vacantes>
-                                `;
-                            }
+                            gestionVacantesView.innerHTML = `<app-gestion-vacantes></app-gestion-vacantes>`;
                             gestionVacantesView.style.display = 'block';
                         }
                         break;
                     case 'roles':
                         if (rolesView) {
-                            if (!rolesView.querySelector('app-roles')) {
-                                rolesView.innerHTML = `
-                                    <app-roles></app-roles>
-                                `;
-                            }
+                            rolesView.innerHTML = `<app-roles></app-roles>`;
                             rolesView.style.display = 'block';
                         }
                         break;
                     case 'usuarios':
                         if (usuariosView) {
-                            if (!usuariosView.querySelector('app-usuarios')) {
-                                usuariosView.innerHTML = `
-                                    <app-usuarios></app-usuarios>
-                                `;
-                            }
+                            usuariosView.innerHTML = `<app-usuarios></app-usuarios>`;
                             usuariosView.style.display = 'block';
                         }
                         break;

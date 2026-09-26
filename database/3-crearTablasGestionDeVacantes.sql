@@ -67,10 +67,11 @@ CREATE TABLE public.solicitudes_vacantes
 (
     id serial NOT NULL,
     fecha_postulacion timestamp with time zone NOT NULL,
-    cv character varying NOT NULL,
     id_estado integer NOT NULL,
     id_vacante integer NOT NULL,
     id_usuario integer NOT NULL,
+    fecha_baja timestamp with time zone,
+    notificado boolean NOT NULL DEFAULT false,
     PRIMARY KEY (id),
     CONSTRAINT id_estado_fk FOREIGN KEY (id_estado)
         REFERENCES public.estados (id) MATCH SIMPLE

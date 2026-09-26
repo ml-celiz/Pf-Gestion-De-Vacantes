@@ -7,6 +7,7 @@ class VacantesComponent extends HTMLElement {
 
         // ESTADOS DE UNA POSTULACIÓN (ids de la tabla estados)
         this.ESTADO_PENDIENTE = 4;
+        this.ESTADO_ACEPTADA = 5;
 
         // Estados que se pueden asignar al publicar un resultado
         this.ESTADOS_RESULTADO = [
@@ -1005,6 +1006,12 @@ class VacantesComponent extends HTMLElement {
 
                                 if (celda) {
                                     celda.textContent = estado.nombre;
+                                }
+
+                                // Con un candidato aceptado la vacante pasa a
+                                // EVALUADA: refrescar el listado de fondo
+                                if (estado.id === this.ESTADO_ACEPTADA) {
+                                    this.cargarVacantes();
                                 }
                             }
                         );

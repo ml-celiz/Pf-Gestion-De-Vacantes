@@ -5,6 +5,7 @@ class SolicitudVacante {
     public ?int $id;
     public ?string $fechaPostulacion;
     public bool $tieneCv;   // el postulante cargó su CV
+    public bool $notificado; // se le envió el correo de aceptación
     public ?int $idEstado;
     public ?int $idVacante;
     public ?int $idUsuario;
@@ -36,6 +37,9 @@ class SolicitudVacante {
 
         $this->tieneCv =
             !empty($data['tiene_cv']);
+
+        $this->notificado =
+            !empty($data['notificado']);
 
         $this->idEstado =
             isset($data['id_estado'])
@@ -115,6 +119,9 @@ class SolicitudVacante {
 
             'tiene_cv' =>
                 $this->tieneCv,
+
+            'notificado' =>
+                $this->notificado,
 
             'id_estado' =>
                 $this->idEstado,

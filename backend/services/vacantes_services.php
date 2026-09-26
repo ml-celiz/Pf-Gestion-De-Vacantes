@@ -4,10 +4,12 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Vacante.php';
 require_once __DIR__ . '/../models/SolicitudVacante.php';
 require_once __DIR__ . '/../models/OrdenMerito.php';
+require_once __DIR__ . '/../utils/Mailer.php';
 
 class VacanteService {
     // Ids de public.estados
     public const ESTADO_VACANTE_ABIERTA    = 1;
+    public const ESTADO_VACANTE_EVALUADA   = 3;
     public const ESTADO_SOLICITUD_PENDIENTE = 4;
     public const ESTADO_SOLICITUD_ACEPTADA  = 5;
     public const ESTADO_SOLICITUD_CANCELADA = 6;
@@ -296,6 +298,7 @@ class VacanteService {
                     s.id,
                     s.fecha_postulacion,
                     (u.cv_path IS NOT NULL) AS tiene_cv,
+                    s.notificado,
                     s.id_estado,
 
                     e.nombre AS estado_nombre,
@@ -538,6 +541,7 @@ class VacanteService {
     /**
      * Publica la orden de mérito de una postulación y actualiza el estado
      * de esa postulación (ACEPTADA o CANCELADA) en una misma transacción.
+     * Si es ACEPTADA, la vacante pasa a EVALUADA en la misma transacción.
      * Devuelve el id creado, o false si los datos no son válidos; si la
      * postulación no existe o ya tiene orden de mérito lanza RuntimeException
      * cuyo código es el HTTP status a responder.
@@ -605,7 +609,24 @@ class VacanteService {
                 'id'        => $om->idSolicitud
             ]);
 
+            // Con un candidato aceptado la vacante queda EVALUADA, sin
+            // importar su estado actual (ya no admite postulaciones)
+            if ($idEstado === self::ESTADO_SOLICITUD_ACEPTADA) {
+                $stmt = $this->db->prepare(
+                    "UPDATE public.vacantes SET id_estado = :id_estado
+                     WHERE id = (SELECT id_vacante FROM public.solicitudes_vacantes WHERE id = :id_solicitud)"
+                );
+                $stmt->execute([
+                    'id_estado'    => self::ESTADO_VACANTE_EVALUADA,
+                    'id_solicitud' => $om->idSolicitud
+                ]);
+            }
+
             $this->db->commit();
+
+            if ($idEstado === self::ESTADO_SOLICITUD_ACEPTADA) {
+                $this->notificarAceptacion($om->idSolicitud);
+            }
 
             return $id !== false ? (int)$id : false;
         } catch (PDOException $e) {
@@ -615,6 +636,83 @@ class VacanteService {
 
             error_log("Error PDO al crear orden de mérito: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Avisa por correo al postulante que su solicitud fue ACEPTADA.
+     * Un fallo en el envío solo se registra en el log: la orden de mérito
+     * ya quedó guardada y no debe revertirse por un problema de correo.
+     */
+    private function notificarAceptacion(int $idSolicitud): void {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT u.email, u.nombre, u.apellido,
+                        v.titulo AS vacante_titulo,
+                        c.nombre AS catedra_nombre,
+                        om.posicion, om.puntaje, om.observaciones
+                 FROM public.solicitudes_vacantes s
+                 JOIN public.usuarios u ON s.id_usuario = u.id
+                 JOIN public.vacantes v ON s.id_vacante = v.id
+                 LEFT JOIN public.catedras c ON v.id_catedra = c.id
+                 LEFT JOIN public.ordenes_merito om ON om.id_solicitud = s.id
+                 WHERE s.id = :id"
+            );
+            $stmt->execute(['id' => $idSolicitud]);
+            $datos = $stmt->fetch();
+
+            if (!$datos || empty($datos['email'])) {
+                error_log("Aviso de aceptación no enviado: solicitud $idSolicitud sin email.");
+                return;
+            }
+
+            $mailer = new Mailer();
+
+            if (!$mailer->estaConfigurado()) {
+                error_log("Aviso de aceptación no enviado: falta configurar MAIL_* en backend/.env.");
+                return;
+            }
+
+            $e = fn($valor) => htmlspecialchars((string)$valor, ENT_QUOTES, 'UTF-8');
+
+            $vacante = $datos['vacante_titulo'] ?: 'la vacante';
+            $catedra = $datos['catedra_nombre']
+                ? " de la cátedra <strong>{$e($datos['catedra_nombre'])}</strong>"
+                : '';
+            $observaciones = !empty($datos['observaciones'])
+                ? "<p><strong>Observaciones:</strong> {$e($datos['observaciones'])}</p>"
+                : '';
+
+            $html = "
+                <div style=\"font-family: Arial, sans-serif; color: #222; max-width: 600px;\">
+                    <h2 style=\"color: #1a4d8f;\">¡Tu postulación fue aceptada!</h2>
+                    <p>Hola {$e($datos['nombre'])} {$e($datos['apellido'])},</p>
+                    <p>
+                        Te informamos que tu postulación a <strong>{$e($vacante)}</strong>{$catedra}
+                        fue <strong>ACEPTADA</strong>.
+                    </p>
+                    <p>
+                        <strong>Posición en la orden de mérito:</strong> {$e($datos['posicion'])}<br>
+                        <strong>Puntaje:</strong> {$e($datos['puntaje'])}
+                    </p>
+                    {$observaciones}
+                    <p>Podés ver el detalle ingresando al sistema de Gestión de Vacantes.</p>
+                    <p style=\"color: #777; font-size: 12px;\">Este es un mensaje automático, por favor no respondas a este correo.</p>
+                </div>";
+
+            $mailer->enviar(
+                $datos['email'],
+                "Postulación aceptada - {$vacante}",
+                $html
+            );
+
+            // Control: queda registrado que el postulante fue avisado
+            $stmt = $this->db->prepare(
+                "UPDATE public.solicitudes_vacantes SET notificado = TRUE WHERE id = :id"
+            );
+            $stmt->execute(['id' => $idSolicitud]);
+        } catch (Throwable $ex) {
+            error_log("Error al enviar aviso de aceptación (solicitud $idSolicitud): " . $ex->getMessage());
         }
     }
 

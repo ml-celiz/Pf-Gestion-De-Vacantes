@@ -9,12 +9,13 @@ CREATE TABLE public.usuarios
     email character varying(50) NOT NULL,
     nombre character varying(50),
     apellido character varying(50),
-    contrasenea character varying(255) NOT NULL,
+    contrasena character varying(255) NOT NULL,
     dni integer,
     telefono character varying,
     fecha_alta timestamp with time zone NOT NULL,
     fecha_actualizacion timestamp with time zone,
     fecha_baja timestamp with time zone,
+    cv_path character varying,
     PRIMARY KEY (id)
 );
 
