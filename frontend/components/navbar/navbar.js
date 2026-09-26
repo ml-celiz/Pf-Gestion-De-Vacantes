@@ -1,4 +1,6 @@
 class AppNavbar extends HTMLElement {
+    static instancias = 0;
+
     constructor() {
         super();
     }
@@ -22,6 +24,12 @@ class AppNavbar extends HTMLElement {
 
             this.innerHTML = htmlContent;
 
+            // Hay un navbar por vista: el id del botón de la cuenta
+            // (al que apunta aria-labelledby) no puede repetirse
+            const idMenu = `user-menu-${++AppNavbar.instancias}`;
+            this.querySelector('#user-menu').id = idMenu;
+            this.querySelector('.user-dropdown').setAttribute('aria-labelledby', idMenu);
+
             // 3. Inicializar eventos
             this.initEvents();
         } catch (error) {
@@ -38,7 +46,7 @@ class AppNavbar extends HTMLElement {
         // =====================================================
         // BOTÓN HOME
         // =====================================================
-        const btnHome = this.querySelector('#btn-home-navbar');
+        const btnHome = this.querySelector('.btn-home-navbar');
 
         if (btnHome) {
             if (isPublic) {
@@ -55,7 +63,7 @@ class AppNavbar extends HTMLElement {
         // =====================================================
         // BOTÓN MENÚ LATERAL (ver components/sidebar)
         // =====================================================
-        const btnSidebar = this.querySelector('#btn-sidebar-navbar');
+        const btnSidebar = this.querySelector('.btn-sidebar-navbar');
 
         if (btnSidebar) {
             if (isPublic) {
@@ -71,7 +79,7 @@ class AppNavbar extends HTMLElement {
         // =====================================================
         // BOTÓN MODO INVITADO
         // =====================================================
-        const btnGuest = this.querySelector('#btn-guest-navbar');
+        const btnGuest = this.querySelector('.btn-guest-navbar');
 
         if (btnGuest) {
             if (isPublic) {
@@ -117,7 +125,7 @@ class AppNavbar extends HTMLElement {
             // =================================================
             // CERRAR SESIÓN
             // =================================================
-            const btnLogout = this.querySelector('#btn-logout-navbar');
+            const btnLogout = this.querySelector('.btn-logout-navbar');
 
             if (btnLogout) {
                 btnLogout.addEventListener('click', () => this.logout());
@@ -157,7 +165,7 @@ class AppNavbar extends HTMLElement {
 
         // Texto de la salida
 
-        const btnSalir = this.querySelector('#btn-logout-navbar');
+        const btnSalir = this.querySelector('.btn-logout-navbar');
 
         if (btnSalir) {
             btnSalir.innerHTML = `

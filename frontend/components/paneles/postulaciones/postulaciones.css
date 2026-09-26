@@ -97,7 +97,7 @@
     font-size: 0.875rem;
     line-height: 1.6;
     white-space: pre-line;
-    word-break: break-word;
+    overflow-wrap: anywhere; /* equivale al obsoleto word-break: break-word */
 }
 
 .resultado-observaciones.resultado-vacio {

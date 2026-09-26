@@ -117,6 +117,34 @@
                 .querySelectorAll('app-perfil, app-faq')
                 .forEach(dialogo => dialogo.remove());
         }
+        /*
+        * El login y el menú quedan siempre en el DOM, y el HTML no admite
+        * más de un <main> visible: el <main> de cada vista oculta lleva
+        * "hidden". Se vuelve a calcular ante cualquier cambio de vista.
+        */
+        function sincronizarMain() {
+            document
+                .querySelectorAll('[id$="-view"]')
+                .forEach(vista => {
+                    const oculta = vista.style.display === 'none';
+                    vista
+                        .querySelectorAll('main')
+                        .forEach(main => {
+                            if (main.hidden !== oculta) {
+                                main.hidden = oculta;
+                            }
+                        });
+                });
+        }
+        new MutationObserver(sincronizarMain).observe(
+            document.body,
+            {
+                subtree: true,
+                childList: true,
+                attributes: true,
+                attributeFilter: ['style']
+            }
+        );
         function getRouteFromUrl() {
             const hash = window.location.hash;
             const routes = {

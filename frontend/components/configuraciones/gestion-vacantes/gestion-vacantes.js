@@ -196,7 +196,7 @@ class GestionVacantesComponent extends HTMLElement {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center">Cargando vacantes...</td>
+                <td colspan="8" class="text-center">Cargando vacantes...</td>
             </tr>
         `;
 
@@ -209,7 +209,7 @@ class GestionVacantesComponent extends HTMLElement {
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center text-danger">Error al cargar vacantes.</td>
+                    <td colspan="8" class="text-center text-danger">Error al cargar vacantes.</td>
                 </tr>
             `;
         }
@@ -226,7 +226,7 @@ class GestionVacantesComponent extends HTMLElement {
         if (this.vacantes.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center text-muted">No hay vacantes registradas.</td>
+                    <td colspan="8" class="text-center text-muted">No hay vacantes registradas.</td>
                 </tr>
             `;
 

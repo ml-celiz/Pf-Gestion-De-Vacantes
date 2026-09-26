@@ -113,7 +113,7 @@ class AppSidebar extends HTMLElement {
 
     // Estado del botón ☰ (hay uno en el navbar de cada vista)
     marcarBotones(abierto) {
-        document.querySelectorAll('#btn-sidebar-navbar').forEach(boton => {
+        document.querySelectorAll('.btn-sidebar-navbar').forEach(boton => {
             boton.setAttribute('aria-expanded', String(abierto));
             boton.classList.toggle('activo', abierto);
         });

@@ -163,7 +163,7 @@ class RolesComponent extends HTMLElement {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center">Cargando roles...</td>
+                <td colspan="3" class="text-center">Cargando roles...</td>
             </tr>
         `;
 
@@ -186,7 +186,7 @@ class RolesComponent extends HTMLElement {
 
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center">No hay roles registrados.</td>
+                        <td colspan="3" class="text-center">No hay roles registrados.</td>
                     </tr>
                 `;
 
@@ -224,7 +224,7 @@ class RolesComponent extends HTMLElement {
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-danger">Error al cargar roles.</td>
+                    <td colspan="3" class="text-center text-danger">Error al cargar roles.</td>
                 </tr>
             `;
         }
@@ -384,7 +384,7 @@ class RolesComponent extends HTMLElement {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="2" class="text-center">Cargando...</td>
+                <td class="text-center">Cargando...</td>
             </tr>
         `;
 
@@ -405,7 +405,7 @@ class RolesComponent extends HTMLElement {
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="2" class="text-center text-danger">Error al obtener módulos.</td>
+                    <td class="text-center text-danger">Error al obtener módulos.</td>
                 </tr>
             `;
         }
@@ -424,7 +424,7 @@ class RolesComponent extends HTMLElement {
         if (this.modulos.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="2" class="text-center text-muted">No hay módulos registrados.</td>
+                    <td class="text-center text-muted">No hay módulos registrados.</td>
                 </tr>
             `;
 
@@ -522,7 +522,7 @@ class RolesComponent extends HTMLElement {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="2" class="text-center">Cargando...</td>
+                <td class="text-center">Cargando...</td>
             </tr>
         `;
 
@@ -543,7 +543,7 @@ class RolesComponent extends HTMLElement {
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="2" class="text-center text-danger">Error al obtener paneles.</td>
+                    <td class="text-center text-danger">Error al obtener paneles.</td>
                 </tr>
             `;
         }
@@ -562,7 +562,7 @@ class RolesComponent extends HTMLElement {
         if (this.paneles.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="2" class="text-center text-muted">No hay paneles registrados.</td>
+                    <td class="text-center text-muted">No hay paneles registrados.</td>
                 </tr>
             `;
 
