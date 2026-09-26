@@ -1,1 +1,16 @@
+# Configuración con contraseñas (usar backend/.env.example como modelo)
 backend/.env
+.env
+
+# Dependencias
+vendor/
+node_modules/
+
+# Temporales, logs y archivos del sistema operativo / editor
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

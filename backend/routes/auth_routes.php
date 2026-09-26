@@ -23,6 +23,17 @@ function handleAuthRoutes(string $method, array $routeParams): void {
         return;
     }
 
+    // Recuperación de contraseña (rutas públicas)
+    if ($method === 'POST' && $action === 'recuperar') {
+        $authController->solicitarRecuperacion();
+        return;
+    }
+
+    if ($method === 'POST' && $action === 'restablecer') {
+        $authController->restablecerContrasena();
+        return;
+    }
+
     if ($method === 'GET' && $action === 'me') {
         $sesionActual = verificarAutenticacion();
         

@@ -98,6 +98,32 @@ GRANT ALL ON SEQUENCE public.sesiones_id_seq TO postgres;
 ALTER TABLE public.sesiones
 ADD COLUMN fecha_expiracion timestamp with time zone;
 
+-- recuperaciones_contrasena
+-- Pedidos de "¿Olvidaste tu contraseña?". Se guarda el hash (SHA-256) del
+-- token que viaja en el link del correo, nunca el token en sí.
+CREATE TABLE public.recuperaciones_contrasena
+(
+    id serial NOT NULL,
+    token_hash character varying(64) NOT NULL,
+    fecha_alta timestamp with time zone NOT NULL DEFAULT NOW(),
+    fecha_expiracion timestamp with time zone NOT NULL,
+    fecha_uso timestamp with time zone,
+    id_usuario integer NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT token_hash_unico UNIQUE (token_hash),
+    CONSTRAINT id_usuario_fk FOREIGN KEY (id_usuario)
+        REFERENCES public.usuarios (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+);
+
+ALTER TABLE IF EXISTS public.recuperaciones_contrasena
+    OWNER to postgres;
+
+GRANT ALL ON TABLE public.recuperaciones_contrasena TO postgres;
+GRANT ALL ON SEQUENCE public.recuperaciones_contrasena_id_seq TO postgres;
+
 -- roles_paneles
 CREATE TABLE public.roles_paneles
 (

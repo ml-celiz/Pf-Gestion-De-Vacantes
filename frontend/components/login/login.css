@@ -246,6 +246,12 @@
     cursor: pointer;
 }
 
+/* "¿Olvidaste tu contraseña?", al lado de la etiqueta del campo */
+.link-forgot {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 .auth-switch-link:hover {
     color: var(--color-primary-hover);
     text-decoration: underline;

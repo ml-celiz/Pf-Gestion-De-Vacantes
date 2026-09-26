@@ -70,6 +70,7 @@
     </script>
 
     <!-- Servicios -->
+    <script src="services/config.js"></script>
     <script src="services/estilos.js"></script>
     <script src="services/api.js"></script>
     <script src="services/auth.service.js"></script>
@@ -178,10 +179,6 @@
                     );
                     route = 'menu';
                 }
-                console.log(
-                    'Ruta recibida:',
-                    route
-                );
                 // ==========================================
                 // ACTUALIZAR URL
                 // ==========================================
@@ -331,9 +328,28 @@
         document.addEventListener(
             'DOMContentLoaded',
             async () => {
-                console.log(
-                    'Verificando sesión...'
-                );
+                // LINK DEL CORREO DE RECUPERACIÓN (?restablecer=TOKEN):
+                // se abre el formulario de nueva contraseña del login
+                const tokenRestablecer =
+                    new URLSearchParams(window.location.search).get('restablecer');
+                if (tokenRestablecer) {
+                    // El token no queda en la barra de direcciones ni en el historial
+                    window.history.replaceState(
+                        {},
+                        '',
+                        window.location.pathname
+                    );
+                    document
+                        .getElementById('app-loader')
+                        .hidden = true;
+                    document
+                        .getElementById('login-view')
+                        .style.display = 'block';
+                    document
+                        .querySelector('app-login')
+                        .abrirRestablecer(tokenRestablecer);
+                    return;
+                }
                 const tieneSesion =
                     await AuthService.restoreSession();
                 // Recién ahora se sabe qué mostrar: hasta acá solo se
@@ -357,10 +373,6 @@
                 } else {
                     const route =
                         getRouteFromUrl();
-                    console.log(
-                        'Sesión válida. Ruta:',
-                        route
-                    );
                     document.dispatchEvent(
                         new CustomEvent(
                             'navigate',
@@ -380,9 +392,6 @@
         document.addEventListener(
             'auth-expired',
             () => {
-                console.log(
-                    'La sesión ha expirado.'
-                );
                 // Ocultar todas las vistas
                 document
                     .querySelectorAll('[id$="-view"]')

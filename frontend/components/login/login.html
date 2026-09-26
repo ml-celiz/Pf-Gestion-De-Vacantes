@@ -54,13 +54,12 @@
                                         Contraseña
                                     </label>
 
-                                    <!--
-                                    <a
-                                        href="#recuperar"
-                                        class="link-forgot text-decoration-none fw-medium fs-7">
+                                    <button
+                                        type="button"
+                                        class="auth-switch-link link-forgot"
+                                        id="btn-ir-recuperar">
                                         ¿Olvidaste tu contraseña?
-                                    </a>
-                                    -->
+                                    </button>
                                 </div>
 
                                 <div class="input-group-custom">
@@ -282,6 +281,151 @@
                             ¿Ya tenés cuenta?
                             <button type="button" class="auth-switch-link" id="btn-volver-login">
                                 Iniciá sesión
+                            </button>
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============================================= -->
+            <!-- RECUPERAR CONTRASEÑA: pedir el link por correo -->
+            <!-- ============================================= -->
+
+            <div class="login-card-container" id="seccion-recuperar" hidden>
+                <header class="text-center mb-3">
+                    <h1 class="h3 fw-extrabold tracking-tight mb-2">Recuperá tu contraseña</h1>
+                    <p class="text-muted fs-6">Te enviaremos un enlace a tu correo para elegir una nueva</p>
+                </header>
+
+                <section class="card login-card border-0">
+                    <div class="card-body p-4">
+                        <div id="recuperar-alert-container" aria-live="polite" aria-atomic="true">
+                        </div>
+
+                        <form id="recuperar-form" novalidate>
+                            <div class="form-group mb-3">
+                                <label for="recuperar-email" class="form-label fw-semibold mb-2">
+                                    Correo electrónico
+                                </label>
+
+                                <div class="input-group-custom">
+                                    <i class="bi bi-envelope input-icon" aria-hidden="true"></i>
+
+                                    <input
+                                        type="email"
+                                        class="form-control form-control-custom"
+                                        id="recuperar-email"
+                                        autocomplete="email"
+                                        placeholder="usuario@utn.edu.ar"
+                                        required
+                                        aria-describedby="recuperar-email-error">
+                                </div>
+
+                                <div id="recuperar-email-error" class="invalid-feedback">
+                                    Ingresá el correo con el que te registraste.
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                id="btn-recuperar-submit"
+                                class="btn btn-primary-custom w-100 fw-bold text-uppercase mt-2">
+                                <span id="btn-recuperar-text">Enviar enlace</span>
+
+                                <span
+                                    id="btn-recuperar-spinner"
+                                    class="spinner-border spinner-border-sm ms-2 d-none"
+                                    role="status"
+                                    aria-hidden="true">
+                                </span>
+                            </button>
+                        </form>
+
+                        <p class="auth-switch-text text-center mt-3 mb-0">
+                            ¿Te acordaste?
+                            <button type="button" class="auth-switch-link" data-volver-login>
+                                Volver a iniciar sesión
+                            </button>
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============================================= -->
+            <!-- RESTABLECER: nueva contraseña (link del correo) -->
+            <!-- ============================================= -->
+
+            <div class="login-card-container" id="seccion-restablecer" hidden>
+                <header class="text-center mb-3">
+                    <h1 class="h3 fw-extrabold tracking-tight mb-2">Elegí una nueva contraseña</h1>
+                    <p class="text-muted fs-6">Después vas a poder ingresar con ella</p>
+                </header>
+
+                <section class="card login-card border-0">
+                    <div class="card-body p-4">
+                        <div id="restablecer-alert-container" aria-live="polite" aria-atomic="true">
+                        </div>
+
+                        <form id="restablecer-form" novalidate>
+                            <div class="form-group mb-3">
+                                <label for="restablecer-contrasena" class="form-label fw-semibold mb-2">
+                                    Nueva contraseña
+                                </label>
+
+                                <div class="input-group-custom">
+                                    <i class="bi bi-lock input-icon" aria-hidden="true"></i>
+
+                                    <input
+                                        type="password"
+                                        class="form-control form-control-custom"
+                                        id="restablecer-contrasena"
+                                        autocomplete="new-password"
+                                        placeholder="••••••••"
+                                        required
+                                        aria-describedby="restablecer-contrasena-ayuda">
+                                </div>
+
+                                <small class="auth-help" id="restablecer-contrasena-ayuda">
+                                    La contraseña debe tener al menos 8 caracteres.
+                                </small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="restablecer-contrasena-2" class="form-label fw-semibold mb-2">
+                                    Repetir contraseña
+                                </label>
+
+                                <div class="input-group-custom">
+                                    <i class="bi bi-lock input-icon" aria-hidden="true"></i>
+
+                                    <input
+                                        type="password"
+                                        class="form-control form-control-custom"
+                                        id="restablecer-contrasena-2"
+                                        autocomplete="new-password"
+                                        placeholder="••••••••"
+                                        required>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                id="btn-restablecer-submit"
+                                class="btn btn-primary-custom w-100 fw-bold text-uppercase mt-2">
+                                <span id="btn-restablecer-text">Guardar contraseña</span>
+
+                                <span
+                                    id="btn-restablecer-spinner"
+                                    class="spinner-border spinner-border-sm ms-2 d-none"
+                                    role="status"
+                                    aria-hidden="true">
+                                </span>
+                            </button>
+                        </form>
+
+                        <p class="auth-switch-text text-center mt-3 mb-0">
+                            <button type="button" class="auth-switch-link" data-volver-login>
+                                Volver a iniciar sesión
                             </button>
                         </p>
                     </div>

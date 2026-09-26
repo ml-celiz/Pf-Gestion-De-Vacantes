@@ -27,16 +27,20 @@ class AppLogin extends HTMLElement {
     }
 
     // =====================================================
-    // ALTERNAR LOGIN / REGISTRO
+    // ALTERNAR LOGIN / REGISTRO / RECUPERAR / RESTABLECER
     // =====================================================
+    static SECCIONES = ['login', 'registro', 'recuperar', 'restablecer'];
+
+    mostrarSeccion(nombre) {
+        AppLogin.SECCIONES.forEach(seccion => {
+            const elemento = this.querySelector(`#seccion-${seccion}`);
+
+            if (elemento) elemento.hidden = seccion !== nombre;
+        });
+    }
+
     mostrarRegistro() {
-        const login = this.querySelector('#seccion-login');
-        const registro = this.querySelector('#seccion-registro');
-
-        if (!login || !registro) return;
-
-        login.hidden = true;
-        registro.hidden = false;
+        this.mostrarSeccion('registro');
 
         this.clearAlert();
 
@@ -46,17 +50,47 @@ class AppLogin extends HTMLElement {
     }
 
     mostrarLogin() {
-        const login = this.querySelector('#seccion-login');
-        const registro = this.querySelector('#seccion-registro');
+        this.mostrarSeccion('login');
+    }
 
-        if (!login || !registro) return;
+    mostrarRecuperar() {
+        this.mostrarSeccion('recuperar');
 
-        registro.hidden = true;
-        login.hidden = false;
+        this.clearAlert();
+
+        const email = this.querySelector('#recuperar-email');
+        const emailLogin = this.querySelector('#email');
+
+        if (email) {
+            // Si ya lo había escrito en el login, se reutiliza
+            if (emailLogin && emailLogin.value.trim() && !email.value) {
+                email.value = emailLogin.value.trim();
+            }
+
+            email.focus();
+        }
+    }
+
+    /*
+    * Link del correo de recuperación (index.html lee ?restablecer=TOKEN).
+    * Puede llamarse antes de que el componente termine de cargar: el
+    * token queda guardado y la sección se muestra al inicializar.
+    */
+    abrirRestablecer(token) {
+        this.tokenRestablecer = token;
+
+        if (!this.querySelector('#seccion-restablecer')) return;
+
+        this.mostrarSeccion('restablecer');
+
+        const contrasena = this.querySelector('#restablecer-contrasena');
+
+        if (contrasena) contrasena.focus();
     }
 
     initEvents() {
         this.initRegistro();
+        this.initRecuperacion();
 
         const loginForm = this.querySelector('#login-form');
         const emailInput = this.querySelector('#email');
@@ -89,8 +123,6 @@ class AppLogin extends HTMLElement {
                 );
 
                 setTimeout(() => {
-                    console.log('Usuario autenticado con éxito:', result.usuario);
-
                     const loginView = document.getElementById('login-view');
                     const menuView = document.getElementById('menu-view');
 
@@ -270,6 +302,152 @@ class AppLogin extends HTMLElement {
                 this.setLoadingRegistro(btnSubmit, btnSpinner, btnText, false);
             }
         });
+    }
+
+    // =====================================================
+    // RECUPERACIÓN DE CONTRASEÑA
+    // =====================================================
+    initRecuperacion() {
+        const btnIrRecuperar = this.querySelector('#btn-ir-recuperar');
+
+        if (btnIrRecuperar) {
+            btnIrRecuperar.addEventListener('click', () => this.mostrarRecuperar());
+        }
+
+        this.querySelectorAll('[data-volver-login]').forEach(boton => {
+            boton.addEventListener('click', () => this.mostrarLogin());
+        });
+
+        // 1) PEDIR EL LINK
+
+        const recuperarForm = this.querySelector('#recuperar-form');
+
+        if (recuperarForm) {
+            const email = this.querySelector('#recuperar-email');
+            const alertContainer = this.querySelector('#recuperar-alert-container');
+            const boton = this.querySelector('#btn-recuperar-submit');
+            const spinner = this.querySelector('#btn-recuperar-spinner');
+            const texto = this.querySelector('#btn-recuperar-text');
+
+            recuperarForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                alertContainer.innerHTML = '';
+
+                const invalido = !email.value.trim() || !email.checkValidity();
+
+                email.classList.toggle('is-invalid', invalido);
+
+                if (invalido) {
+                    email.focus();
+                    return;
+                }
+
+                this.setCargando(boton, spinner, texto, true, 'Enviando...', 'Enviar enlace');
+
+                try {
+                    const respuesta = await AuthService.solicitarRecuperacion(email.value.trim());
+
+                    this.showAlert(alertContainer, 'success', this.escapar(respuesta.message));
+                } catch (error) {
+                    this.showAlert(
+                        alertContainer,
+                        'danger',
+                        this.escapar(error.message || 'No se pudo enviar el correo. Intentá nuevamente.')
+                    );
+                } finally {
+                    this.setCargando(boton, spinner, texto, false, 'Enviando...', 'Enviar enlace');
+                }
+            });
+        }
+
+        // 2) ELEGIR LA CONTRASEÑA NUEVA
+
+        const restablecerForm = this.querySelector('#restablecer-form');
+
+        if (restablecerForm) {
+            const contrasena = this.querySelector('#restablecer-contrasena');
+            const contrasena2 = this.querySelector('#restablecer-contrasena-2');
+            const alertContainer = this.querySelector('#restablecer-alert-container');
+            const boton = this.querySelector('#btn-restablecer-submit');
+            const spinner = this.querySelector('#btn-restablecer-spinner');
+            const texto = this.querySelector('#btn-restablecer-text');
+
+            restablecerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                alertContainer.innerHTML = '';
+
+                const corta = contrasena.value.length < 8;
+                const distintas = contrasena.value !== contrasena2.value;
+
+                contrasena.classList.toggle('is-invalid', corta);
+                contrasena2.classList.toggle('is-invalid', !corta && distintas);
+
+                if (corta) {
+                    this.showAlert(alertContainer, 'danger', 'La contraseña debe tener al menos 8 caracteres.');
+                    contrasena.focus();
+                    return;
+                }
+
+                if (distintas) {
+                    this.showAlert(alertContainer, 'danger', 'Las contraseñas no coinciden.');
+                    contrasena2.focus();
+                    return;
+                }
+
+                this.setCargando(boton, spinner, texto, true, 'Guardando...', 'Guardar contraseña');
+
+                try {
+                    const respuesta = await AuthService.restablecerContrasena(
+                        this.tokenRestablecer || '',
+                        contrasena.value
+                    );
+
+                    this.tokenRestablecer = null;
+                    restablecerForm.reset();
+
+                    // Volver al login con el aviso de éxito
+                    this.mostrarLogin();
+
+                    this.showAlert(
+                        this.querySelector('#alert-container'),
+                        'success',
+                        this.escapar(respuesta.message)
+                    );
+
+                    const emailLogin = this.querySelector('#email');
+
+                    if (emailLogin) emailLogin.focus();
+                } catch (error) {
+                    this.showAlert(
+                        alertContainer,
+                        'danger',
+                        this.escapar(error.message || 'No se pudo guardar la contraseña. Intentá nuevamente.')
+                    );
+                } finally {
+                    this.setCargando(boton, spinner, texto, false, 'Guardando...', 'Guardar contraseña');
+                }
+            });
+        }
+
+        // El link del correo llegó antes de que el componente cargara
+        if (this.tokenRestablecer) {
+            this.abrirRestablecer(this.tokenRestablecer);
+        }
+    }
+
+    // Deshabilita el botón mientras se envía (evita el doble envío)
+    setCargando(boton, spinner, texto, cargando, textoCargando, textoNormal) {
+        boton.disabled = cargando;
+        spinner.classList.toggle('d-none', !cargando);
+        texto.textContent = cargando ? textoCargando : textoNormal;
+    }
+
+    escapar(texto) {
+        const div = document.createElement('div');
+        div.textContent = String(texto ?? '');
+        return div.innerHTML;
     }
 
     setLoadingRegistro(btnSubmit, btnSpinner, btnText, isLoading) {

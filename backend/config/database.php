@@ -9,7 +9,7 @@ class Database {
             $port = $_ENV['DB_PORT'] ?? '5432';
             $db   = $_ENV['DB_NAME'] ?? 'postgres';
             $user = $_ENV['DB_USER'] ?? 'postgres';
-            $pass = $_ENV['DB_PASS'] ?? '123';
+            $pass = $_ENV['DB_PASS'] ?? '';   // se configura en backend/.env
 
             $dsn = "pgsql:host=$host;port=$port;dbname=$db";
 
@@ -19,8 +19,11 @@ class Database {
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 ]);
             } catch (PDOException $e) {
+                // El detalle solo va al log: nunca se muestra el error crudo
+                error_log("Error de conexión a la base de datos: " . $e->getMessage());
+
                 http_response_code(500);
-                echo json_encode(["error" => "Error de conexión a la base de datos: " . $e->getMessage()]);
+                echo json_encode(["message" => "No se pudo conectar con el servidor. Intentá nuevamente en unos minutos."]);
                 exit;
             }
         }

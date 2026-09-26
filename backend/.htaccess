@@ -1,0 +1,19 @@
+# Configuración para el hosting (Apache).
+# Toda petición a backend/ la atiende main.php: así /backend/api/... funciona
+# y nadie puede abrir directamente .env, los servicios ni los CV subidos.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Algunos hostings descartan el encabezado Authorization (token de sesión)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteRule ^main\.php$ - [L]
+    RewriteRule ^ main.php [QSA,L]
+</IfModule>
+
+# Por si mod_rewrite no está disponible: el .env nunca se sirve
+<Files ".env">
+    Require all denied
+</Files>

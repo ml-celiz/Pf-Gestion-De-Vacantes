@@ -3,6 +3,8 @@
 require_once __DIR__ . '/../services/auth_services.php';
 require_once __DIR__ . '/../services/usuario_services.php';
 require_once __DIR__ . '/../models/Sesion.php';
+require_once __DIR__ . '/../services/correo_services.php';
+require_once __DIR__ . '/../services/recuperacion_services.php';
 
 class AuthController {
 
@@ -27,10 +29,58 @@ class AuthController {
             return;
         }
 
+        // Correo de bienvenida: si falla, la cuenta igual queda creada
+        try {
+            (new CorreoService())->enviarBienvenida(
+                trim($input['email'] ?? ''),
+                trim($input['nombre'] ?? '')
+            );
+        } catch (Throwable $e) {
+            error_log("No se pudo enviar el correo de bienvenida (usuario $id): " . $e->getMessage());
+        }
+
         http_response_code(201);
         echo json_encode([
             "message" => "Cuenta creada correctamente. Ya podés iniciar sesión.",
             "id"      => $id
+        ]);
+    }
+
+    // POST /api/auth/recuperar  { email }
+    public function solicitarRecuperacion(): void {
+        $input = json_decode(file_get_contents("php://input"), true) ?? [];
+
+        try {
+            (new RecuperacionService())->solicitar((string)($input['email'] ?? ''));
+        } catch (RuntimeException $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode(["message" => $e->getMessage()]);
+            return;
+        }
+
+        // Mismo mensaje exista o no la cuenta
+        echo json_encode([
+            "message" => "Si el correo está registrado, te enviamos un enlace para restablecer la contraseña. Revisá tu bandeja de entrada (y la carpeta de spam)."
+        ]);
+    }
+
+    // POST /api/auth/restablecer  { token, contrasena }
+    public function restablecerContrasena(): void {
+        $input = json_decode(file_get_contents("php://input"), true) ?? [];
+
+        try {
+            (new RecuperacionService())->restablecer(
+                (string)($input['token'] ?? ''),
+                (string)($input['contrasena'] ?? '')
+            );
+        } catch (RuntimeException $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode(["message" => $e->getMessage()]);
+            return;
+        }
+
+        echo json_encode([
+            "message" => "¡Listo! Tu contraseña fue actualizada. Ya podés iniciar sesión."
         ]);
     }
 

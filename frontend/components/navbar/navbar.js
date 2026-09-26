@@ -195,7 +195,6 @@ class AppNavbar extends HTMLElement {
 
     // NAVEGACIÓN
     navigateTo(route) {
-        console.log('Navegando hacia:', route);
 
         this.dispatchEvent(
             new CustomEvent('navigate', {
@@ -209,7 +208,6 @@ class AppNavbar extends HTMLElement {
 
     // CERRAR SESIÓN
     async logout() {
-        console.log('Cerrando sesión...');
 
         try {
             // Avisar al backend que la sesión terminó

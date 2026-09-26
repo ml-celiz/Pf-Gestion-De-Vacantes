@@ -8,6 +8,21 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 header("Access-Control-Expose-Headers: Content-Disposition");
 require_once __DIR__ . '/utils/helpers.php';
 
+// Los errores de PHP nunca se muestran en la respuesta (romperían el JSON y
+// expondrían detalles internos): solo se registran en el log del servidor
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
+set_exception_handler(function (Throwable $e) {
+    error_log("Error no controlado: " . $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine());
+
+    if (!headers_sent()) {
+        http_response_code(500);
+    }
+
+    echo json_encode(["message" => "Ocurrió un error inesperado. Intentá nuevamente."]);
+});
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;

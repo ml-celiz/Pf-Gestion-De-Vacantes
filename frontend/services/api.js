@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+// API_BASE_URL se define en services/config.js
 
 class ApiClient {
     /*
@@ -21,7 +21,14 @@ class ApiClient {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            let response;
+
+            try {
+                response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            } catch {
+                // Sin conexión o servidor caído: el navegador da un mensaje en inglés
+                throw new Error('No se pudo conectar con el servidor. Verificá tu conexión e intentá nuevamente.');
+            }
 
             // Los errores siempre vienen en JSON
             const esJson = (response.headers.get('Content-Type') || '').includes('application/json');

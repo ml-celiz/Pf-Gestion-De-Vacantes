@@ -695,7 +695,6 @@ class VacantesComponent extends HTMLElement {
     // ACCIÓN: PUBLICAR RESULTADOS
     // =========================================================
     publicarResultados(vacante) {
-        console.log('Publicar resultados:', vacante);
 
         // Se implementará posteriormente.
     }
@@ -714,14 +713,12 @@ class VacantesComponent extends HTMLElement {
         this.mostrarDialogoPostulados([], vacante, false, true);
 
         try {
-            console.log('Cargando postulados de vacante:', vacante.id);
 
             const solicitudes =
                 await ApiClient.get(
                     `/vacantes/solicitudes?id_vacante=${encodeURIComponent(vacante.id)}`
                 );
 
-            console.log('Postulados recibidos:', solicitudes);
 
             // Si el usuario cerró el diálogo mientras cargaba, no reabrirlo
             if (!document.querySelector('.postulados-dialog[open]')) {

@@ -69,7 +69,6 @@ class AppMenu extends HTMLElement {
 
     // NAVEGACIÓN
     navigateTo(route) {
-        console.log('Navegando hacia:', route);
 
         this.dispatchEvent(
             new CustomEvent('navigate', {

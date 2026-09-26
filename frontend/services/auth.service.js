@@ -8,6 +8,16 @@ class AuthService {
         return ApiClient.post('/auth/registro', datos);
     }
 
+    // RECUPERACIÓN DE CONTRASEÑA
+    // 1) pide el link por correo  2) guarda la nueva con el token del link
+    static async solicitarRecuperacion(email) {
+        return ApiClient.post('/auth/recuperar', { email });
+    }
+
+    static async restablecerContrasena(token, contrasena) {
+        return ApiClient.post('/auth/restablecer', { token, contrasena });
+    }
+
     // MODO INVITADO
     // No hay sesión en el servidor: solo se puede consultar
     // el listado de vacantes, que es público.
