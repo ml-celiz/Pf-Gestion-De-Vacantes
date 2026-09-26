@@ -71,6 +71,17 @@
     --color-focus-ring: var(--color-primary);
 }
 
+/* Medidas compartidas entre componentes */
+:root {
+    --alto-navbar: 64px;   /* el menú lateral se abre justo debajo */
+}
+
+@media (max-width: 576px) {
+    :root {
+        --alto-navbar: 60px;
+    }
+}
+
 /*
 * Fondo y tipografía de toda la aplicación. Están acá (y no en el CSS
 * de un componente) para que se apliquen desde el primer pintado: si no,

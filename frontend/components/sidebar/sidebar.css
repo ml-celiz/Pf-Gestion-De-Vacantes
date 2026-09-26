@@ -1,0 +1,253 @@
+/* =========================================================
+   MENÚ LATERAL
+   Cerrado: fuera de la pantalla. Abierto (app-sidebar.abierto):
+   entra desde la izquierda sobre un fondo oscuro. Menú y fondo
+   empiezan debajo del navbar, que queda visible y usable.
+   ========================================================= */
+
+.sidebar-overlay {
+    position: fixed;
+    inset: var(--alto-navbar) 0 0 0;
+    z-index: 1040;
+    background: var(--color-overlay);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s ease;
+}
+
+.sidebar {
+    position: fixed;
+    inset: var(--alto-navbar) auto 0 0;
+    z-index: 1045;
+    width: 290px;
+    max-width: 85vw;
+    display: flex;
+    flex-direction: column;
+    /*
+    * Mismo color y borde que el navbar. El color del navbar es apenas
+    * transparente: acá va sobre una base blanca para que no se
+    * transparente el contenido de la página que queda detrás.
+    */
+    background:
+        linear-gradient(var(--color-navbar-bg), var(--color-navbar-bg)),
+        var(--color-white);
+    border-right: 1px solid var(--color-accent-ring);
+    box-shadow: 12px 0 35px var(--color-shadow-dialog);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+}
+
+app-sidebar.abierto .sidebar-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+app-sidebar.abierto .sidebar {
+    transform: translateX(0);
+}
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
+.sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.6rem 0.75rem 0;
+}
+
+.sidebar-cerrar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.sidebar-cerrar:hover {
+    background: var(--color-white-translucent);
+    color: var(--color-dark);
+}
+
+/* =========================================================
+   SECCIONES E ÍTEMS
+   ========================================================= */
+
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.25rem 0.75rem 0.85rem;
+}
+
+.sidebar-seccion {
+    margin-top: 1.1rem;
+}
+
+.sidebar-seccion-titulo {
+    display: block;
+    margin: 0 0 0.35rem 0.6rem;
+    color: var(--color-gray-500);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.sidebar-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-bottom: 2px;
+    padding: 0.6rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.6rem;
+    color: var(--color-gray-700);
+    font-size: 0.87rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.sidebar-item i {
+    width: 1.1rem;
+    color: var(--color-gray-500);
+    font-size: 1rem;
+    text-align: center;
+    transition: color 0.15s ease;
+}
+
+/* Sobre el fondo celeste del navbar, el hover y el activo se
+   destacan con blanco y celeste más marcado */
+.sidebar-item:hover {
+    background: var(--color-white-translucent);
+    color: var(--color-dark);
+}
+
+.sidebar-item:hover i {
+    color: var(--color-primary);
+}
+
+/* Pantalla actual */
+.sidebar-item.activo {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.sidebar-item.activo i {
+    color: var(--color-primary);
+}
+
+.sidebar-item.activo::before {
+    content: "";
+    position: absolute;
+    inset: 0.45rem auto 0.45rem -0.75rem;
+    width: 3px;
+    background: var(--color-primary);
+    border-radius: 0 3px 3px 0;
+}
+
+/* =========================================================
+   PIE
+   ========================================================= */
+
+.sidebar-footer {
+    padding: 0.85rem 1rem 0.75rem;
+    border-top: 1px solid var(--color-accent-ring);
+}
+
+.sidebar-usuario {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.sidebar-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary-soft);
+    border-radius: 50%;
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.sidebar-usuario-datos {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-usuario-nombre {
+    overflow: hidden;
+    color: var(--color-dark);
+    font-size: 0.85rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-usuario-rol {
+    color: var(--color-gray-500);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Cerrar sesión */
+.sidebar-salir {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-white);
+    border: 1px solid var(--color-danger-border);
+    border-radius: 0.6rem;
+    color: var(--color-danger);
+    font-size: 1rem;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.sidebar-salir:hover {
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+}
+
+.sidebar-version {
+    display: block;
+    margin-top: 0.7rem;
+    color: var(--color-gray-400);
+    font-size: 0.68rem;
+    text-align: center;
+}
+
+/* El panel recibe el foco al abrirse; no necesita anillo */
+.sidebar:focus {
+    outline: none;
+}

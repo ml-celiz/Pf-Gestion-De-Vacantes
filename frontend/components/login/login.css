@@ -19,13 +19,13 @@
 
 /* ENCABEZADO */
 .login-card-container header {
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 1rem !important;
 }
 
 .login-card-container h1 {
     margin-bottom: 0.4rem !important;
     color: var(--color-dark);
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 800;
     letter-spacing: -0.5px;
 }
@@ -90,7 +90,7 @@
 /* INPUTS */
 .form-control-custom {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    padding: 0.65rem 1rem 0.65rem 2.75rem;
     font-size: 0.9rem;
     color: var(--color-dark);
     background-color: var(--color-white);
@@ -149,7 +149,7 @@
 /* BOTÓN PRINCIPAL */
 .btn-primary-custom {
     width: 100%;
-    padding: 0.8rem 1rem;
+    padding: 0.72rem 1rem;
     margin-top: 0.25rem;
     border: none;
     border-radius: 0.75rem;
@@ -251,17 +251,100 @@
     text-decoration: underline;
 }
 
-/* ACCESSIBILITY */
-.visually-hidden-sr {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
+/* =========================================================
+   ALTO DE LA PANTALLA
+   Login y registro entran en la ventana sin scroll vertical:
+   el pie es más compacto que en el resto de la app y, en
+   pantallas bajas, se reducen los espacios.
+   ========================================================= */
+
+app-login .app-footer {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}
+
+app-login .app-footer .container {
+    padding-top: 0.75rem;
+}
+
+@media (max-height: 800px) {
+    .login-card-container header {
+        margin-bottom: 0.6rem !important;
+    }
+
+    .login-card-container h1 {
+        font-size: 1.35rem;
+    }
+
+    .login-card-container header p {
+        font-size: 0.82rem;
+    }
+
+    .login-card .card-body {
+        padding: 1.1rem 1.5rem !important;
+    }
+
+    .login-card .form-group.mb-3 {
+        margin-bottom: 0.65rem !important;
+    }
+
+    .form-label {
+        margin-bottom: 0.3rem !important;
+        font-size: 0.82rem;
+    }
+
+    .form-control-custom {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .auth-switch-text {
+        margin-top: 0.6rem !important;
+    }
+
+    /* En el registro el título alcanza: el subtítulo se oculta */
+    #seccion-registro header p {
+        display: none;
+    }
+
+    app-login .app-main-content {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    #registro-contrasena-ayuda {
+        margin-bottom: 0.6rem !important;
+    }
+
+    .btn-primary-custom {
+        padding-top: 0.6rem;
+        padding-bottom: 0.6rem;
+    }
+
+    app-login .app-footer {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    app-login .app-footer .container {
+        padding-top: 0.5rem;
+    }
+
+    app-login .app-footer p {
+        font-size: 0.72rem;
+    }
+}
+
+/* Ventanas muy bajas (ej. 1280x720): campos un poco más juntos */
+@media (max-height: 640px) {
+    .login-card .form-group.mb-3 {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .form-control-custom {
+        padding-top: 0.42rem;
+        padding-bottom: 0.42rem;
+    }
 }
 
 /* RESPONSIVE*/

@@ -35,6 +35,7 @@ function handleAuthRoutes(string $method, array $routeParams): void {
                 "id" => $userId,
                 "email" => $sesionActual['email'] ?? null,
                 "nombre" => $sesionActual['nombre'] ?? null,
+                "apellido" => $sesionActual['apellido'] ?? null,
                 "roles" => obtenerRolesUsuario((int)$userId)
             ]
         ]);

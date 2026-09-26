@@ -1,0 +1,32 @@
+<!-- Fondo oscuro detrás del menú (cierra al hacer click) -->
+<div class="sidebar-overlay"></div>
+
+<aside class="sidebar" aria-label="Navegación" tabindex="-1" inert>
+    <!-- ENCABEZADO: solo el botón para cerrar -->
+    <div class="sidebar-header">
+        <button type="button" class="sidebar-cerrar" title="Cerrar" aria-label="Cerrar menú">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <!-- SECCIONES (se arman según el rol) -->
+    <nav class="sidebar-nav"></nav>
+
+    <!-- PIE: usuario, salir y versión -->
+    <div class="sidebar-footer">
+        <div class="sidebar-usuario">
+            <span class="sidebar-avatar"></span>
+
+            <div class="sidebar-usuario-datos">
+                <strong class="sidebar-usuario-nombre"></strong>
+                <span class="sidebar-usuario-rol"></span>
+            </div>
+
+            <button type="button" class="sidebar-salir">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </div>
+
+        <span class="sidebar-version"></span>
+    </div>
+</aside>

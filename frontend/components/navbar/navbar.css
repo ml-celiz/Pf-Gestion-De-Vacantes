@@ -6,7 +6,7 @@ app-navbar {
 
 /* Barra superior */
 .app-navbar {
-    height: 64px;
+    height: var(--alto-navbar);
     background: var(--color-navbar-bg) !important;
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--color-accent-ring) !important;
@@ -16,6 +16,40 @@ app-navbar {
 /* BRAND */
 .brand-group {
     height: 100%;
+}
+
+/* Botón del menú lateral */
+.sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.7rem;
+    color: var(--color-dark);
+    font-size: 1.45rem;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+    background: var(--color-white-translucent);
+    border-color: var(--color-accent-border);
+    color: var(--color-primary);
+}
+
+/* Menú lateral abierto */
+.sidebar-toggle.activo {
+    background: var(--color-primary-subtle);
+    border-color: var(--color-accent-border);
+    color: var(--color-primary);
 }
 
 /* Círculo que contiene el logo */
@@ -219,10 +253,7 @@ app-navbar {
 
 /* RESPONSIVE */
 @media (max-width: 576px) {
-    .app-navbar {
-        height: 60px;
-    }
-
+    /* El alto del navbar en celular está en --alto-navbar (global.css) */
     .brand-badge {
         width: 42px;
         height: 42px;

@@ -53,6 +53,22 @@ class AppNavbar extends HTMLElement {
         }
 
         // =====================================================
+        // BOTÓN MENÚ LATERAL (ver components/sidebar)
+        // =====================================================
+        const btnSidebar = this.querySelector('#btn-sidebar-navbar');
+
+        if (btnSidebar) {
+            if (isPublic) {
+                btnSidebar.remove();
+            } else {
+                // Abre o cierra el menú lateral (queda debajo del navbar)
+                btnSidebar.addEventListener('click', () => {
+                    document.dispatchEvent(new CustomEvent('alternar-sidebar'));
+                });
+            }
+        }
+
+        // =====================================================
         // BOTÓN MODO INVITADO
         // =====================================================
         const btnGuest = this.querySelector('#btn-guest-navbar');

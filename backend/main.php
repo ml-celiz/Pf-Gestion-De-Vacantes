@@ -31,3 +31,6 @@ routeRequest();
 
 // frontend
 // C:\xampp\php\php.exe -S localhost:5500
+
+// UBICACION ARCHIVO:
+// C:\xampp\htdocs

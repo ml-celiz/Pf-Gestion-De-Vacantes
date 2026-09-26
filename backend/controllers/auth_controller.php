@@ -77,6 +77,7 @@ class AuthController {
             "usuario" => [
                 "id"     => $usuario->id,
                 "nombre" => $usuario->nombre,
+                "apellido" => $usuario->apellido,
                 "email"  => $usuario->email,
                 "roles"  => $roles
             ]
