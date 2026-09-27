@@ -137,10 +137,12 @@ class PostulacionesComponent extends HTMLElement {
                             <i class="bi bi-eye-fill"></i>
                         </button>
 
-                        <!-- Dar de baja: solo mientras no fue evaluada -->
+                        <!-- Dar de baja: solo mientras no fue evaluada y
+                             si el rol puede editar postulaciones -->
                         <button
                             class="btn-action delete"
                             type="button"
+                            ${AuthService.puede('postulaciones', 'editar') ? '' : 'hidden'}
                             title="${evaluada
                                 ? 'La postulación ya fue evaluada'
                                 : 'Dar de baja la postulación'}"

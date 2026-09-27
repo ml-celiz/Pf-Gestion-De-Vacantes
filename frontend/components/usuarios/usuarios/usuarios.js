@@ -66,6 +66,11 @@ class UsuariosComponent extends HTMLElement {
 
         const btnAddUsuario = this.querySelector('#btn-add-usuario');
 
+
+        // Alta solo si el rol puede escribir en el módulo `usuarios` (roles_modulos)
+
+        if (btnAddUsuario) btnAddUsuario.hidden = !AuthService.puede('usuarios', 'escribir');
+
         if (btnAddUsuario) {
             btnAddUsuario.addEventListener('click', () => this.abrirDialogoCrearUsuario());
         }
@@ -212,11 +217,11 @@ class UsuariosComponent extends HTMLElement {
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button class="btn-action edit" title="Editar" type="button">
+                        <button class="btn-action edit" title="Editar" type="button" ${AuthService.puede('usuarios', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button" ${AuthService.puede('usuarios', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>

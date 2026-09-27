@@ -422,8 +422,9 @@
         // ==========================================
         document.addEventListener(
             'modo-invitado',
-            () => {
-                AuthService.entrarModoInvitado();
+            async () => {
+                // Trae los permisos del rol `inv` antes de mostrar el panel
+                await AuthService.entrarModoInvitado();
                 limpiarVistasDinamicas();
                 document.dispatchEvent(
                     new CustomEvent(

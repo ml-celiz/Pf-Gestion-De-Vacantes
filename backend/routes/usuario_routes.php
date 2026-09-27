@@ -5,9 +5,9 @@ require_once __DIR__ . '/../services/auth_services.php';
 
 /*
 * Todas las rutas de usuarios exigen sesión.
-* Administrar cuentas ajenas es exclusivo de `admin`; sobre la propia
-* cuenta (pantalla "Mi perfil") cada usuario puede leer, editar y darse
-* de baja. El alta pública se hace por POST /api/auth/registro.
+* Administrar cuentas ajenas requiere el módulo `usuarios` (roles_modulos);
+* sobre la propia cuenta (pantalla "Mi perfil") cada usuario puede leer,
+* editar y darse de baja. El alta pública se hace por POST /api/auth/registro.
 */
 function handleUsuarioRoutes(string $method, array $uriParts): void {
     $controller = new UsuarioController();
@@ -18,7 +18,7 @@ function handleUsuarioRoutes(string $method, array $uriParts): void {
     // --- CV: /api/usuarios/{id}/cv ---
     if ($id !== null && ($uriParts[3] ?? null) === 'cv') {
 
-        // GET: descargar. El dueño, admin, ra y el jefe de cátedra
+        // GET: descargar. El dueño, quien lee `usuarios`, ra y el jefe de cátedra
         // de una vacante a la que se postuló (ver exigirAccesoCv)
         if ($method === 'GET') {
             exigirAccesoCv($sesion, $id);
@@ -26,7 +26,8 @@ function handleUsuarioRoutes(string $method, array $uriParts): void {
             return;
         }
 
-        // POST / DELETE: solo el propio usuario, y solo postulantes
+        // POST / DELETE: solo el propio usuario, y solo si puede postularse
+        // (módulo `postulaciones`, escribir): el CV se usa en las postulaciones
         if ($method === 'POST' || $method === 'DELETE') {
             if ((int)$sesion['id_usuario'] !== $id) {
                 http_response_code(403);
@@ -34,7 +35,7 @@ function handleUsuarioRoutes(string $method, array $uriParts): void {
                 return;
             }
 
-            exigirRol($sesion, ['pos']);
+            exigirPermiso($sesion, 'postulaciones', 'escribir');
 
             $method === 'POST'
                 ? $controller->subirCv($id)
@@ -48,35 +49,35 @@ function handleUsuarioRoutes(string $method, array $uriParts): void {
 
     // GET /api/usuarios
     if ($method === 'GET' && $id === null) {
-        exigirRol($sesion, ['admin']);
+        exigirPermiso($sesion, 'usuarios', 'leer');
         $controller->listar();
         return;
     }
 
     // GET /api/usuarios/{id}
     if ($method === 'GET' && $id !== null) {
-        exigirSelfOAdmin($sesion, $id);
+        exigirPropioOPermiso($sesion, $id, 'leer');
         $controller->obtenerPorId($id);
         return;
     }
 
     // POST /api/usuarios
     if ($method === 'POST' && $id === null) {
-        exigirRol($sesion, ['admin']);
+        exigirPermiso($sesion, 'usuarios', 'escribir');
         $controller->crear();
         return;
     }
 
     // PUT /api/usuarios/{id}
     if ($method === 'PUT' && $id !== null) {
-        exigirSelfOAdmin($sesion, $id);
+        exigirPropioOPermiso($sesion, $id, 'editar');
         $controller->actualizar($id, (int)$sesion['id_usuario'] === $id);
         return;
     }
 
     // DELETE /api/usuarios/{id}
     if ($method === 'DELETE' && $id !== null) {
-        exigirSelfOAdmin($sesion, $id);
+        exigirPropioOPermiso($sesion, $id, 'editar');
         $controller->eliminar($id);
         return;
     }

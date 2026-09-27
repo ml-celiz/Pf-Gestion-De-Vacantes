@@ -13,11 +13,15 @@ class VacantesController {
     // --- VACANTES ---
 
     /*
-    * Público (lo ve también el invitado). Si consulta un jefe de
-    * cátedra, solo recibe las vacantes de sus cátedras.
+    * Módulo `vacantes`, leer. Sin sesión se evalúa el rol invitado.
+    * Si consulta un jefe de cátedra, solo recibe las vacantes de sus cátedras.
     */
     public function listarVacantes(): void {
-        $idJefe = idJefeDeCatedraParaFiltrar(obtenerSesionOpcional());
+        $sesion = obtenerSesionOpcional();
+
+        exigirPermiso($sesion, 'vacantes', 'leer');
+
+        $idJefe = idJefeDeCatedraParaFiltrar($sesion);
 
         echo json_encode($this->service->obtenerVacantes($idJefe));
     }
@@ -26,7 +30,7 @@ class VacantesController {
 
         $sesionActual = verificarAutenticacion();
 
-        exigirRol($sesionActual, ['admin', 'ra']);
+        exigirPermiso($sesionActual, 'vacantes', 'escribir');
 
         $idUsuario =
             isset($sesionActual['id_usuario'])
@@ -75,7 +79,7 @@ class VacantesController {
     }
 
     public function actualizarVacante(int $id): void {
-        exigirRol(verificarAutenticacion(), ['admin', 'ra']);
+        exigirPermiso(verificarAutenticacion(), 'vacantes', 'editar');
 
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         if ($this->service->actualizarVacante($id, $input)) {
@@ -87,7 +91,7 @@ class VacantesController {
     }
 
     public function eliminarVacante(int $id): void {
-        exigirRol(verificarAutenticacion(), ['admin', 'ra']);
+        exigirPermiso(verificarAutenticacion(), 'vacantes', 'editar');
 
         if ($this->service->eliminarVacante($id)) {
             echo json_encode(["message" => "Vacante eliminada correctamente."]);
@@ -102,6 +106,8 @@ class VacantesController {
     public function listarSolicitudes(): void
     {
         $sesionActual = verificarAutenticacion();
+
+        exigirPermiso($sesionActual, 'postulaciones', 'leer');
 
         $idVacante =
             isset($_GET['id_vacante']) &&
@@ -135,7 +141,7 @@ class VacantesController {
 
         $sesionActual = verificarAutenticacion();
 
-        exigirRol($sesionActual, ['admin', 'pos']);
+        exigirPermiso($sesionActual, 'postulaciones', 'escribir');
 
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
@@ -176,7 +182,9 @@ class VacantesController {
             return;
         }
 
-        // Solo el postulante (o un admin) puede dar de baja su postulación
+        // Módulo `postulaciones`, editar; y además solo el postulante
+        // (o un admin) puede dar de baja su postulación
+        exigirPermiso($sesionActual, 'postulaciones', 'editar');
         exigirSelfOAdmin($sesionActual, (int)$solicitud['id_usuario']);
 
         try {
@@ -192,7 +200,7 @@ class VacantesController {
 
     public function listarOrdenesMerito(): void {
 
-        exigirRol(verificarAutenticacion(), ['admin', 'pos', 'ra']);
+        exigirPermiso(verificarAutenticacion(), 'ordenes_merito', 'leer');
 
         $idVacante =
             isset($_GET['id_vacante']) &&
@@ -205,13 +213,20 @@ class VacantesController {
 
     public function crearOrdenMerito(): void {
 
-        // `ra` ve los postulados y su CV, pero no evalúa
-        exigirRol(verificarAutenticacion(), ['jfc', 'admin']);
+        // Módulo `ordenes_merito`, escribir (en la base: jfc y admin;
+        // `ra` ve los postulados y su CV, pero no evalúa)
+        $sesionActual = verificarAutenticacion();
+
+        exigirPermiso($sesionActual, 'ordenes_merito', 'escribir');
 
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
+        // Un jefe de cátedra solo publica resultados de vacantes de sus
+        // cátedras (null = rol que puede evaluar cualquier vacante, ej. admin)
+        $idJefe = idJefeDeCatedraParaFiltrar($sesionActual);
+
         try {
-            $id = $this->service->crearOrdenMerito($input);
+            $id = $this->service->crearOrdenMerito($input, $idJefe);
         } catch (RuntimeException $e) {
             http_response_code($e->getCode() ?: 400);
             echo json_encode(["message" => $e->getMessage()]);

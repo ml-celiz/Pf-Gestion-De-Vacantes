@@ -209,16 +209,20 @@ class VacantesComponent extends HTMLElement {
             // CÁTEDRAS
             // -------------------------------------------------
             // Se cargan solamente para poder mostrar el nombre
-            // de la cátedra correspondiente a cada vacante.
+            // de la cátedra correspondiente a cada vacante (si el rol
+            // puede leer cátedras; si no, se usa catedra_nombre que ya
+            // viene en cada vacante).
 
-            try {
-                const catedras = await ApiClient.get('/institucional/catedras');
+            this.catedras = [];
 
-                this.catedras = catedras || [];
-            } catch (error) {
-                console.warn('No se pudieron cargar las cátedras:', error);
+            if (AuthService.puede('catedras', 'leer')) {
+                try {
+                    const catedras = await ApiClient.get('/institucional/catedras');
 
-                this.catedras = [];
+                    this.catedras = catedras || [];
+                } catch (error) {
+                    console.warn('No se pudieron cargar las cátedras:', error);
+                }
             }
 
             this.vacantesCurrentPage = 1;
@@ -1551,23 +1555,31 @@ class VacantesComponent extends HTMLElement {
         }
     }
 
+    // Cada botón combina el rol (qué botón le corresponde a cada tipo de
+    // usuario) con el permiso del módulo configurado en la base
+    // (roles_modulos): si se le quita el permiso al rol, el botón desaparece.
+
     // Ver el listado de postulados de una vacante (incluye ver el CV)
     esJfc() {
-        return this.tieneRol(['jfc', 'admin', 'ra']);
+        return this.tieneRol(['jfc', 'admin', 'ra']) &&
+            AuthService.puede('postulaciones', 'leer');
     }
 
     // Cargar la orden de mérito de un postulante.
     // `ra` ve los postulados y su CV, pero no evalúa.
     puedePublicarResultado() {
-        return this.tieneRol(['admin', 'jfc']);
+        return this.tieneRol(['admin', 'jfc']) &&
+            AuthService.puede('ordenes_merito', 'escribir');
     }
 
     puedePostularse() {
-        return this.tieneRol(['admin', 'pos']);
+        return this.tieneRol(['admin', 'pos']) &&
+            AuthService.puede('postulaciones', 'escribir');
     }
 
     puedeVerResultados() {
-        return this.tieneRol(['admin', 'pos', 'ra']);
+        return this.tieneRol(['admin', 'pos', 'ra']) &&
+            AuthService.puede('ordenes_merito', 'leer');
     }
 }
 

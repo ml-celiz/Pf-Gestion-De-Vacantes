@@ -5,9 +5,10 @@ require_once __DIR__ . '/../services/auth_services.php';
 require_once __DIR__ . '/../utils/helpers.php';
 
 /*
-* Departamentos y cátedras se administran desde "Gestión de vacantes"
-* (admin y ra). Solo el listado de cátedras es público: el panel de
-* vacantes lo usa también en modo invitado.
+* Departamentos y cátedras se administran desde "Gestión de vacantes".
+* Cada uno se controla con su módulo (`departamentos`, `catedras`) según
+* roles_modulos. El listado de cátedras admite consultas sin sesión:
+* en ese caso se evalúan los permisos del rol invitado.
 */
 function handleInstitucionalRoutes(string $method, array $uriParts): void {
     $controller = new InstitucionalController();
@@ -15,16 +16,28 @@ function handleInstitucionalRoutes(string $method, array $uriParts): void {
     $subResource = $uriParts[2] ?? null;
     $id = isset($uriParts[3]) && is_numeric($uriParts[3]) ? (int)$uriParts[3] : null;
 
-    $esListadoPublico = $subResource === 'catedras' && $method === 'GET' && $id === null;
+    $esListadoCatedras = $subResource === 'catedras' && $method === 'GET' && $id === null;
 
-    if (!$esListadoPublico) {
-        exigirRol(verificarAutenticacion(), ['admin', 'ra']);
+    $sesion = $esListadoCatedras ? obtenerSesionOpcional() : verificarAutenticacion();
+
+    if ($subResource === 'departamentos' || $subResource === 'catedras') {
+        exigirPermiso($sesion, $subResource, accionSegunMetodo($method));
     }
 
     /* --- USUARIOS JFC --- */
 
     if ($subResource === 'usuarios-jfc') {
         // GET /api/institucional/usuarios-jfc
+        // Solo sirve para elegir el jefe al crear o editar una cátedra
+        if (
+            !tienePermiso((int)$sesion['id_usuario'], 'catedras', 'escribir') &&
+            !tienePermiso((int)$sesion['id_usuario'], 'catedras', 'editar')
+        ) {
+            http_response_code(403);
+            echo json_encode(["message" => "No tiene permisos para realizar esta acción."]);
+            return;
+        }
+
         if ($method === 'GET') {
             $controller->listarUsuariosJfc();
             return;
@@ -68,7 +81,7 @@ function handleInstitucionalRoutes(string $method, array $uriParts): void {
     /* --- CÁTEDRAS --- */
 
     if ($subResource === 'catedras') {
-        // GET /api/institucional/catedras (público)
+        // GET /api/institucional/catedras (también sin sesión, con los permisos de `inv`)
         if ($method === 'GET' && $id === null) {
             $controller->listarCatedras();
             return;

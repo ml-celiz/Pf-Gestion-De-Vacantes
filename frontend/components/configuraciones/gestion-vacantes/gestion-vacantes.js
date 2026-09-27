@@ -67,6 +67,12 @@ class GestionVacantesComponent extends HTMLElement {
         // AGREGAR VACANTE
         const btnAddVacante = this.querySelector('#btn-add-vacante');
 
+        // Los botones "Añadir" solo se ven si el rol puede dar de alta en
+        // ese módulo (roles_modulos: escribir)
+        this.ocultarSiNoPuede(btnAddVacante, 'vacantes', 'escribir');
+        this.ocultarSiNoPuede(this.querySelector('#btn-add-catedra'), 'catedras', 'escribir');
+        this.ocultarSiNoPuede(this.querySelector('#btn-add-departamento'), 'departamentos', 'escribir');
+
         if (btnAddVacante) {
             btnAddVacante.addEventListener('click', () => {
                 this.abrirDialogoVacante();
@@ -194,6 +200,9 @@ class GestionVacantesComponent extends HTMLElement {
             return;
         }
 
+        // Sin permiso de lectura no se muestra la tabla
+        if (!this.mostrarSeccionSiPuede(tbody, 'vacantes')) return;
+
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="text-center">Cargando vacantes...</td>
@@ -259,11 +268,11 @@ class GestionVacantesComponent extends HTMLElement {
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button class="btn-action edit" title="Editar" type="button">
+                        <button class="btn-action edit" title="Editar" type="button" ${this.oculto('vacantes', 'editar')}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button" ${this.oculto('vacantes', 'editar')}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
@@ -344,6 +353,15 @@ class GestionVacantesComponent extends HTMLElement {
 
     // CARGAR USUARIOS JEFES DE CATEDRA
     async cargarUsuariosJfc() {
+        // Solo hacen falta para el formulario de cátedra
+        if (
+            !AuthService.puede('catedras', 'escribir') &&
+            !AuthService.puede('catedras', 'editar')
+        ) {
+            this.usuariosJfc = [];
+            return;
+        }
+
         try {
             const usuarios = await ApiClient.get('/institucional/usuarios-jfc');
 
@@ -374,6 +392,9 @@ class GestionVacantesComponent extends HTMLElement {
         const tbody = this.querySelector('#tb-catedras');
 
         if (!tbody) return;
+
+        // Sin permiso de lectura no se muestra la tabla
+        if (!this.mostrarSeccionSiPuede(tbody, 'catedras')) return;
 
         tbody.innerHTML = `
             <tr>
@@ -431,11 +452,11 @@ class GestionVacantesComponent extends HTMLElement {
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button class="btn-action edit" title="Editar" type="button">
+                        <button class="btn-action edit" title="Editar" type="button" ${this.oculto('catedras', 'editar')}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button" ${this.oculto('catedras', 'editar')}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
@@ -506,6 +527,9 @@ class GestionVacantesComponent extends HTMLElement {
 
         if (!tbody) return;
 
+        // Sin permiso de lectura no se muestra la tabla
+        if (!this.mostrarSeccionSiPuede(tbody, 'departamentos')) return;
+
         tbody.innerHTML = `
             <tr>
                 <td colspan="2" class="text-center">Cargando...</td>
@@ -563,11 +587,11 @@ class GestionVacantesComponent extends HTMLElement {
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button class="btn-action edit" title="Editar" type="button">
+                        <button class="btn-action edit" title="Editar" type="button" ${this.oculto('departamentos', 'editar')}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button" ${this.oculto('departamentos', 'editar')}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
@@ -1448,6 +1472,33 @@ class GestionVacantesComponent extends HTMLElement {
                 snackbar.remove();
             }, 300);
         }, 3000);
+    }
+
+    // =========================================================
+    // PERMISOS POR MÓDULO (roles_modulos)
+    // =========================================================
+    // Atributo para los botones de las filas: 'hidden' si el rol no
+    // tiene la acción sobre el módulo
+    oculto(modulo, accion) {
+        return AuthService.puede(modulo, accion) ? '' : 'hidden';
+    }
+
+    ocultarSiNoPuede(elemento, modulo, accion) {
+        if (elemento) {
+            elemento.hidden = !AuthService.puede(modulo, accion);
+        }
+    }
+
+    // Muestra u oculta la tarjeta de la tabla según el permiso de lectura
+    mostrarSeccionSiPuede(tbody, modulo) {
+        const puedeLeer = AuthService.puede(modulo, 'leer');
+        const seccion = tbody.closest('section');
+
+        if (seccion) {
+            seccion.hidden = !puedeLeer;
+        }
+
+        return puedeLeer;
     }
 }
 

@@ -546,7 +546,7 @@ class VacanteService {
      * postulación no existe o ya tiene orden de mérito lanza RuntimeException
      * cuyo código es el HTTP status a responder.
      */
-    public function crearOrdenMerito(array $data): int|false {
+    public function crearOrdenMerito(array $data, ?int $idJefe = null): int|false {
         $om = new OrdenMerito($data);
 
         // El modelo convierte los faltantes en 0, por eso se valida sobre $data
@@ -565,12 +565,22 @@ class VacanteService {
         }
 
         $stmt = $this->db->prepare(
-            "SELECT 1 FROM public.solicitudes_vacantes WHERE id = :id AND fecha_baja IS NULL"
+            "SELECT c.id_usuario AS id_jefe
+             FROM public.solicitudes_vacantes s
+             JOIN public.vacantes v ON v.id = s.id_vacante
+             JOIN public.catedras c ON c.id = v.id_catedra
+             WHERE s.id = :id AND s.fecha_baja IS NULL"
         );
         $stmt->execute(['id' => $om->idSolicitud]);
+        $solicitud = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($stmt->fetchColumn() === false) {
+        if ($solicitud === false) {
             throw new RuntimeException("Solicitud no encontrada.", 404);
+        }
+
+        // El jefe de cátedra solo evalúa postulaciones de sus cátedras
+        if ($idJefe !== null && (int)$solicitud['id_jefe'] !== $idJefe) {
+            throw new RuntimeException("Solo podés publicar resultados de vacantes de tus cátedras.", 403);
         }
 
         if ($this->existeOrdenMeritoDeSolicitud($om->idSolicitud)) {

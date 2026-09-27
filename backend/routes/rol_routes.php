@@ -7,10 +7,11 @@ require_once __DIR__ . '/../utils/helpers.php';
 function handleRolRoutes(string $method, array $uriParts): void {
 
     /*
-    * Solo `admin` administra roles. Sin esto, cualquier usuario autenticado
-    * podría asignarse el rol admin con POST /api/roles/{id}/usuarios.
+    * Roles, sus módulos, paneles y usuarios: módulo `roles` (en la base,
+    * solo admin). Sin esto, cualquier usuario autenticado podría
+    * asignarse el rol admin con POST /api/roles/{id}/usuarios.
     */
-    exigirRol(verificarAutenticacion(), ['admin']);
+    exigirPermiso(verificarAutenticacion(), 'roles', accionSegunMetodo($method));
 
     $controller = new RolController();
 

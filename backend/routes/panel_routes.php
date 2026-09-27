@@ -3,9 +3,9 @@
 require_once __DIR__ . '/../controllers/panel_controller.php';
 require_once __DIR__ . '/../services/auth_services.php';
 
-// Los paneles se administran desde la pantalla de roles: solo admin
+// Los paneles se administran desde la pantalla de roles: módulo `roles`
 function handlePanelRoutes(string $method, array $uriParts): void {
-    exigirRol(verificarAutenticacion(), ['admin']);
+    exigirPermiso(verificarAutenticacion(), 'roles', accionSegunMetodo($method));
 
     $controller = new PanelController();
     $id = isset($uriParts[2]) && is_numeric($uriParts[2]) ? (int)$uriParts[2] : null;

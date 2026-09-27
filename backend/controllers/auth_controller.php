@@ -130,7 +130,9 @@ class AuthController {
                 "apellido" => $usuario->apellido,
                 "email"  => $usuario->email,
                 "roles"  => $roles
-            ]
+            ],
+            // Paneles y permisos por módulo de sus roles (roles_paneles / roles_modulos)
+            "permisos" => obtenerPermisosUsuario((int)$usuario->id)
         ]);
     }
 

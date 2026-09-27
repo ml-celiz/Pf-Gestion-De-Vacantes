@@ -48,7 +48,22 @@ function handleAuthRoutes(string $method, array $routeParams): void {
                 "nombre" => $sesionActual['nombre'] ?? null,
                 "apellido" => $sesionActual['apellido'] ?? null,
                 "roles" => obtenerRolesUsuario((int)$userId)
-            ]
+            ],
+            "permisos" => obtenerPermisosUsuario((int)$userId)
+        ]);
+        return;
+    }
+
+    // Permisos de quien consulta: los de su sesión o, sin sesión, los del
+    // rol invitado (así el modo invitado también se configura desde la base)
+    if ($method === 'GET' && $action === 'permisos') {
+        $sesion = obtenerSesionOpcional();
+
+        http_response_code(200);
+        echo json_encode([
+            "permisos" => obtenerPermisosUsuario(
+                $sesion ? (int)$sesion['id_usuario'] : null
+            )
         ]);
         return;
     }

@@ -42,6 +42,7 @@ class ApiClient {
                 if (endpoint !== '/auth/login') {
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('user_info');
+                    localStorage.removeItem('user_permisos');
 
                     document.dispatchEvent(new CustomEvent('auth-expired'));
                 }

@@ -58,6 +58,103 @@ function exigirRol(array $sesion, array $rolesPermitidos): void {
     }
 }
 
+/*
+* PERMISOS SEGÚN LA BASE DE DATOS
+* Los paneles (pantallas) de cada rol salen de roles_paneles y los
+* permisos sobre cada módulo (leer / escribir / editar) de roles_modulos.
+* Un usuario con varios roles tiene la unión de los permisos.
+* Sin sesión (modo invitado) se usan los permisos del rol `inv`.
+*
+* Acción según el método HTTP:
+*   GET -> leer   POST -> escribir (alta)   PUT / DELETE -> editar (modificación y baja)
+*/
+const ROL_INVITADO = 'inv';
+
+function obtenerPermisosUsuario(?int $idUsuario): array {
+    static $cache = [];
+
+    $clave = $idUsuario ?: 0;
+
+    if (isset($cache[$clave])) {
+        return $cache[$clave];
+    }
+
+    $db = Database::getConnection();
+
+    // Roles de los que salen los permisos
+    if ($idUsuario) {
+        $filtroRoles = "SELECT ru.id_rol FROM public.roles_usuarios ru WHERE ru.id_usuario = :valor";
+        $params = ['valor' => $idUsuario];
+    } else {
+        $filtroRoles = "SELECT r.id FROM public.roles r WHERE LOWER(TRIM(r.nombre)) = :valor";
+        $params = ['valor' => ROL_INVITADO];
+    }
+
+    $stmt = $db->prepare(
+        "SELECT DISTINCT LOWER(TRIM(p.nombre)) AS nombre
+         FROM public.roles_paneles rp
+         JOIN public.paneles p ON p.id = rp.id_panel
+         WHERE rp.id_rol IN ($filtroRoles)"
+    );
+    $stmt->execute($params);
+    $paneles = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+
+    $stmt = $db->prepare(
+        "SELECT LOWER(TRIM(m.nombre)) AS nombre,
+                BOOL_OR(COALESCE(rm.leer, false))     AS leer,
+                BOOL_OR(COALESCE(rm.escribir, false)) AS escribir,
+                BOOL_OR(COALESCE(rm.editar, false))   AS editar
+         FROM public.roles_modulos rm
+         JOIN public.modulos m ON m.id = rm.id_modulo
+         WHERE rm.id_rol IN ($filtroRoles)
+         GROUP BY LOWER(TRIM(m.nombre))"
+    );
+    $stmt->execute($params);
+
+    $modulos = [];
+
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
+        $modulos[$fila['nombre']] = [
+            'leer'     => (bool)$fila['leer'],
+            'escribir' => (bool)$fila['escribir'],
+            'editar'   => (bool)$fila['editar'],
+        ];
+    }
+
+    return $cache[$clave] = [
+        'paneles' => array_values($paneles),
+        'modulos' => (object)$modulos   // {} en JSON aunque no tenga módulos
+    ];
+}
+
+function tienePermiso(?int $idUsuario, string $modulo, string $accion): bool {
+    $modulos = (array)obtenerPermisosUsuario($idUsuario)['modulos'];
+
+    return !empty($modulos[strtolower($modulo)][$accion]);
+}
+
+function accionSegunMetodo(string $method): string {
+    return match ($method) {
+        'GET'           => 'leer',
+        'POST'          => 'escribir',
+        default         => 'editar',   // PUT y DELETE
+    };
+}
+
+/*
+* Corta la petición con 403 si el usuario no tiene la acción sobre el módulo.
+* $sesion null = sin sesión: se evalúan los permisos del rol invitado.
+*/
+function exigirPermiso(?array $sesion, string $modulo, string $accion): void {
+    $idUsuario = isset($sesion['id_usuario']) ? (int)$sesion['id_usuario'] : null;
+
+    if (!tienePermiso($idUsuario, $modulo, $accion)) {
+        http_response_code(403);
+        echo json_encode(["message" => "No tiene permisos para realizar esta acción."]);
+        exit;
+    }
+}
+
 /* Corta la petición con 403 si el usuario de la sesión no es el dueño del recurso ni admin */
 function exigirSelfOAdmin(array $sesion, int $idObjetivo): void {
     $idUsuario = isset($sesion['id_usuario']) ? (int)$sesion['id_usuario'] : 0;
@@ -70,10 +167,22 @@ function exigirSelfOAdmin(array $sesion, int $idObjetivo): void {
 }
 
 /*
+* Sobre la propia cuenta (Mi perfil) siempre se puede operar; sobre una
+* ajena hace falta el permiso del módulo `usuarios`.
+*/
+function exigirPropioOPermiso(array $sesion, int $idObjetivo, string $accion): void {
+    if ((int)($sesion['id_usuario'] ?? 0) === $idObjetivo) {
+        return;
+    }
+
+    exigirPermiso($sesion, 'usuarios', $accion);
+}
+
+/*
 * Corta la petición con 403 si el usuario de la sesión no puede ver el CV
 * de `$idDuenio`. Pueden verlo:
 *   - el dueño del CV;
-*   - admin;
+*   - quien puede leer el módulo `usuarios` (admin);
 *   - ra, si el dueño tiene una postulación activa en alguna vacante;
 *   - jfc, si el dueño tiene una postulación activa en una vacante de una
 *     cátedra de la que es jefe (catedras.id_usuario).
@@ -82,7 +191,7 @@ function exigirSelfOAdmin(array $sesion, int $idObjetivo): void {
 function exigirAccesoCv(array $sesion, int $idDuenio): void {
     $idUsuario = isset($sesion['id_usuario']) ? (int)$sesion['id_usuario'] : 0;
 
-    if ($idUsuario === $idDuenio || usuarioTieneAlgunRol($idUsuario, ['admin'])) {
+    if ($idUsuario === $idDuenio || tienePermiso($idUsuario, 'usuarios', 'leer')) {
         return;
     }
 

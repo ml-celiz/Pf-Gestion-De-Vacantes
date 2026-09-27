@@ -56,6 +56,9 @@ class RolesComponent extends HTMLElement {
         // AGREGAR ROL
         const btnAddRol = this.querySelector('#btn-add-rol');
 
+        // Alta solo si el rol puede escribir en el módulo `roles` (roles_modulos)
+        if (btnAddRol) btnAddRol.hidden = !AuthService.puede('roles', 'escribir');
+
         if (btnAddRol) {
             btnAddRol.addEventListener('click', () => {
                 this.abrirDialogoCrearRol();
@@ -65,12 +68,18 @@ class RolesComponent extends HTMLElement {
         // AGREGAR MÓDULO
         const btnAddModulo = this.querySelector('#btn-add-modulo');
 
+        // Alta solo si el rol puede escribir en el módulo `roles` (roles_modulos)
+        if (btnAddModulo) btnAddModulo.hidden = !AuthService.puede('roles', 'escribir');
+
         if (btnAddModulo) {
             btnAddModulo.addEventListener('click', () => this.abrirDialogoCrear('modulo'));
         }
 
         // AGREGAR PANEL
         const btnAddPanel = this.querySelector('#btn-add-panel');
+
+        // Alta solo si el rol puede escribir en el módulo `roles` (roles_modulos)
+        if (btnAddPanel) btnAddPanel.hidden = !AuthService.puede('roles', 'escribir');
 
         if (btnAddPanel) {
             btnAddPanel.addEventListener('click', () => this.abrirDialogoCrear('panel'));
@@ -257,11 +266,11 @@ class RolesComponent extends HTMLElement {
                             <i class="bi bi-eye-fill"></i>
                         </button>
 
-                        <button class="btn-action edit" title="Editar" type="button">
+                        <button class="btn-action edit" title="Editar" type="button" ${AuthService.puede('roles', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button" ${AuthService.puede('roles', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
@@ -447,11 +456,11 @@ class RolesComponent extends HTMLElement {
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button class="btn-action edit" title="Editar" type="button">
+                        <button class="btn-action edit" title="Editar" type="button" ${AuthService.puede('roles', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button" ${AuthService.puede('roles', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
@@ -585,11 +594,11 @@ class RolesComponent extends HTMLElement {
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button class="btn-action edit" title="Editar" type="button">
+                        <button class="btn-action edit" title="Editar" type="button" ${AuthService.puede('roles', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button">
+                        <button class="btn-action delete" title="Eliminar" type="button" ${AuthService.puede('roles', 'editar') ? '' : 'hidden'}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
