@@ -44,6 +44,28 @@ class AppNavbar extends HTMLElement {
         const isPublic = this.dataset.public === 'true';
 
         // =====================================================
+        // SALTAR AL CONTENIDO PRINCIPAL
+        // La navegación usa el # de la URL, así que el enlace no
+        // puede cambiarlo (se leería como una ruta inexistente):
+        // mueve el foco al contenido de la vista actual.
+        // =====================================================
+        const saltar = this.querySelector('.saltar-contenido');
+
+        if (saltar) {
+            saltar.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                const vista = this.closest('[id$="-view"]') || document;
+                const contenido = vista.querySelector('main, .panel-container');
+
+                if (contenido) {
+                    contenido.setAttribute('tabindex', '-1');
+                    contenido.focus();
+                }
+            });
+        }
+
+        // =====================================================
         // BOTÓN HOME
         // =====================================================
         const btnHome = this.querySelector('.btn-home-navbar');

@@ -131,6 +131,36 @@ form:has(:is(input, select, textarea)[required])::before {
     margin-bottom: 0.75rem;
 }
 
+/*
+* Atajo "Saltar al contenido principal" (navbar): fuera de la pantalla
+* hasta que recibe el foco con Tab; ahí aparece arriba a la izquierda.
+*/
+.saltar-contenido {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 2000;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--color-primary);
+    color: var(--color-white);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transform: translateY(-200%);
+}
+
+.saltar-contenido:focus {
+    color: var(--color-white);
+    transform: translateY(0);
+}
+
+/* El contenido recibe el foco por código: sin anillo de foco propio */
+main[tabindex="-1"]:focus,
+.panel-container[tabindex="-1"]:focus {
+    outline: none;
+}
+
 /* Ocultamiento accesible exclusivo para lectores de pantalla (TAW) */
 .visually-hidden-sr {
     position: absolute !important;
