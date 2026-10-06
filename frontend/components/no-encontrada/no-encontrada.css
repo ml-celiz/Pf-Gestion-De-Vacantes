@@ -1,0 +1,31 @@
+/* PÁGINA NO ENCONTRADA (404) */
+.no-encontrada-card {
+    width: 100%;
+    max-width: 460px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    background: var(--color-white);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px var(--color-shadow-sm);
+}
+
+.no-encontrada-codigo {
+    display: block;
+    color: var(--color-primary);
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.no-encontrada-card h1 {
+    margin: 0.75rem 0 0.5rem;
+    color: var(--color-dark);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.no-encontrada-card p {
+    margin-bottom: 1.5rem;
+    color: var(--color-gray-600);
+    font-size: 0.95rem;
+}

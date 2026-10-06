@@ -192,7 +192,7 @@ class AuthService {
 
     // ¿EL USUARIO PUEDE ENTRAR A ESA PANTALLA?
     static puedeAcceder(ruta) {
-        if (ruta === 'menu' || ruta === 'faq') {
+        if (ruta === 'menu' || ruta === 'faq' || ruta === 'no-encontrada') {
             return true;
         }
 

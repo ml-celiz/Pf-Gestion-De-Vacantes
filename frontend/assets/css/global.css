@@ -107,6 +107,30 @@ textarea:focus-visible {
     outline-offset: 3px !important;
 }
 
+/*
+* Campos obligatorios: la etiqueta de todo campo con "required" lleva un
+* asterisco rojo, y el formulario arranca con la leyenda que lo explica.
+* Así se marcan antes de completar el formulario en todas las pantallas,
+* sin repetir el asterisco a mano en cada etiqueta.
+*/
+.form-group:has(:is(input, select, textarea)[required]) label::after {
+    content: " *";
+    color: var(--color-danger);
+    font-weight: 700;
+}
+
+form:has(:is(input, select, textarea)[required])::before {
+    content: "Los campos marcados con * son obligatorios.";
+    display: block;
+    color: var(--color-gray-500);
+    font-size: 0.8rem;
+}
+
+/* Los diálogos son flex en columna y ya los separa el gap; el login no */
+.login-card form::before {
+    margin-bottom: 0.75rem;
+}
+
 /* Ocultamiento accesible exclusivo para lectores de pantalla (TAW) */
 .visually-hidden-sr {
     position: absolute !important;

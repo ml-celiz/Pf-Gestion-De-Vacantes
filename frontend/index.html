@@ -59,6 +59,9 @@
     <!-- USUARIOS -->
     <div id="usuarios-view" style="display: none;"></div>
 
+    <!-- PÁGINA NO ENCONTRADA (404) -->
+    <div id="no-encontrada-view" style="display: none;"></div>
+
     <!-- Mi perfil y Preguntas frecuentes son dialogs: los abre el navbar -->
 
     <!-- MENÚ LATERAL: uno solo para toda la app; lo abre el botón ☰ del navbar -->
@@ -89,6 +92,7 @@
     <script type="module" src="components/paneles/postulaciones/postulaciones.js"></script>
     <script type="module" src="components/perfil/perfil.js"></script>
     <script type="module" src="components/faq/faq.js"></script>
+    <script type="module" src="components/no-encontrada/no-encontrada.js"></script>
 
     <!-- NAVEGACIÓN ENTRE VISTAS -->
     <script>
@@ -160,7 +164,11 @@
                 '#/usuarios/usuarios':
                     'usuarios'
             };
-            return routes[hash] || 'menu';
+            // Sin ruta: menú principal. Ruta que no existe: página 404
+            if (!hash || hash === '#' || hash === '#/') {
+                return 'menu';
+            }
+            return routes[hash] || 'no-encontrada';
         }
         // ==========================================
         // NAVEGACIÓN
@@ -293,6 +301,14 @@
                             usuariosView.style.display = 'block';
                         }
                         break;
+                    case 'no-encontrada': {
+                        // La URL queda como estaba, para que se vea qué dirección falló
+                        const noEncontradaView =
+                            document.getElementById('no-encontrada-view');
+                        noEncontradaView.innerHTML = `<app-no-encontrada></app-no-encontrada>`;
+                        noEncontradaView.style.display = 'block';
+                        break;
+                    }
                     default:
                         console.warn(
                             'Ruta no implementada:',

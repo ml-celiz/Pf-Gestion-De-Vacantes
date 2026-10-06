@@ -1,0 +1,6 @@
+# Configuración para el hosting (Apache).
+# Una dirección que no existe muestra la página 404 propia del sistema en
+# lugar del error genérico del servidor. La ruta es desde la raíz del sitio:
+# si el frontend se publica en una subcarpeta, agregarla adelante
+# (por ejemplo: ErrorDocument 404 /vacantes/404.html).
+ErrorDocument 404 /404.html

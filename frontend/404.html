@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Página no encontrada - Sistema de Gestión de Vacantes - UTN FRRO</title>
+
+    <!--
+    * Página de error 404 del servidor (ver .htaccess). Apache la muestra
+    * desde cualquier carpeta, por eso las rutas son absolutas (desde la
+    * raíz del sitio). Si el frontend se publica en una subcarpeta, agregarla
+    * adelante en los href/src de esta página y en el .htaccess.
+    -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+    <link rel="stylesheet" href="/assets/css/global.css">
+    <link rel="stylesheet" href="/components/navbar/navbar.css">
+    <link rel="stylesheet" href="/components/footer/footer.css">
+    <link rel="stylesheet" href="/components/no-encontrada/no-encontrada.css">
+</head>
+
+<body>
+    <div class="app-viewport d-flex flex-column min-vh-100">
+        <!-- ENCABEZADO INSTITUCIONAL -->
+        <header class="app-navbar sticky-top">
+            <div class="container-fluid px-3 px-md-5 h-100 d-flex align-items-center">
+                <div class="brand-group d-flex align-items-center gap-3">
+                    <a
+                        href="/"
+                        class="brand-badge d-flex align-items-center justify-content-center rounded-circle"
+                        title="Ir al inicio">
+                        <img src="/assets/img/utn.png" alt="Logo UTN FRRO" class="navbar-logo">
+                    </a>
+
+                    <div class="brand-text">
+                        <span class="brand-title fw-bold d-block">Facultad Regional Rosario</span>
+                        <span class="brand-subtitle d-none d-sm-block">
+                            Universidad Tecnológica Nacional
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="no-encontrada-main flex-grow-1 d-flex align-items-center justify-content-center p-3">
+            <section class="no-encontrada-card">
+                <span class="no-encontrada-codigo" aria-hidden="true">404</span>
+
+                <h1>Página no encontrada</h1>
+
+                <p>
+                    La dirección que ingresaste no existe o cambió.
+                    Revisá que esté bien escrita o volvé al inicio
+                    del sistema.
+                </p>
+
+                <a href="/" class="app-btn app-btn-primary text-decoration-none">
+                    <i class="bi bi-house" aria-hidden="true"></i>
+                    Volver al inicio
+                </a>
+            </section>
+        </main>
+
+        <!-- PIE INSTITUCIONAL -->
+        <footer class="app-footer py-4 px-3">
+            <div class="container text-center">
+                <p class="fw-bold mb-1 fs-7 text-dark opacity-75">
+                    FACULTAD REGIONAL ROSARIO &mdash;
+                    UNIVERSIDAD TECNOLÓGICA NACIONAL
+                </p>
+
+                <p class="mb-0 fs-7 opacity-75">
+                    Zeballos 1341 - S2000BQA - Rosario |
+                    Tel: 0341 - 4481871
+                </p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
