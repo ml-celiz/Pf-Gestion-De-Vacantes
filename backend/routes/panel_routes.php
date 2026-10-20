@@ -3,7 +3,8 @@
 require_once __DIR__ . '/../controllers/panel_controller.php';
 require_once __DIR__ . '/../services/auth_services.php';
 
-// Los paneles se administran desde la pantalla de roles: módulo `roles`
+// RUTAS DE PANELES: /api/paneles[/{id}]
+// Se administran desde la pantalla de roles: módulo `roles`
 function handlePanelRoutes(string $method, array $uriParts): void {
     exigirPermiso(verificarAutenticacion(), 'roles', accionSegunMetodo($method));
 

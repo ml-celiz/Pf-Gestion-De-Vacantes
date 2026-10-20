@@ -1,14 +1,21 @@
 /*
-* PÁGINA NO ENCONTRADA (404)
+* COMPONENTE <app-no-encontrada> (PÁGINA NO ENCONTRADA - 404)
 * Se muestra cuando la dirección tiene una ruta que no existe
 * (por ejemplo, un #/paneles/... mal escrito). Explica el error y
 * ofrece volver al menú principal.
 */
 class AppNoEncontrada extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML

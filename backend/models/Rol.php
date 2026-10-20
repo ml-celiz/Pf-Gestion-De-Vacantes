@@ -1,5 +1,12 @@
 <?php
 
+/*
+* Fila de `roles`. duracionToken = minutos que dura la sesión de ese rol.
+*
+* MODELO: representa una fila de la base como objeto. El constructor
+* recibe el array de la consulta (o del pedido) y toArray() arma la
+* respuesta JSON con los nombres de campo que usa el frontend.
+*/
 class Rol {
     public ?int $id;
     public string $nombre;
@@ -26,6 +33,7 @@ class Rol {
     }
 }
 
+// Asignación de un panel a un rol (roles_paneles)
 class RolPanel {
     public ?int $id;
     public int $idRol;
@@ -49,6 +57,7 @@ class RolPanel {
     }
 }
 
+// Permisos de un rol sobre un módulo (roles_modulos)
 class RolModulo {
     public ?int $id;
     public int $idRol;
@@ -77,32 +86,6 @@ class RolModulo {
             'escribir'      => $this->escribir,
             'editar'        => $this->editar,
             'modulo_nombre' => $this->moduloNombre
-        ];
-    }
-}
-
-class RolUsuario {
-    public ?int $id;
-    public int $idRol;
-    public int $idUsuario;
-    public ?string $usuario;
-    public ?string $email;
-
-    public function __construct(array $data = []) {
-        $this->id        = isset($data['id']) ? (int)$data['id'] : null;
-        $this->idRol     = isset($data['id_rol']) ? (int)$data['id_rol'] : 0;
-        $this->idUsuario = isset($data['id_usuario']) ? (int)$data['id_usuario'] : 0;
-        $this->usuario   = $data['usuario'] ?? null;
-        $this->email     = $data['email'] ?? null;
-    }
-
-    public function toArray(): array {
-        return [
-            'id'         => $this->id,
-            'id_rol'     => $this->idRol,
-            'id_usuario' => $this->idUsuario,
-            'usuario'    => $this->usuario,
-            'email'      => $this->email
         ];
     }
 }

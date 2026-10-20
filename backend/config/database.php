@@ -1,5 +1,10 @@
 <?php
 
+/*
+* CONEXIÓN A LA BASE DE DATOS (PostgreSQL, con PDO)
+* Singleton: se abre una sola conexión por pedido y todos los servicios la
+* comparten con Database::getConnection(). Los datos salen de backend/.env.
+*/
 class Database {
     private static ?PDO $instance = null;
 

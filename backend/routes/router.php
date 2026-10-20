@@ -8,6 +8,16 @@ require_once __DIR__ . '/rol_routes.php';
 require_once __DIR__ . '/usuario_routes.php';
 require_once __DIR__ . '/vacantes_routes.php';
 
+/*
+* ROUTER PRINCIPAL
+* Toma la URL (/api/{recurso}/...) y deriva el pedido al archivo de rutas
+* de ese recurso. Cada archivo de rutas decide, según el método HTTP y el
+* resto de la URL, qué método del controlador se ejecuta.
+*
+* Flujo de un pedido: main.php -> router.php -> *_routes.php (sesión y
+* permisos) -> *_controller.php (lee el pedido y responde) ->
+* *_services.php (lógica y SQL) -> models/ (fila de la base como objeto).
+*/
 function routeRequest(): void {
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $method = $_SERVER['REQUEST_METHOD'];
@@ -36,8 +46,8 @@ function routeRequest(): void {
             break;
         
         case 'paneles':
-                    handlePanelRoutes($method, $routeParams);
-                    break;
+            handlePanelRoutes($method, $routeParams);
+            break;
 
         case 'modulos':
             handleModuloRoutes($method, $routeParams);
@@ -48,8 +58,8 @@ function routeRequest(): void {
             break;
 
         case 'institucional':
-                    handleInstitucionalRoutes($method, $routeParams);
-                    break;
+            handleInstitucionalRoutes($method, $routeParams);
+            break;
     
         case 'vacantes':
             handleVacantesRoutes($method, $routeParams);

@@ -2,7 +2,17 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Usuario.php';
+require_once __DIR__ . '/../utils/validaciones.php';
 
+/*
+* SERVICIO DE USUARIOS
+* Lógica y consultas a la base de la tabla `usuarios`: listado, alta
+* (registro público y alta desde el panel de administración), edición,
+* baja lógica y manejo del CV en PDF.
+*
+* Ante un dato inválido los métodos lanzan RuntimeException: el mensaje se
+* muestra al usuario y el código es el HTTP status que responde el controlador.
+*/
 class UsuarioService
 {
     private PDO $db;
@@ -14,9 +24,10 @@ class UsuarioService
 
 
     // =====================================================
-    // OBTENER TODOS
+    // LISTAR
     // =====================================================
 
+    // Usuarios activos con sus roles (separados por coma) y cantidad de sesiones
     public function obtenerTodos(): array
     {
         $sql = "
@@ -73,33 +84,23 @@ class UsuarioService
 
         $stmt = $this->db->query($sql);
 
-        $rows = $stmt->fetchAll();
-
         return array_map(
             fn($row) => (new UsuarioModel($row))->toArray(),
-            $rows
+            $stmt->fetchAll()
         );
     }
 
-
-    // =====================================================
-    // OBTENER POR ID
-    // =====================================================
-
+    // Un usuario activo (null si no existe o fue dado de baja)
     public function obtenerPorId(int $id): ?array
     {
-        $sql = "
+        $stmt = $this->db->prepare("
             SELECT *
             FROM public.usuarios
             WHERE id = :id
                 AND fecha_baja IS NULL
-        ";
+        ");
 
-        $stmt = $this->db->prepare($sql);
-
-        $stmt->execute([
-            'id' => $id
-        ]);
+        $stmt->execute(['id' => $id]);
 
         $row = $stmt->fetch();
 
@@ -110,18 +111,15 @@ class UsuarioService
 
 
     // =====================================================
-    // EMAIL YA REGISTRADO
+    // VALIDACIONES
     // =====================================================
 
     /**
      * El email identifica al usuario en el login, así que no puede repetirse.
      * `$exceptoId` permite que un usuario conserve su propio email al editarse.
      */
-    public function existeEmail(
-        string $email,
-        ?int $exceptoId = null
-    ): bool {
-
+    public function existeEmail(string $email, ?int $exceptoId = null): bool
+    {
         $sql = "
             SELECT 1
             FROM public.usuarios
@@ -142,6 +140,37 @@ class UsuarioService
         return $stmt->fetchColumn() !== false;
     }
 
+    /**
+     * Valida los datos de un alta o edición (mismas reglas que el frontend).
+     * - `$contrasenaObligatoria`: en el alta sí; al editar solo se valida si se envía.
+     * - `$dniObligatorio`: el alta desde el panel de usuarios lo exige.
+     * - `$exceptoId`: id del usuario editado (puede conservar su email).
+     */
+    private function validarDatos(
+        array $data,
+        bool $contrasenaObligatoria,
+        bool $dniObligatorio = false,
+        ?int $exceptoId = null
+    ): void {
+        $contrasena = (string)($data['contrasena'] ?? $data['contraseña'] ?? '');
+
+        $error =
+            validarEmail((string)($data['email'] ?? ''))
+            ?? validarNombre((string)($data['nombre'] ?? ''), 'nombre')
+            ?? validarNombre((string)($data['apellido'] ?? ''), 'apellido')
+            ?? validarDni($data['dni'] ?? null, $dniObligatorio)
+            ?? validarTelefono($data['telefono'] ?? null)
+            ?? (($contrasenaObligatoria || $contrasena !== '') ? validarContrasena($contrasena) : null);
+
+        if ($error !== null) {
+            throw new RuntimeException($error, 400);
+        }
+
+        if ($this->existeEmail((string)$data['email'], $exceptoId)) {
+            throw new RuntimeException("Ya existe una cuenta registrada con ese correo electrónico.", 409);
+        }
+    }
+
 
     // =====================================================
     // REGISTRO PÚBLICO
@@ -154,75 +183,16 @@ class UsuarioService
      * `pos` (postulante). Si el rol se tomara del cuerpo del pedido,
      * cualquiera podría registrarse como admin.
      *
-     * Devuelve el id creado; ante un dato inválido lanza RuntimeException
-     * cuyo código es el HTTP status a responder.
+     * Devuelve el id creado.
      */
     public function registrar(array $data): int
     {
-        $email = trim($data['email'] ?? '');
-
-        $rawPassword =
-            $data['contrasena']
-            ?? $data['contraseña']
-            ?? '';
-
-        $nombre   = trim($data['nombre'] ?? '');
-        $apellido = trim($data['apellido'] ?? '');
-
-        if (
-            $email === '' ||
-            !filter_var($email, FILTER_VALIDATE_EMAIL)
-        ) {
-            throw new RuntimeException(
-                "Ingrese un correo electrónico válido.",
-                400
-            );
-        }
-
-        if ($nombre === '' || $apellido === '') {
-            throw new RuntimeException(
-                "El nombre y el apellido son obligatorios.",
-                400
-            );
-        }
-
-        if (strlen($rawPassword) < 8) {
-            throw new RuntimeException(
-                "La contraseña debe tener al menos 8 caracteres.",
-                400
-            );
-        }
-
-        if ($this->existeEmail($email)) {
-            throw new RuntimeException(
-                "Ya existe una cuenta registrada con ese correo electrónico.",
-                409
-            );
-        }
+        $this->validarDatos($data, true);
 
         try {
             $this->db->beginTransaction();
 
-            $stmt = $this->db->prepare("
-                INSERT INTO public.usuarios
-                    (email, nombre, apellido, contrasena, dni, telefono, fecha_alta)
-                VALUES
-                    (:email, :nombre, :apellido, :contrasena, :dni, :telefono, NOW())
-                RETURNING id
-            ");
-
-            $stmt->execute([
-                'email'      => $email,
-                'nombre'     => $nombre,
-                'apellido'   => $apellido,
-                'contrasena' => password_hash($rawPassword, PASSWORD_BCRYPT),
-                'dni'        => isset($data['dni']) && $data['dni'] !== ''
-                    ? (int)$data['dni']
-                    : null,
-                'telefono'   => trim($data['telefono'] ?? '') ?: null
-            ]);
-
-            $id = (int)$stmt->fetchColumn();
+            $id = $this->insertarUsuario($data);
 
             // Rol fijo: postulante
             $stmt = $this->db->prepare("
@@ -236,10 +206,7 @@ class UsuarioService
             $stmt->execute(['id_usuario' => $id]);
 
             if ($stmt->rowCount() === 0) {
-                throw new RuntimeException(
-                    "No se pudo asignar el rol de postulante.",
-                    500
-                );
+                throw new RuntimeException("No se pudo asignar el rol de postulante.", 500);
             }
 
             $this->db->commit();
@@ -254,10 +221,7 @@ class UsuarioService
 
             error_log("Error PDO al registrar usuario: " . $e->getMessage());
 
-            throw new RuntimeException(
-                "No se pudo completar el registro.",
-                400
-            );
+            throw new RuntimeException("No se pudo completar el registro.", 400);
 
         } catch (RuntimeException $e) {
 
@@ -271,88 +235,46 @@ class UsuarioService
 
 
     // =====================================================
-    // CREAR
+    // CREAR (desde el panel de usuarios)
     // =====================================================
 
-    public function crear(array $data): int|false
+    // El rol se asigna después, con POST /api/roles/{id}/usuarios
+    public function crear(array $data): int
     {
-        $rawPassword =
-            $data['contrasena']
-            ?? $data['contraseña']
-            ?? null;
-
-        $email =
-            $data['email']
-            ?? null;
-
-        if (empty($email) || empty($rawPassword)) {
-            return false;
-        }
-
-        // El email identifica al usuario en el login
-        if ($this->existeEmail($email)) {
-            return false;
-        }
-
-        $usuario = new UsuarioModel($data);
-
-        $hash = password_hash(
-            $rawPassword,
-            PASSWORD_BCRYPT
-        );
+        $this->validarDatos($data, true, true);
 
         try {
-
-            $sql = "
-                INSERT INTO public.usuarios
-                    (
-                        email,
-                        nombre,
-                        apellido,
-                        contrasena,
-                        dni,
-                        telefono,
-                        fecha_alta
-                    )
-                VALUES
-                    (
-                        :email,
-                        :nombre,
-                        :apellido,
-                        :contrasena,
-                        :dni,
-                        :telefono,
-                        NOW()
-                    )
-                RETURNING id
-            ";
-
-            $stmt = $this->db->prepare($sql);
-
-            $stmt->execute([
-                'email'      => $usuario->email,
-                'nombre'     => $usuario->nombre,
-                'apellido'   => $usuario->apellido,
-                'contrasena' => $hash,
-                'dni'        => $usuario->dni,
-                'telefono'   => $usuario->telefono
-            ]);
-
-            $id = $stmt->fetchColumn();
-
-            return $id !== false
-                ? (int)$id
-                : false;
-
+            return $this->insertarUsuario($data);
         } catch (PDOException $e) {
+            error_log("Error PDO al crear usuario: " . $e->getMessage());
 
-            error_log(
-                "Error PDO al crear usuario: "
-                . $e->getMessage()
-            );
-
-            return false;
+            throw new RuntimeException("No se pudo crear el usuario.", 400);
         }
+    }
+
+    // INSERT común al registro y al alta; la contraseña se guarda hasheada
+    private function insertarUsuario(array $data): int
+    {
+        $usuario = new UsuarioModel($data);
+
+        $stmt = $this->db->prepare("
+            INSERT INTO public.usuarios
+                (email, nombre, apellido, contrasena, dni, telefono, fecha_alta)
+            VALUES
+                (:email, :nombre, :apellido, :contrasena, :dni, :telefono, NOW())
+            RETURNING id
+        ");
+
+        $stmt->execute([
+            'email'      => trim($usuario->email),
+            'nombre'     => trim((string)$usuario->nombre),
+            'apellido'   => trim((string)$usuario->apellido),
+            'contrasena' => password_hash($usuario->contrasena, PASSWORD_BCRYPT),
+            'dni'        => $usuario->dni ?: null,
+            'telefono'   => trim((string)$usuario->telefono) ?: null
+        ]);
+
+        return (int)$stmt->fetchColumn();
     }
 
 
@@ -360,92 +282,34 @@ class UsuarioService
     // ACTUALIZAR
     // =====================================================
 
-    public function actualizar(
-        int $id,
-        array $data
-    ): bool {
-
-        // ---------------------------------------------
-        // Verificar que exista
-        // ---------------------------------------------
-
-        $usuarioExistente =
-            $this->obtenerPorId($id);
+    /**
+     * Edita los datos del usuario. Si no llega contraseña, se conserva la actual.
+     * Devuelve false si el usuario no existe o falla la base.
+     */
+    public function actualizar(int $id, array $data): bool
+    {
+        $usuarioExistente = $this->obtenerPorId($id);
 
         if (!$usuarioExistente) {
             return false;
         }
 
+        $this->validarDatos($data, false, false, $id);
 
-        // ---------------------------------------------
-        // Crear modelo con los datos recibidos
-        // ---------------------------------------------
+        $usuario = new UsuarioModel($data);
 
-        $usuario =
-            new UsuarioModel($data);
-
-
-        // ---------------------------------------------
-        // EMAIL
-        // ---------------------------------------------
-
-        // No puede quedar con el email de otra cuenta activa
-        if (
-            !empty($usuario->email) &&
-            $this->existeEmail($usuario->email, $id)
-        ) {
-            return false;
-        }
-
-
-        // ---------------------------------------------
-        // CONTRASEÑA
-        // ---------------------------------------------
-
-        $rawPassword =
-            $data['contrasena']
-            ?? $data['contraseña']
-            ?? null;
-
-
-        if (!empty($rawPassword)) {
-
-            // Se cambió la contraseña
-            $hash = password_hash(
-                $rawPassword,
-                PASSWORD_BCRYPT
-            );
-
+        // Contraseña: la nueva (hasheada) o la que ya tenía
+        if ($usuario->contrasena !== '') {
+            $hash = password_hash($usuario->contrasena, PASSWORD_BCRYPT);
         } else {
-
-            // Mantener contraseña actual
-            $sqlPass = "
-                SELECT contrasena
-                FROM public.usuarios
-                WHERE id = :id
-            ";
-
-            $stmtPass =
-                $this->db->prepare($sqlPass);
-
-            $stmtPass->execute([
-                'id' => $id
-            ]);
-
-            $hash =
-                $stmtPass->fetchColumn();
+            $stmtPass = $this->db->prepare("SELECT contrasena FROM public.usuarios WHERE id = :id");
+            $stmtPass->execute(['id' => $id]);
+            $hash = $stmtPass->fetchColumn();
         }
-
-
-        // ---------------------------------------------
-        // ACTUALIZAR
-        // ---------------------------------------------
 
         try {
-
-            $sql = "
+            $stmt = $this->db->prepare("
                 UPDATE public.usuarios
-
                 SET
                     email = :email,
                     nombre = :nombre,
@@ -454,55 +318,28 @@ class UsuarioService
                     dni = :dni,
                     telefono = :telefono,
                     fecha_actualizacion = NOW()
-
                 WHERE id = :id
                     AND fecha_baja IS NULL
-            ";
-
-            $stmt =
-                $this->db->prepare($sql);
+            ");
 
             return $stmt->execute([
-
-                'id' =>
-                    $id,
-
-                'email' =>
-                    $usuario->email
-                    ?: $usuarioExistente['email'],
-
-                'nombre' =>
-                    $usuario->nombre,
-
-                'apellido' =>
-                    $usuario->apellido,
-
-                'contrasena' =>
-                    $hash,
-
-                'dni' =>
-                    $usuario->dni,
-
-                'telefono' =>
-                    $usuario->telefono
+                'id'         => $id,
+                'email'      => trim($usuario->email) ?: $usuarioExistente['email'],
+                'nombre'     => trim((string)$usuario->nombre),
+                'apellido'   => trim((string)$usuario->apellido),
+                'contrasena' => $hash,
+                'dni'        => $usuario->dni ?: null,
+                'telefono'   => trim((string)$usuario->telefono) ?: null
             ]);
 
         } catch (PDOException $e) {
-
-            error_log(
-                "Error PDO al actualizar usuario: "
-                . $e->getMessage()
-            );
+            error_log("Error PDO al actualizar usuario: " . $e->getMessage());
 
             return false;
         }
     }
 
-
-    // =====================================================
-    // CONTRASEÑA ACTUAL
-    // =====================================================
-
+    // Compara la contraseña ingresada con el hash guardado (cambio desde "Mi perfil")
     public function verificarContrasena(int $id, string $contrasena): bool
     {
         $stmt = $this->db->prepare("
@@ -552,8 +389,7 @@ class UsuarioService
 
     /**
      * Guarda (o reemplaza) el CV del usuario. `$archivo` es la entrada
-     * de $_FILES. Ante un archivo inválido lanza RuntimeException cuyo
-     * código es el HTTP status a responder.
+     * de $_FILES.
      */
     public function guardarCv(int $id, ?array $archivo): void
     {
@@ -682,23 +518,17 @@ class UsuarioService
     // ELIMINAR
     // =====================================================
 
+    // Baja lógica: se completa fecha_baja y el usuario deja de poder ingresar
     public function eliminar(int $id): bool
     {
-        $sql = "
+        $stmt = $this->db->prepare("
             UPDATE public.usuarios
-
             SET fecha_baja = NOW()
-
             WHERE id = :id
                 AND fecha_baja IS NULL
-        ";
+        ");
 
-        $stmt =
-            $this->db->prepare($sql);
-
-        $stmt->execute([
-            'id' => $id
-        ]);
+        $stmt->execute(['id' => $id]);
 
         return $stmt->rowCount() > 0;
     }

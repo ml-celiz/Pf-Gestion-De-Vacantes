@@ -1,19 +1,28 @@
 /*
-* MI PERFIL
-* Se abre como dialog desde el menú "Mi cuenta" del navbar:
+* COMPONENTE <app-perfil> (MI PERFIL)
+* Dialog con los datos de la cuenta del usuario logueado: verlos, editarlos,
+* cambiar la contraseña, cargar el CV (postulantes) y dar de baja la cuenta.
+* Se abre desde el menú "Mi cuenta" del navbar:
 *     document.body.appendChild(document.createElement('app-perfil'));
 * Al cerrarse, el elemento se elimina solo.
+*
+* Endpoints: GET/PUT/DELETE /api/usuarios/{id} y POST/GET/DELETE /api/usuarios/{id}/cv
 */
 class PerfilComponent extends HTMLElement {
+    static CV_MAX_BYTES = 5 * 1024 * 1024;   // mismo límite que el backend
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
 
-        this.usuario = null;
-        this.dialog = null;
+        this.usuario = null;   // datos del usuario (GET /api/usuarios/{id})
+        this.dialog = null;    // <dialog> principal del perfil
     }
 
     // =========================================================
-    // INICIALIZACIÓN
+    // CICLO DE VIDA: carga el HTML y abre el dialog
     // =========================================================
     async connectedCallback() {
         try {
@@ -48,9 +57,10 @@ class PerfilComponent extends HTMLElement {
     }
 
     // =========================================================
-    // CARGAR PERFIL
-    // GET /api/usuarios/{id}
+    // DATOS (API)
     // =========================================================
+
+    // GET /api/usuarios/{id}: datos frescos del usuario de la sesión
     async cargarPerfil() {
         const sesion = AuthService.getUser();
 
@@ -73,8 +83,10 @@ class PerfilComponent extends HTMLElement {
     }
 
     // =========================================================
-    // VISTA: DATOS
+    // RENDER: VISTA DE DATOS
     // =========================================================
+
+    // Datos de la cuenta, CV (si es postulante) y botones editar / eliminar
     renderDatos() {
         const usuario = this.usuario;
         const nombre = usuario.nombre || '';
@@ -157,6 +169,7 @@ class PerfilComponent extends HTMLElement {
             .addEventListener('click', () => this.abrirDialogoEliminar());
     }
 
+    // Un par etiqueta / valor de la lista de datos
     renderDato(label, valor) {
         return `
             <div class="perfil-dato">
@@ -166,13 +179,25 @@ class PerfilComponent extends HTMLElement {
         `;
     }
 
+    // Mensaje de error en lugar de los datos (sin botones)
+    renderError(mensaje) {
+        this.setContenido(`
+            <div class="perfil-error">
+                <i class="bi bi-exclamation-circle"></i>
+                <p>${this.escapeHtml(mensaje)}</p>
+            </div>
+        `);
+
+        this.setAcciones(null);
+    }
+
     // =========================================================
     // CV (solo postulantes)
     // POST / GET / DELETE /api/usuarios/{id}/cv
     // Un único PDF por usuario; "Ver CV" lo descarga.
     // =========================================================
-    static CV_MAX_BYTES = 5 * 1024 * 1024;   // mismo límite que el backend
 
+    // Bloque del CV: estado y botones según si ya tiene uno cargado
     renderCv() {
         const tieneCv = Boolean(this.usuario.tiene_cv);
 
@@ -220,6 +245,7 @@ class PerfilComponent extends HTMLElement {
         `;
     }
 
+    // Eventos de los botones del CV y del selector de archivo
     configurarCv() {
         const seccion = this.querySelector('.perfil-cv');
         const inputArchivo = seccion.querySelector('#perfil-cv-archivo');
@@ -249,6 +275,7 @@ class PerfilComponent extends HTMLElement {
         });
     }
 
+    // POST /api/usuarios/{id}/cv (carga o reemplaza el PDF)
     async subirCv(archivo) {
         // Validación rápida; la definitiva la hace el backend
         const esPdf = archivo.type === 'application/pdf' || /\.pdf$/i.test(archivo.name);
@@ -282,6 +309,7 @@ class PerfilComponent extends HTMLElement {
         }
     }
 
+    // GET /api/usuarios/{id}/cv (descarga el PDF)
     async descargarCv(boton) {
         boton.disabled = true;
 
@@ -295,6 +323,7 @@ class PerfilComponent extends HTMLElement {
         }
     }
 
+    // Confirmación + DELETE /api/usuarios/{id}/cv
     abrirDialogoEliminarCv() {
         const dialog = document.createElement('dialog');
 
@@ -352,19 +381,8 @@ class PerfilComponent extends HTMLElement {
         dialog.showModal();
     }
 
-    renderError(mensaje) {
-        this.setContenido(`
-            <div class="perfil-error">
-                <i class="bi bi-exclamation-circle"></i>
-                <p>${this.escapeHtml(mensaje)}</p>
-            </div>
-        `);
-
-        this.setAcciones(null);
-    }
-
     // =========================================================
-    // VISTA: EDITAR
+    // RENDER: VISTA EDITAR
     // PUT /api/usuarios/{id}
     // Reemplaza el contenido del mismo dialog; "Cancelar"
     // vuelve a la vista de datos.
@@ -449,7 +467,7 @@ class PerfilComponent extends HTMLElement {
                 </div>
                 <small class="form-help perfil-form-ayuda">
                     Para cambiar la contraseña completá los dos campos. Si los dejás vacíos,
-                    se conserva la actual.
+                    se conserva la actual. ${Validaciones.AYUDA_CONTRASENA}
                 </small>
 
                 <p class="app-dialog-error" role="alert" hidden></p>
@@ -471,6 +489,9 @@ class PerfilComponent extends HTMLElement {
         `);
 
         const form = this.querySelector('#perfil-form');
+
+        agregarOjosContrasena(form);
+
         const mensajeError = form.querySelector('.app-dialog-error');
         const btnCancelar = acciones.querySelector('#btn-perfil-cancelar');
         const btnGuardar = acciones.querySelector('#btn-perfil-guardar');
@@ -495,51 +516,27 @@ class PerfilComponent extends HTMLElement {
             const contrasena = form.querySelector('#perfil-contrasena');
             const contrasenaActual = form.querySelector('#perfil-contrasena-actual');
 
-            if (!nombre.value.trim()) {
-                mostrarError('El nombre es obligatorio.');
-                nombre.focus();
-                return;
-            }
+            // VALIDACIONES: pares [campo, error]; se muestra el primero que falle
+            const cambiaContrasena = Boolean(contrasena.value || contrasenaActual.value);
 
-            if (!apellido.value.trim()) {
-                mostrarError('El apellido es obligatorio.');
-                apellido.focus();
-                return;
-            }
+            const reglas = [
+                [nombre, Validaciones.nombre(nombre.value, 'nombre')],
+                [apellido, Validaciones.nombre(apellido.value, 'apellido')],
+                [email, Validaciones.email(email.value)],
+                [dni, Validaciones.dni(dni.value)],
+                [telefono, Validaciones.telefono(telefono.value)],
+                [contrasenaActual, cambiaContrasena && !contrasenaActual.value
+                    ? 'Ingresá tu contraseña actual para cambiarla.' : null],
+                [contrasena, cambiaContrasena ? Validaciones.contrasena(contrasena.value) : null],
+                [contrasena, cambiaContrasena && contrasena.value === contrasenaActual.value
+                    ? 'La nueva contraseña tiene que ser distinta de la actual.' : null]
+            ];
 
-            if (!email.value.trim() || !email.checkValidity()) {
-                mostrarError('Ingresá un correo electrónico válido.');
-                email.focus();
-                return;
-            }
+            const fallo = reglas.find(([, error]) => error !== null);
 
-            if (dni.value.trim() && !/^\d+$/.test(dni.value.trim())) {
-                mostrarError('El DNI debe contener solo números.');
-                dni.focus();
-                return;
-            }
-
-            if (contrasenaActual.value && !contrasena.value) {
-                mostrarError('Ingresá la nueva contraseña.');
-                contrasena.focus();
-                return;
-            }
-
-            if (contrasena.value && !contrasenaActual.value) {
-                mostrarError('Ingresá tu contraseña actual para cambiarla.');
-                contrasenaActual.focus();
-                return;
-            }
-
-            if (contrasena.value && contrasena.value.length < 8) {
-                mostrarError('La nueva contraseña debe tener al menos 8 caracteres.');
-                contrasena.focus();
-                return;
-            }
-
-            if (contrasena.value && contrasena.value === contrasenaActual.value) {
-                mostrarError('La nueva contraseña tiene que ser distinta de la actual.');
-                contrasena.focus();
+            if (fallo) {
+                mostrarError(fallo[1]);
+                fallo[0].focus();
                 return;
             }
 
@@ -663,8 +660,10 @@ class PerfilComponent extends HTMLElement {
     }
 
     // =========================================================
-    // PARTES DEL DIALOG
+    // UTILIDADES
     // =========================================================
+
+    // Partes del dialog principal: título, contenido y botones
     setTitulo(titulo) {
         const h2 = this.querySelector('#perfil-dialog-titulo');
 
@@ -692,9 +691,7 @@ class PerfilComponent extends HTMLElement {
         return acciones;
     }
 
-    // =========================================================
-    // SNACKBAR
-    // =========================================================
+    // Aviso temporal abajo de la pantalla ('success' | 'error')
     mostrarSnackbar(mensaje, tipo = 'success') {
         const anterior = document.querySelector('.perfil-snackbar');
 
@@ -730,9 +727,7 @@ class PerfilComponent extends HTMLElement {
         }, 3000);
     }
 
-    // =========================================================
-    // UTILIDADES
-    // =========================================================
+    // 'dd/mm/aaaa' o '-'
     formatearFecha(fecha) {
         if (!fecha) return '-';
 
@@ -752,6 +747,7 @@ class PerfilComponent extends HTMLElement {
         return date.toLocaleDateString('es-AR');
     }
 
+    // Evita que un texto se interprete como HTML
     escapeHtml(valor) {
         if (valor === null || valor === undefined) {
             return '';

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/correo_services.php';
+require_once __DIR__ . '/../utils/validaciones.php';
 
 /*
 * RECUPERACIÓN DE CONTRASEÑA
@@ -99,17 +100,16 @@ class RecuperacionService {
         }
     }
 
+    // Valida el token del link y guarda la contraseña nueva
     public function restablecer(string $token, string $contrasena): void {
         if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
             throw new RuntimeException("El enlace no es válido. Pedí uno nuevo.", 400);
         }
 
-        if (strlen($contrasena) < 8) {
-            throw new RuntimeException("La contraseña debe tener al menos 8 caracteres.", 400);
-        }
+        $error = validarContrasena($contrasena);
 
-        if (strlen($contrasena) > 72) {
-            throw new RuntimeException("La contraseña puede tener como máximo 72 caracteres.", 400);
+        if ($error !== null) {
+            throw new RuntimeException($error, 400);
         }
 
         $stmt = $this->db->prepare(

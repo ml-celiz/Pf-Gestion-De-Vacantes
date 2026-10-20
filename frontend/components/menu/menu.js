@@ -1,8 +1,20 @@
+/*
+* COMPONENTE <app-menu>
+* Menú principal: tarjetas de acceso a cada pantalla. Solo se muestran las
+* que el rol del usuario puede abrir (AuthService.puedeAcceder).
+*/
 class AppMenu extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
@@ -32,6 +44,10 @@ class AppMenu extends HTMLElement {
         }
     }
 
+    // =========================================================
+    // EVENTOS
+    // =========================================================
+    // Click en cada tarjeta: navega a su pantalla
     initEvents() {
         // TARJETAS DEL MENÚ
         const menuCards = this.querySelectorAll('.menu-card');
@@ -45,7 +61,9 @@ class AppMenu extends HTMLElement {
         });
     }
 
-    // PERMISOS SEGÚN EL ROL
+    // =========================================================
+    // RENDER
+    // =========================================================
     // Oculta las tarjetas a las que el usuario no puede entrar y las
     // secciones que quedan vacías. Hay que volver a llamarlo cada vez
     // que se muestra el menú, porque el elemento se crea antes del login.
@@ -67,7 +85,10 @@ class AppMenu extends HTMLElement {
         }
     }
 
-    // NAVEGACIÓN
+    // =========================================================
+    // ACCIONES
+    // =========================================================
+    // Pide a navegacion.js que muestre otra pantalla
     navigateTo(route) {
 
         this.dispatchEvent(

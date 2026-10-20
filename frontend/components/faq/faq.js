@@ -1,14 +1,21 @@
 /*
-* PREGUNTAS FRECUENTES
+* COMPONENTE <app-faq> (PREGUNTAS FRECUENTES)
 * Se abre como dialog desde el menú "Mi cuenta" del navbar:
 *     document.body.appendChild(document.createElement('app-faq'));
 * Al cerrarse, el elemento se elimina solo.
 */
 class FaqComponent extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y abre el dialog
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
@@ -42,7 +49,4 @@ class FaqComponent extends HTMLElement {
     }
 }
 
-// =============================================================
-// REGISTRAR COMPONENTE
-// =============================================================
 customElements.define('app-faq', FaqComponent);

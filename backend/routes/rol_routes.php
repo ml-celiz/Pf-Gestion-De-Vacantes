@@ -4,6 +4,13 @@ require_once __DIR__ . '/../controllers/rol_controller.php';
 require_once __DIR__ . '/../services/auth_services.php';
 require_once __DIR__ . '/../utils/helpers.php';
 
+/*
+* RUTAS DE ROLES: /api/roles/...
+*   /api/roles[/{id}]                       ABM de roles
+*   /api/roles/{id}/paneles[/{idPanel}]     pantallas del rol
+*   /api/roles/{id}/modulos[/{idModulo}]    permisos por módulo
+*   /api/roles/{id}/usuarios[/{idUsuario}]  usuarios con ese rol
+*/
 function handleRolRoutes(string $method, array $uriParts): void {
 
     /*

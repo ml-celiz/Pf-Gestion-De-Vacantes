@@ -2,6 +2,11 @@
 
 require_once __DIR__ . '/../services/modulo_services.php';
 
+/*
+* CONTROLADOR DE MÓDULOS
+* Recibe los pedidos de /api/modulos, llama a ModuloService y responde en JSON.
+* Los permisos (módulo `roles`) ya se verificaron en routes/modulo_routes.php.
+*/
 class ModuloController {
     private ModuloService $moduloService;
 
@@ -9,14 +14,21 @@ class ModuloController {
         $this->moduloService = new ModuloService();
     }
 
+    // GET /api/modulos
     public function listar(): void {
-        $modulos = $this->moduloService->obtenerTodos();
-        echo json_encode($modulos);
+        echo json_encode($this->moduloService->obtenerTodos());
     }
 
+    // POST /api/modulos  { nombre }
     public function crear(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        $exito = $this->moduloService->crear($input);
+
+        try {
+            $exito = $this->moduloService->crear($input);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
+        }
 
         if ($exito) {
             http_response_code(201);
@@ -27,9 +39,16 @@ class ModuloController {
         }
     }
 
+    // PUT /api/modulos/{id}  { nombre }
     public function actualizar(int $id): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        $exito = $this->moduloService->actualizar($id, $input);
+
+        try {
+            $exito = $this->moduloService->actualizar($id, $input);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
+        }
 
         if ($exito) {
             echo json_encode(["message" => "Módulo actualizado correctamente."]);
@@ -39,10 +58,9 @@ class ModuloController {
         }
     }
 
+    // DELETE /api/modulos/{id}
     public function eliminar(int $id): void {
-        $exito = $this->moduloService->eliminar($id);
-
-        if ($exito) {
+        if ($this->moduloService->eliminar($id)) {
             echo json_encode(["message" => "Módulo eliminado correctamente."]);
         } else {
             http_response_code(404);

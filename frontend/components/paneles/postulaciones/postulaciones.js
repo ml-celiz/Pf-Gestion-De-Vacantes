@@ -1,4 +1,15 @@
+/*
+* COMPONENTE <app-postulaciones>
+* Tabla paginada de postulaciones. Un postulante ve las suyas (puede ver el
+* resultado publicado o darse de baja); admin y ra ven todas.
+*
+* Endpoints: GET /api/vacantes/solicitudes, DELETE /api/vacantes/solicitudes/{id}
+*/
 class PostulacionesComponent extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
 
@@ -7,6 +18,9 @@ class PostulacionesComponent extends HTMLElement {
         this.postulaciones = [];
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS, luego los datos
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
@@ -21,7 +35,7 @@ class PostulacionesComponent extends HTMLElement {
 
             this.innerHTML = await response.text();
 
-            this.configurarEventos();
+            this.initEvents();
             await this.cargarPostulaciones();
         } catch (error) {
             console.error('Error al cargar el componente de postulaciones:', error);
@@ -34,11 +48,11 @@ class PostulacionesComponent extends HTMLElement {
         }
     }
 
-    /* =====================================================
-       EVENTOS
-       ===================================================== */
-
-    configurarEventos() {
+    // =========================================================
+    // EVENTOS
+    // =========================================================
+    // Botones de la pantalla: refrescar y paginación
+    initEvents() {
         this.querySelector('#btn-refresh-postulaciones')
             .addEventListener('click', () => this.cargarPostulaciones());
 
@@ -57,13 +71,12 @@ class PostulacionesComponent extends HTMLElement {
         });
     }
 
-    /* =====================================================
-       CARGAR POSTULACIONES
-       GET /api/vacantes/solicitudes
-       El backend ya limita la lista: un postulante solo recibe
-       las suyas (sin las dadas de baja); admin y ra ven todas.
-       ===================================================== */
-
+    // =========================================================
+    // DATOS (API)
+    // =========================================================
+    // GET /api/vacantes/solicitudes
+    // El backend ya limita la lista: un postulante solo recibe
+    // las suyas (sin las dadas de baja); admin y ra ven todas.
     async cargarPostulaciones() {
         const usuario = AuthService.getUser();
         const roles = AuthService.getRoles();
@@ -85,10 +98,10 @@ class PostulacionesComponent extends HTMLElement {
         this.renderPostulaciones();
     }
 
-    /* =====================================================
-       RENDER
-       ===================================================== */
-
+    // =========================================================
+    // RENDER
+    // =========================================================
+    // Filas de la página actual, con sus botones ver resultado / dar de baja
     renderPostulaciones() {
         const tbody = this.querySelector('#tb-postulaciones');
 
@@ -165,14 +178,12 @@ class PostulacionesComponent extends HTMLElement {
         this.actualizarPaginacion();
     }
 
-    /* =====================================================
-       PAGINACIÓN
-       ===================================================== */
-
+    // Cantidad de páginas según la cantidad de postulaciones
     totalPaginas() {
         return Math.max(1, Math.ceil(this.postulaciones.length / this.postulacionesPerPage));
     }
 
+    // Texto y botones de paginación
     actualizarPaginacion() {
         const totalPaginas = this.totalPaginas();
 
@@ -187,12 +198,11 @@ class PostulacionesComponent extends HTMLElement {
             this.postulacionesCurrentPage >= totalPaginas;
     }
 
-    /* =====================================================
-       VER RESULTADO
-       Muestra la orden de mérito publicada para la
-       postulación. Solo se llega si ya existe.
-       ===================================================== */
-
+    // =========================================================
+    // DIALOGS
+    // =========================================================
+    // Muestra la orden de mérito publicada para la
+    // postulación. Solo se llega si ya existe.
     mostrarResultado(postulacion) {
         const orden = postulacion.orden_merito;
 
@@ -264,13 +274,9 @@ class PostulacionesComponent extends HTMLElement {
         dialog.showModal();
     }
 
-    /* =====================================================
-       DAR DE BAJA
-       DELETE /api/vacantes/solicitudes/{id}
-       Baja lógica: el backend completa la fecha de baja y la
-       postulación deja de listarse.
-       ===================================================== */
-
+    // DELETE /api/vacantes/solicitudes/{id}
+    // Baja lógica: el backend completa la fecha de baja y la
+    // postulación deja de listarse.
     confirmarBaja(postulacion) {
         const dialog = this.crearDialogo('postulacion-baja-dialog');
 
@@ -329,12 +335,11 @@ class PostulacionesComponent extends HTMLElement {
         dialog.showModal();
     }
 
-    /* =====================================================
-       DIALOG BASE
-       Usa el estilo común de global.css (.app-dialog).
-       Se elimina del DOM al cerrarse (botones o Esc).
-       ===================================================== */
-
+    // =========================================================
+    // UTILIDADES
+    // =========================================================
+    // Usa el estilo común de global.css (.app-dialog).
+    // Se elimina del DOM al cerrarse (botones o Esc).
     crearDialogo(claseExtra) {
         const dialog = document.createElement('dialog');
 
@@ -345,10 +350,7 @@ class PostulacionesComponent extends HTMLElement {
         return dialog;
     }
 
-    /* =====================================================
-       SNACKBAR
-       ===================================================== */
-
+    // Aviso temporal abajo de la pantalla ('success' | 'error')
     mostrarSnackbar(mensaje, tipo = 'success') {
         document.querySelector('.postulaciones-snackbar')?.remove();
 
@@ -370,10 +372,7 @@ class PostulacionesComponent extends HTMLElement {
         }, 3000);
     }
 
-    /* =====================================================
-       FECHAS
-       ===================================================== */
-
+    // Fecha para mostrar ('dd/mm/aaaa' o '-')
     formatearFecha(fecha) {
         if (!fecha) return '-';
 
@@ -417,6 +416,7 @@ class PostulacionesComponent extends HTMLElement {
         return `${dia} ${hora} hs`;
     }
 
+    // Evita que un texto se interprete como HTML
     escapeHtml(valor) {
         const div = document.createElement('div');
         div.textContent = valor ?? '';

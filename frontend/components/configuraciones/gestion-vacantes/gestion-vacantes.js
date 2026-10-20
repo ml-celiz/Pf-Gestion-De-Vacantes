@@ -1,4 +1,18 @@
+/*
+* COMPONENTE <app-gestion-vacantes>
+* Pantalla de configuración con tres tablas: vacantes (principal), cátedras
+* y departamentos. Cada una tiene su ABM en un dialog; los botones se
+* muestran según los permisos de los módulos `vacantes`, `catedras` y
+* `departamentos`.
+*
+* Endpoints: /api/vacantes[/{id}], /api/vacantes/estados,
+*            /api/institucional/{departamentos|catedras}[/{id}], /api/institucional/usuarios-jfc
+*/
 class GestionVacantesComponent extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
 
@@ -20,7 +34,9 @@ class GestionVacantesComponent extends HTMLElement {
         this.departamentosCurrentPage = 1;
     }
 
-    // INICIALIZACIÓN
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS, luego los datos
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
@@ -55,7 +71,10 @@ class GestionVacantesComponent extends HTMLElement {
         }
     }
 
+    // =========================================================
     // EVENTOS
+    // =========================================================
+    // Botones de la pantalla: refrescar, agregar y paginación de las tres tablas
     initEvents() {
         // REFRESCAR
         const btnRefresh = this.querySelector('#btn-refresh');
@@ -174,7 +193,10 @@ class GestionVacantesComponent extends HTMLElement {
         }
     }
 
-    // RECARGAR TODO
+    // =========================================================
+    // DATOS (API)
+    // =========================================================
+    // Vuelve a la primera página de cada tabla y recarga todo
     async recargarTodo() {
         this.vacantesCurrentPage = 1;
         this.catedrasCurrentPage = 1;
@@ -189,7 +211,6 @@ class GestionVacantesComponent extends HTMLElement {
         ]);
     }
 
-    // VACANTES
     // GET /api/vacantes
     async cargarVacantes() {
         const tbody = this.querySelector('#tb-vacantes');
@@ -224,7 +245,107 @@ class GestionVacantesComponent extends HTMLElement {
         }
     }
 
-    // RENDER VACANTES
+    // GET /api/institucional/catedras
+    async cargarCatedras() {
+        const tbody = this.querySelector('#tb-catedras');
+
+        if (!tbody) return;
+
+        // Sin permiso de lectura no se muestra la tabla
+        if (!this.mostrarSeccionSiPuede(tbody, 'catedras')) return;
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center">Cargando...</td>
+            </tr>
+        `;
+
+        try {
+            const catedras = await ApiClient.get('/institucional/catedras');
+            this.catedras = catedras || [];
+            this.renderCatedras();
+        } catch (error) {
+            console.error('Error obteniendo cátedras:', error);
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center text-danger">Error al obtener cátedras.</td>
+                </tr>
+            `;
+        }
+    }
+
+    // GET /api/institucional/departamentos
+    async cargarDepartamentos() {
+        const tbody = this.querySelector('#tb-departamentos');
+
+        if (!tbody) return;
+
+        // Sin permiso de lectura no se muestra la tabla
+        if (!this.mostrarSeccionSiPuede(tbody, 'departamentos')) return;
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="2" class="text-center">Cargando...</td>
+            </tr>
+        `;
+
+        try {
+            const departamentos = await ApiClient.get('/institucional/departamentos');
+            this.departamentos = departamentos || [];
+            this.renderDepartamentos();
+        } catch (error) {
+            console.error('Error obteniendo departamentos:', error);
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="2" class="text-center text-danger">
+                        Error al obtener departamentos.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // GET /api/institucional/usuarios-jfc (jefes para el select de cátedras)
+    async cargarUsuariosJfc() {
+        // Solo hacen falta para el formulario de cátedra
+        if (
+            !AuthService.puede('catedras', 'escribir') &&
+            !AuthService.puede('catedras', 'editar')
+        ) {
+            this.usuariosJfc = [];
+            return;
+        }
+
+        try {
+            const usuarios = await ApiClient.get('/institucional/usuarios-jfc');
+
+            this.usuariosJfc = usuarios || [];
+        } catch (error) {
+            console.error('Error obteniendo usuarios JFC:', error);
+
+            this.usuariosJfc = [];
+        }
+    }
+
+    // GET /api/vacantes/estados (opciones del select de vacantes)
+    async cargarEstados() {
+        try {
+            const estados = await ApiClient.get('/vacantes/estados');
+
+            this.estados = estados || [];
+        } catch (error) {
+            console.error('Error obteniendo estados:', error);
+
+            this.estados = [];
+        }
+    }
+
+    // =========================================================
+    // RENDER
+    // =========================================================
+    // Filas de vacantes de la página actual, con sus botones
     renderVacantes() {
         const tbody = this.querySelector('#tb-vacantes');
 
@@ -315,7 +436,7 @@ class GestionVacantesComponent extends HTMLElement {
         this.actualizarPaginacionVacantes();
     }
 
-    // PAGINACIÓN VACANTES
+    // Paginación de la tabla de vacantes
     actualizarPaginacionVacantes() {
         const total = this.vacantes.length;
         const totalPages = Math.max(1, Math.ceil(total / this.vacantesPerPage));
@@ -351,73 +472,7 @@ class GestionVacantesComponent extends HTMLElement {
         }
     }
 
-    // CARGAR USUARIOS JEFES DE CATEDRA
-    async cargarUsuariosJfc() {
-        // Solo hacen falta para el formulario de cátedra
-        if (
-            !AuthService.puede('catedras', 'escribir') &&
-            !AuthService.puede('catedras', 'editar')
-        ) {
-            this.usuariosJfc = [];
-            return;
-        }
-
-        try {
-            const usuarios = await ApiClient.get('/institucional/usuarios-jfc');
-
-            this.usuariosJfc = usuarios || [];
-        } catch (error) {
-            console.error('Error obteniendo usuarios JFC:', error);
-
-            this.usuariosJfc = [];
-        }
-    }
-
-    // CARGAR ESTADOS
-    async cargarEstados() {
-        try {
-            const estados = await ApiClient.get('/vacantes/estados');
-
-            this.estados = estados || [];
-        } catch (error) {
-            console.error('Error obteniendo estados:', error);
-
-            this.estados = [];
-        }
-    }
-
-    // CÁTEDRAS
-    // GET /api/institucional/catedras
-    async cargarCatedras() {
-        const tbody = this.querySelector('#tb-catedras');
-
-        if (!tbody) return;
-
-        // Sin permiso de lectura no se muestra la tabla
-        if (!this.mostrarSeccionSiPuede(tbody, 'catedras')) return;
-
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="3" class="text-center">Cargando...</td>
-            </tr>
-        `;
-
-        try {
-            const catedras = await ApiClient.get('/institucional/catedras');
-            this.catedras = catedras || [];
-            this.renderCatedras();
-        } catch (error) {
-            console.error('Error obteniendo cátedras:', error);
-
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="3" class="text-center text-danger">Error al obtener cátedras.</td>
-                </tr>
-            `;
-        }
-    }
-
-    // RENDER CÁTEDRAS
+    // Filas de cátedras de la página actual
     renderCatedras() {
         const tbody = this.querySelector('#tb-catedras');
 
@@ -484,7 +539,7 @@ class GestionVacantesComponent extends HTMLElement {
         this.actualizarPaginacionCatedras();
     }
 
-    // PAGINACIÓN CÁTEDRAS
+    // Paginación de la tabla de cátedras
     actualizarPaginacionCatedras() {
         const total = this.catedras.length;
         const totalPages = Math.max(1, Math.ceil(total / this.catedrasPerPage));
@@ -520,40 +575,7 @@ class GestionVacantesComponent extends HTMLElement {
         }
     }
 
-    // DEPARTAMENTOS
-    // GET /api/institucional/departamentos
-    async cargarDepartamentos() {
-        const tbody = this.querySelector('#tb-departamentos');
-
-        if (!tbody) return;
-
-        // Sin permiso de lectura no se muestra la tabla
-        if (!this.mostrarSeccionSiPuede(tbody, 'departamentos')) return;
-
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="2" class="text-center">Cargando...</td>
-            </tr>
-        `;
-
-        try {
-            const departamentos = await ApiClient.get('/institucional/departamentos');
-            this.departamentos = departamentos || [];
-            this.renderDepartamentos();
-        } catch (error) {
-            console.error('Error obteniendo departamentos:', error);
-
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="2" class="text-center text-danger">
-                        Error al obtener departamentos.
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    // RENDER DEPARTAMENTOS
+    // Filas de departamentos de la página actual
     renderDepartamentos() {
         const tbody = this.querySelector('#tb-departamentos');
 
@@ -622,7 +644,7 @@ class GestionVacantesComponent extends HTMLElement {
         this.actualizarPaginacionDepartamentos();
     }
 
-    // PAGINACIÓN DEPARTAMENTOS
+    // Paginación de la tabla de departamentos
     actualizarPaginacionDepartamentos() {
         const total = this.departamentos.length;
         const totalPages = Math.max(1, Math.ceil(total / this.departamentosPerPage));
@@ -658,7 +680,10 @@ class GestionVacantesComponent extends HTMLElement {
         }
     }
 
-    // MOSTRAR REQUISITOS
+    // =========================================================
+    // DIALOGS
+    // =========================================================
+    // Dialog de solo lectura con los requisitos de una vacante
     mostrarRequisitos(requisitos) {
         let datos = requisitos;
 
@@ -716,87 +741,7 @@ class GestionVacantesComponent extends HTMLElement {
         });
     }
 
-    // GENERAR HTML DE REQUISITOS
-    generarRequisitosHTML(datos) {
-        if (!datos || typeof datos !== 'object') {
-            return `
-                <p class="requisitos-empty">No hay requisitos registrados.</p>
-            `;
-        }
-
-        return Object.entries(datos)
-            .map(([clave, valor]) => {
-                const titulo = this.formatearTituloRequisito(clave);
-                let contenido = '';
-
-                if (Array.isArray(valor)) {
-                    contenido = `
-                        <ul class="requisitos-list">
-                            ${valor.map(item => `
-                                <li>${item}</li>
-                            `).join('')}
-                        </ul>
-                    `;
-                } else {
-                    contenido = `
-                        <p class="requisito-text">${valor || '-'}</p>
-                    `;
-                }
-
-                return `
-                    <div class="requisito-group">
-                        <h3>${titulo}</h3>
-
-                        ${contenido}
-                    </div>
-                `;
-            })
-            .join('');
-    }
-
-    // FORMATEAR TÍTULO DE REQUISITO
-    formatearTituloRequisito(clave) {
-        return clave
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, letra => letra.toUpperCase());
-    }
-
-    // FORMATEAR FECHA
-    formatearFecha(fecha) {
-        if (!fecha) {
-            return '-';
-        }
-
-        const date = new Date(fecha);
-
-        if (Number.isNaN(date.getTime())) {
-            return fecha;
-        }
-
-        return date.toLocaleDateString(
-            'es-AR',
-            {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            }
-        );
-    }
-
-    // HELPERS
-    crearDialogoBase() {
-        const dialog = document.createElement('dialog');
-        dialog.classList.add('custom-dialog');
-        return dialog;
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text ?? '';
-        return div.innerHTML;
-    }
-
-    // DIALOG DEPARTAMENTOS
+    // Alta / edición de un departamento
     abrirDialogoDepartamento(departamento = null) {
         const esEdicion = departamento !== null;
         const dialog = this.crearDialogoBase();
@@ -810,7 +755,7 @@ class GestionVacantesComponent extends HTMLElement {
                 </h2>
             </div>
 
-            <form class="dialog-form">
+            <form class="dialog-form" novalidate>
                 <div class="form-group">
                     <label for="departamento-nombre">Nombre</label>
 
@@ -823,6 +768,9 @@ class GestionVacantesComponent extends HTMLElement {
                         value="${this.escapeHtml(departamento?.nombre || '')}"
                         required>
                 </div>
+
+                <p class="app-dialog-error" role="alert" hidden></p>
+
 
                 <div class="dialog-actions">
                     <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
@@ -846,9 +794,10 @@ class GestionVacantesComponent extends HTMLElement {
             event.preventDefault();
 
             const nombre = input.value.trim();
+            const error = Validaciones.textoObligatorio(nombre, 'nombre');
 
-            if (!nombre) {
-                input.focus();
+            if (error) {
+                this.mostrarErrorDialogo(dialog, error, input);
                 return;
             }
 
@@ -881,11 +830,9 @@ class GestionVacantesComponent extends HTMLElement {
             } catch (error) {
                 console.error('Error guardando departamento:', error);
 
-                this.mostrarSnackbar(
-                    esEdicion
-                        ? 'No se pudo actualizar el departamento.'
-                        : 'No se pudo crear el departamento.',
-                    'error'
+                this.mostrarErrorDialogo(
+                    dialog,
+                    error.message || (esEdicion ? 'No se pudo actualizar el departamento.' : 'No se pudo crear el departamento.')
                 );
             }
         });
@@ -897,7 +844,7 @@ class GestionVacantesComponent extends HTMLElement {
         input.focus();
     }
 
-    // DIALOG CATEDRA
+    // Alta / edición de una cátedra (nombre, departamento y jefe)
     abrirDialogoCatedra(catedra = null) {
         const esEdicion = catedra !== null;
         const dialog = this.crearDialogoBase();
@@ -935,7 +882,7 @@ class GestionVacantesComponent extends HTMLElement {
                 </h2>
             </div>
 
-            <form class="dialog-form">
+            <form class="dialog-form" novalidate>
                 <div class="form-group">
                     <label for="catedra-nombre">Nombre</label>
 
@@ -969,6 +916,9 @@ class GestionVacantesComponent extends HTMLElement {
                     </select>
                 </div>
 
+                <p class="app-dialog-error" role="alert" hidden></p>
+
+
                 <div class="dialog-actions">
                     <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
 
@@ -998,18 +948,17 @@ class GestionVacantesComponent extends HTMLElement {
             const idDepartamento = Number(selectDepartamento.value);
             const idUsuario = Number(selectUsuario.value);
 
-            if (!nombre) {
-                inputNombre.focus();
-                return;
-            }
+            // VALIDACIONES: pares [campo, error]; se muestra el primero que falle
+            const reglas = [
+                [inputNombre, Validaciones.textoObligatorio(nombre, 'nombre')],
+                [selectDepartamento, !idDepartamento ? 'Seleccioná un departamento.' : null],
+                [selectUsuario, !idUsuario ? 'Seleccioná el jefe de cátedra.' : null]
+            ];
 
-            if (!idDepartamento) {
-                selectDepartamento.focus();
-                return;
-            }
+            const fallo = reglas.find(([, error]) => error !== null);
 
-            if (!idUsuario) {
-                selectUsuario.focus();
+            if (fallo) {
+                this.mostrarErrorDialogo(dialog, fallo[1], fallo[0]);
                 return;
             }
 
@@ -1041,11 +990,9 @@ class GestionVacantesComponent extends HTMLElement {
             } catch (error) {
                 console.error('Error guardando cátedra:', error);
 
-                this.mostrarSnackbar(
-                    esEdicion
-                        ? 'No se pudo actualizar la cátedra.'
-                        : 'No se pudo crear la cátedra.',
-                    'error'
+                this.mostrarErrorDialogo(
+                    dialog,
+                    error.message || (esEdicion ? 'No se pudo actualizar la cátedra.' : 'No se pudo crear la cátedra.')
                 );
             }
         });
@@ -1057,7 +1004,7 @@ class GestionVacantesComponent extends HTMLElement {
         inputNombre.focus();
     }
 
-    // DIALOG VACANTE
+    // Alta / edición de una vacante
     abrirDialogoVacante(vacante = null) {
         const esEdicion = vacante !== null;
         const dialog = this.crearDialogoBase();
@@ -1096,7 +1043,7 @@ class GestionVacantesComponent extends HTMLElement {
                 </h2>
             </div>
 
-            <form class="dialog-form">
+            <form class="dialog-form" novalidate>
                 <!-- TÍTULO -->
 
                 <div class="form-group">
@@ -1182,6 +1129,9 @@ class GestionVacantesComponent extends HTMLElement {
 
                 <!-- BOTONES -->
 
+                <p class="app-dialog-error" role="alert" hidden></p>
+
+
                 <div class="dialog-actions">
                     <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
 
@@ -1228,21 +1178,20 @@ class GestionVacantesComponent extends HTMLElement {
 
             // VALIDACIONES
 
-            if (!titulo.value.trim()) {
-                titulo.focus();
+            // VALIDACIONES (las mismas que el backend): se muestra la primera que falle
+            const reglas = [
+                [titulo, Validaciones.textoObligatorio(titulo.value, 'título')],
+                [descripcion, Validaciones.textoObligatorio(descripcion.value, 'descripción')],
+                [catedra, !catedra.value ? 'Seleccioná una cátedra.' : null],
+                [estado, !estado.value ? 'Seleccioná un estado.' : null],
+                [fin, inicio.value && fin.value && fin.value < inicio.value
+                    ? 'La fecha de fin no puede ser anterior a la de inicio.' : null]
+            ];
 
-                return;
-            }
+            const fallo = reglas.find(([, error]) => error !== null);
 
-            if (!catedra.value) {
-                catedra.focus();
-
-                return;
-            }
-
-            if (!estado.value) {
-                estado.focus();
-
+            if (fallo) {
+                this.mostrarErrorDialogo(dialog, fallo[1], fallo[0]);
                 return;
             }
 
@@ -1287,11 +1236,9 @@ class GestionVacantesComponent extends HTMLElement {
             } catch (error) {
                 console.error('Error guardando vacante:', error);
 
-                this.mostrarSnackbar(
-                    esEdicion
-                        ? 'No se pudo actualizar la vacante.'
-                        : 'No se pudo crear la vacante.',
-                    'error'
+                this.mostrarErrorDialogo(
+                    dialog,
+                    error.message || (esEdicion ? 'No se pudo actualizar la vacante.' : 'No se pudo crear la vacante.')
                 );
             }
         });
@@ -1305,52 +1252,7 @@ class GestionVacantesComponent extends HTMLElement {
         titulo.focus();
     }
 
-    // 'YYYY-MM-DD' para el selector de fecha ('' si no hay fecha)
-    formatearFechaInput(fecha) {
-        const coincidencia = String(fecha ?? '').match(/^(\d{4}-\d{2}-\d{2})/);
-        return coincidencia ? coincidencia[1] : '';
-    }
-
-    formatearRequisitosInput(requisitos) {
-        if (!requisitos) {
-            return '';
-        }
-
-        // Si viene como string
-        if (typeof requisitos === 'string') {
-            return requisitos;
-        }
-
-        // Formato esperado:
-        // {
-        //     requisitos: [
-        //         "...",
-        //         "..."
-        //     ]
-        // }
-        if (typeof requisitos === 'object' && Array.isArray(requisitos.requisitos)) {
-            return requisitos.requisitos.join('\n');
-        }
-
-        // Compatibilidad por si ya existen datos antiguos
-        if (typeof requisitos === 'object' && typeof requisitos.requisitos === 'string') {
-            return requisitos.requisitos;
-        }
-
-        return '';
-    }
-
-    convertirRequisitos(valor) {
-        const requisitos = valor
-            .split('\n')
-            .map(requisito => requisito.trim())
-            .filter(requisito => requisito !== '');
-
-        return {
-            requisitos: requisitos
-        };
-    }
-
+    // Confirmación y baja (tipo: 'departamento' | 'catedra' | 'vacante')
     abrirDialogoEliminar(tipo, elemento) {
         const nombres = {
             departamento: 'departamento',
@@ -1384,6 +1286,9 @@ class GestionVacantesComponent extends HTMLElement {
                     </strong>?
                 </p>
             </div>
+
+            <p class="app-dialog-error" role="alert" hidden></p>
+
 
             <div class="dialog-actions">
                 <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
@@ -1425,10 +1330,7 @@ class GestionVacantesComponent extends HTMLElement {
                     error
                 );
 
-                this.mostrarSnackbar(
-                    `No se pudo eliminar el ${nombreTipo}.`,
-                    'error'
-                );
+                this.mostrarErrorDialogo(dialog, error.message || `No se pudo eliminar el ${nombreTipo}.`);
             }
         });
 
@@ -1437,6 +1339,176 @@ class GestionVacantesComponent extends HTMLElement {
         dialog.showModal();
     }
 
+    // =========================================================
+    // PERMISOS POR MÓDULO (roles_modulos)
+    // =========================================================
+    // Atributo 'hidden' para los botones de las filas si el rol no tiene la acción
+    oculto(modulo, accion) {
+        return AuthService.puede(modulo, accion) ? '' : 'hidden';
+    }
+
+    // Oculta un botón si el rol no tiene la acción sobre el módulo
+    ocultarSiNoPuede(elemento, modulo, accion) {
+        if (elemento) {
+            elemento.hidden = !AuthService.puede(modulo, accion);
+        }
+    }
+
+    // Muestra u oculta la tarjeta de la tabla según el permiso de lectura
+    mostrarSeccionSiPuede(tbody, modulo) {
+        const puedeLeer = AuthService.puede(modulo, 'leer');
+        const seccion = tbody.closest('section');
+
+        if (seccion) {
+            seccion.hidden = !puedeLeer;
+        }
+
+        return puedeLeer;
+    }
+
+    // =========================================================
+    // UTILIDADES
+    // =========================================================
+    // HTML de la lista de requisitos (acepta texto, lista u objeto)
+    generarRequisitosHTML(datos) {
+        if (!datos || typeof datos !== 'object') {
+            return `
+                <p class="requisitos-empty">No hay requisitos registrados.</p>
+            `;
+        }
+
+        return Object.entries(datos)
+            .map(([clave, valor]) => {
+                const titulo = this.formatearTituloRequisito(clave);
+                let contenido = '';
+
+                if (Array.isArray(valor)) {
+                    contenido = `
+                        <ul class="requisitos-list">
+                            ${valor.map(item => `
+                                <li>${item}</li>
+                            `).join('')}
+                        </ul>
+                    `;
+                } else {
+                    contenido = `
+                        <p class="requisito-text">${valor || '-'}</p>
+                    `;
+                }
+
+                return `
+                    <div class="requisito-group">
+                        <h3>${titulo}</h3>
+
+                        ${contenido}
+                    </div>
+                `;
+            })
+            .join('');
+    }
+
+    // 'experiencia_docente' -> 'Experiencia docente'
+    formatearTituloRequisito(clave) {
+        return clave
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, letra => letra.toUpperCase());
+    }
+
+    // Requisitos guardados -> texto del textarea (uno por línea)
+    formatearRequisitosInput(requisitos) {
+        if (!requisitos) {
+            return '';
+        }
+
+        // Si viene como string
+        if (typeof requisitos === 'string') {
+            return requisitos;
+        }
+
+        // Formato esperado:
+        // {
+        //     requisitos: [
+        //         "...",
+        //         "..."
+        //     ]
+        // }
+        if (typeof requisitos === 'object' && Array.isArray(requisitos.requisitos)) {
+            return requisitos.requisitos.join('\n');
+        }
+
+        // Compatibilidad por si ya existen datos antiguos
+        if (typeof requisitos === 'object' && typeof requisitos.requisitos === 'string') {
+            return requisitos.requisitos;
+        }
+
+        return '';
+    }
+
+    // Texto del textarea -> lista de requisitos para enviar
+    convertirRequisitos(valor) {
+        const requisitos = valor
+            .split('\n')
+            .map(requisito => requisito.trim())
+            .filter(requisito => requisito !== '');
+
+        return {
+            requisitos: requisitos
+        };
+    }
+
+    // Fecha para mostrar en la tabla ('dd/mm/aaaa' o '-')
+    formatearFecha(fecha) {
+        if (!fecha) {
+            return '-';
+        }
+
+        const date = new Date(fecha);
+
+        if (Number.isNaN(date.getTime())) {
+            return fecha;
+        }
+
+        return date.toLocaleDateString(
+            'es-AR',
+            {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }
+        );
+    }
+
+    // 'YYYY-MM-DD' para el selector de fecha ('' si no hay fecha)
+    formatearFechaInput(fecha) {
+        const coincidencia = String(fecha ?? '').match(/^(\d{4}-\d{2}-\d{2})/);
+        return coincidencia ? coincidencia[1] : '';
+    }
+
+    // Muestra un error dentro del dialog abierto y enfoca el campo (si se indica)
+    mostrarErrorDialogo(dialog, mensaje, campo = null) {
+        const mensajeError = dialog.querySelector('.app-dialog-error');
+
+        mensajeError.textContent = mensaje;
+        mensajeError.hidden = false;
+
+        if (campo) campo.focus();
+    }
+
+    // <dialog> vacío con el estilo de los paneles
+    crearDialogoBase() {
+        const dialog = document.createElement('dialog');
+        dialog.classList.add('custom-dialog');
+        return dialog;
+    }
+
+    // Evita que un texto se interprete como HTML
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text ?? '';
+        return div.innerHTML;
+    }
+
+    // Aviso temporal abajo de la pantalla ('success' | 'error')
     mostrarSnackbar(mensaje, tipo = 'success') {
         const anterior = document.querySelector('.app-snackbar');
 
@@ -1473,34 +1545,6 @@ class GestionVacantesComponent extends HTMLElement {
             }, 300);
         }, 3000);
     }
-
-    // =========================================================
-    // PERMISOS POR MÓDULO (roles_modulos)
-    // =========================================================
-    // Atributo para los botones de las filas: 'hidden' si el rol no
-    // tiene la acción sobre el módulo
-    oculto(modulo, accion) {
-        return AuthService.puede(modulo, accion) ? '' : 'hidden';
-    }
-
-    ocultarSiNoPuede(elemento, modulo, accion) {
-        if (elemento) {
-            elemento.hidden = !AuthService.puede(modulo, accion);
-        }
-    }
-
-    // Muestra u oculta la tarjeta de la tabla según el permiso de lectura
-    mostrarSeccionSiPuede(tbody, modulo) {
-        const puedeLeer = AuthService.puede(modulo, 'leer');
-        const seccion = tbody.closest('section');
-
-        if (seccion) {
-            seccion.hidden = !puedeLeer;
-        }
-
-        return puedeLeer;
-    }
 }
 
-// REGISTRAR COMPONENTE
 customElements.define('app-gestion-vacantes', GestionVacantesComponent);

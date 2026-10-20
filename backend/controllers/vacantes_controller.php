@@ -3,6 +3,12 @@
 require_once __DIR__ . '/../services/vacantes_services.php';
 require_once __DIR__ . '/../services/auth_services.php';
 
+/*
+* CONTROLADOR DE VACANTES
+* Recibe los pedidos de /api/vacantes (vacantes, postulaciones, órdenes de
+* mérito y estados), verifica la sesión y los permisos del módulo que
+* corresponde, llama a VacanteService y responde en JSON.
+*/
 class VacantesController {
     private VacanteService $service;
 
@@ -13,6 +19,7 @@ class VacantesController {
     // --- VACANTES ---
 
     /*
+    * GET /api/vacantes
     * Módulo `vacantes`, leer. Sin sesión se evalúa el rol invitado.
     * Si consulta un jefe de cátedra, solo recibe las vacantes de sus cátedras.
     */
@@ -26,6 +33,7 @@ class VacantesController {
         echo json_encode($this->service->obtenerVacantes($idJefe));
     }
 
+    // POST /api/vacantes  (módulo `vacantes`, escribir)
     public function crearVacante(): void {
 
         $sesionActual = verificarAutenticacion();
@@ -58,12 +66,14 @@ class VacantesController {
         */
         $input['id_usuario'] = $idUsuario;
 
-        if (
-            $this->service->crearVacante(
-                $input,
-                $idUsuario
-            )
-        ) {
+        try {
+            $exito = $this->service->crearVacante($input, $idUsuario);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
+        }
+
+        if ($exito) {
             http_response_code(201);
             echo json_encode([
                 "message" =>
@@ -78,11 +88,20 @@ class VacantesController {
         }
     }
 
+    // PUT /api/vacantes/{id}  (módulo `vacantes`, editar)
     public function actualizarVacante(int $id): void {
         exigirPermiso(verificarAutenticacion(), 'vacantes', 'editar');
 
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        if ($this->service->actualizarVacante($id, $input)) {
+
+        try {
+            $exito = $this->service->actualizarVacante($id, $input);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
+        }
+
+        if ($exito) {
             echo json_encode(["message" => "Vacante actualizada correctamente."]);
         } else {
             http_response_code(400);
@@ -90,6 +109,7 @@ class VacantesController {
         }
     }
 
+    // DELETE /api/vacantes/{id}  (módulo `vacantes`, editar)
     public function eliminarVacante(int $id): void {
         exigirPermiso(verificarAutenticacion(), 'vacantes', 'editar');
 
@@ -103,6 +123,7 @@ class VacantesController {
 
     // --- SOLICITUDES DE VACANTES ---
 
+    // GET /api/vacantes/solicitudes?id_vacante=&id_usuario=  (módulo `postulaciones`, leer)
     public function listarSolicitudes(): void
     {
         $sesionActual = verificarAutenticacion();
@@ -137,6 +158,7 @@ class VacantesController {
         );
     }
 
+    // POST /api/vacantes/solicitudes  { id_vacante }  (módulo `postulaciones`, escribir)
     public function crearSolicitud(): void {
 
         $sesionActual = verificarAutenticacion();
@@ -165,11 +187,11 @@ class VacantesController {
                 "id"      => $id
             ]);
         } catch (RuntimeException $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode(["message" => $e->getMessage()]);
+            responderError($e);
         }
     }
 
+    // DELETE /api/vacantes/solicitudes/{id}  (baja lógica de la postulación)
     public function eliminarSolicitud(int $id): void {
 
         $sesionActual = verificarAutenticacion();
@@ -191,13 +213,13 @@ class VacantesController {
             $this->service->eliminarSolicitud($id);
             echo json_encode(["message" => "Postulación cancelada correctamente."]);
         } catch (RuntimeException $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode(["message" => $e->getMessage()]);
+            responderError($e);
         }
     }
 
     // --- ORDENES DE MÉRITO ---
 
+    // GET /api/vacantes/ordenes_merito?id_vacante=  (módulo `ordenes_merito`, leer)
     public function listarOrdenesMerito(): void {
 
         exigirPermiso(verificarAutenticacion(), 'ordenes_merito', 'leer');
@@ -211,6 +233,7 @@ class VacantesController {
         echo json_encode($this->service->obtenerOrdenesMerito($idVacante));
     }
 
+    // POST /api/vacantes/ordenes_merito  { id_solicitud, puntaje, posicion, observaciones, id_estado }
     public function crearOrdenMerito(): void {
 
         // Módulo `ordenes_merito`, escribir (en la base: jfc y admin;
@@ -228,8 +251,7 @@ class VacantesController {
         try {
             $id = $this->service->crearOrdenMerito($input, $idJefe);
         } catch (RuntimeException $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode(["message" => $e->getMessage()]);
+            responderError($e);
             return;
         }
 
@@ -247,6 +269,9 @@ class VacantesController {
         }
     }
 
+    // --- ESTADOS ---
+
+    // GET /api/vacantes/estados  (para el formulario de vacantes)
     public function listarEstados(): void {
 
         echo json_encode(

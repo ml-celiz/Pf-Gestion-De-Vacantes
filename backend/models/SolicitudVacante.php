@@ -1,5 +1,13 @@
 <?php
 
+/*
+* Fila de `solicitudes_vacantes` (postulación) con datos del postulante,
+* de la vacante y, si ya fue evaluada, su orden de mérito.
+*
+* MODELO: representa una fila de la base como objeto. El constructor
+* recibe el array de la consulta (o del pedido) y toArray() arma la
+* respuesta JSON con los nombres de campo que usa el frontend.
+*/
 class SolicitudVacante {
 
     public ?int $id;

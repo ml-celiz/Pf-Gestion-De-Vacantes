@@ -1,4 +1,19 @@
+/*
+* COMPONENTE <app-vacantes>
+* Listado de vacantes abiertas y cerradas. Según el rol y los permisos:
+*   - postulante: ver requisitos, postularse y ver resultados generales.
+*   - jfc / ra / admin: ver postulados (y su CV) y publicar la orden de mérito.
+*   - invitado: solo mira el listado (un aviso invita a crear una cuenta).
+*
+* Endpoints: GET /api/vacantes, GET /api/institucional/catedras,
+*            GET/POST /api/vacantes/solicitudes, GET/POST /api/vacantes/ordenes_merito,
+*            GET /api/usuarios/{id}/cv
+*/
 class VacantesComponent extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
 
@@ -23,13 +38,13 @@ class VacantesComponent extends HTMLElement {
         this.vacantesCurrentPage = 1;
     }
 
-    // INICIALIZACIÓN
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS, luego los datos
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
             const estilos = cargarEstilos('components/paneles/vacantes/vacantes.css');
-
-            // 2. Cargar el HTML de la plantilla
             const response = await fetch('components/paneles/vacantes/vacantes.html');
             if (!response.ok) throw new Error('No se pudo cargar la plantilla HTML');
 
@@ -37,25 +52,155 @@ class VacantesComponent extends HTMLElement {
 
             this.innerHTML = await response.text();
 
-            // 3. Inicializar eventos
             await this.inicializar();
         } catch (error) {
             console.error('Error inicializando el componente de vacantes:', error);
         }
     }
 
+    // Aviso de invitado, eventos y primera carga
     async inicializar() {
         this.mostrarAvisoInvitado();
-        this.configurarEventos();
+        this.initEvents();
         await this.cargarVacantes();
     }
 
     // =========================================================
-    // AVISO DE MODO INVITADO
+    // EVENTOS
+    // =========================================================
+    // Botones de la pantalla: refrescar y paginación
+    initEvents() {
+        // -----------------------------------------------------
+        // RECARGAR
+        // -----------------------------------------------------
+
+        const btnRefresh = this.querySelector('#btn-refresh');
+
+        if (btnRefresh) {
+            btnRefresh.addEventListener('click', () => {
+                this.recargar();
+            });
+        }
+
+        // -----------------------------------------------------
+        // PAGINACIÓN ANTERIOR
+        // -----------------------------------------------------
+
+        const prev = this.querySelector('#vacantes-prev');
+
+        if (prev) {
+            prev.addEventListener('click', () => {
+                if (this.vacantesCurrentPage > 1) {
+                    this.vacantesCurrentPage--;
+
+                    this.renderVacantes();
+                }
+            });
+        }
+
+        // -----------------------------------------------------
+        // PAGINACIÓN SIGUIENTE
+        // -----------------------------------------------------
+
+        const next = this.querySelector('#vacantes-next');
+
+        if (next) {
+            next.addEventListener('click', () => {
+                const totalPages =
+                    Math.max(1, Math.ceil(this.vacantes.length / this.vacantesPerPage));
+
+                if (this.vacantesCurrentPage < totalPages) {
+                    this.vacantesCurrentPage++;
+
+                    this.renderVacantes();
+                }
+            });
+        }
+    }
+
+    // =========================================================
+    // DATOS (API)
+    // =========================================================
+    // GET /api/vacantes (y las cátedras, para mostrar su nombre)
+    async cargarVacantes() {
+        const tbody = this.querySelector('#tb-vacantes');
+
+        if (!tbody) {
+            console.error('No se encontró #tb-vacantes');
+
+            return;
+        }
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center">Cargando vacantes...</td>
+            </tr>
+        `;
+
+        try {
+            // -------------------------------------------------
+            // VACANTES
+            // -------------------------------------------------
+
+            const vacantes = await ApiClient.get('/vacantes');
+
+            this.vacantes = vacantes || [];
+
+            // -------------------------------------------------
+            // CÁTEDRAS
+            // -------------------------------------------------
+            // Se cargan solamente para poder mostrar el nombre
+            // de la cátedra correspondiente a cada vacante (si el rol
+            // puede leer cátedras; si no, se usa catedra_nombre que ya
+            // viene en cada vacante).
+
+            this.catedras = [];
+
+            if (AuthService.puede('catedras', 'leer')) {
+                try {
+                    const catedras = await ApiClient.get('/institucional/catedras');
+
+                    this.catedras = catedras || [];
+                } catch (error) {
+                    console.warn('No se pudieron cargar las cátedras:', error);
+                }
+            }
+
+            this.vacantesCurrentPage = 1;
+
+            // -------------------------------------------------
+            // RENDER
+            // -------------------------------------------------
+
+            this.renderVacantes();
+        } catch (error) {
+            console.error('Error cargando vacantes:', error);
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-danger">
+                        Error al cargar las vacantes.
+                    </td>
+                </tr>
+            `;
+
+            this.actualizarPaginacion();
+        }
+    }
+
+    // Vuelve a la primera página y recarga
+    async recargar() {
+        this.vacantesCurrentPage = 1;
+
+        await this.cargarVacantes();
+    }
+
+    // =========================================================
+    // RENDER
+    // =========================================================
     // El invitado puede mirar el listado, pero postularse y ver
     // resultados requiere una cuenta (esos botones ya se ocultan
     // por rol; el aviso explica por qué no están).
-    // =========================================================
     mostrarAvisoInvitado() {
         if (!AuthService.esInvitado()) {
             return;
@@ -125,131 +270,7 @@ class VacantesComponent extends HTMLElement {
             });
     }
 
-    // =========================================================
-    // EVENTOS
-    // =========================================================
-    configurarEventos() {
-        // -----------------------------------------------------
-        // RECARGAR
-        // -----------------------------------------------------
-
-        const btnRefresh = this.querySelector('#btn-refresh');
-
-        if (btnRefresh) {
-            btnRefresh.addEventListener('click', () => {
-                this.recargar();
-            });
-        }
-
-        // -----------------------------------------------------
-        // PAGINACIÓN ANTERIOR
-        // -----------------------------------------------------
-
-        const prev = this.querySelector('#vacantes-prev');
-
-        if (prev) {
-            prev.addEventListener('click', () => {
-                if (this.vacantesCurrentPage > 1) {
-                    this.vacantesCurrentPage--;
-
-                    this.renderVacantes();
-                }
-            });
-        }
-
-        // -----------------------------------------------------
-        // PAGINACIÓN SIGUIENTE
-        // -----------------------------------------------------
-
-        const next = this.querySelector('#vacantes-next');
-
-        if (next) {
-            next.addEventListener('click', () => {
-                const totalPages =
-                    Math.max(1, Math.ceil(this.vacantes.length / this.vacantesPerPage));
-
-                if (this.vacantesCurrentPage < totalPages) {
-                    this.vacantesCurrentPage++;
-
-                    this.renderVacantes();
-                }
-            });
-        }
-    }
-
-    // =========================================================
-    // CARGAR VACANTES
-    // GET /api/vacantes
-    // =========================================================
-    async cargarVacantes() {
-        const tbody = this.querySelector('#tb-vacantes');
-
-        if (!tbody) {
-            console.error('No se encontró #tb-vacantes');
-
-            return;
-        }
-
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center">Cargando vacantes...</td>
-            </tr>
-        `;
-
-        try {
-            // -------------------------------------------------
-            // VACANTES
-            // -------------------------------------------------
-
-            const vacantes = await ApiClient.get('/vacantes');
-
-            this.vacantes = vacantes || [];
-
-            // -------------------------------------------------
-            // CÁTEDRAS
-            // -------------------------------------------------
-            // Se cargan solamente para poder mostrar el nombre
-            // de la cátedra correspondiente a cada vacante (si el rol
-            // puede leer cátedras; si no, se usa catedra_nombre que ya
-            // viene en cada vacante).
-
-            this.catedras = [];
-
-            if (AuthService.puede('catedras', 'leer')) {
-                try {
-                    const catedras = await ApiClient.get('/institucional/catedras');
-
-                    this.catedras = catedras || [];
-                } catch (error) {
-                    console.warn('No se pudieron cargar las cátedras:', error);
-                }
-            }
-
-            this.vacantesCurrentPage = 1;
-
-            // -------------------------------------------------
-            // RENDER
-            // -------------------------------------------------
-
-            this.renderVacantes();
-        } catch (error) {
-            console.error('Error cargando vacantes:', error);
-
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" class="text-center text-danger">
-                        Error al cargar las vacantes.
-                    </td>
-                </tr>
-            `;
-
-            this.actualizarPaginacion();
-        }
-    }
-
-    // =========================================================
-    // RENDER VACANTES
-    // =========================================================
+    // Filas de la página actual, con los botones que correspondan al rol
     renderVacantes() {
         const tbody = this.querySelector('#tb-vacantes');
 
@@ -443,9 +464,7 @@ class VacantesComponent extends HTMLElement {
         this.actualizarPaginacion();
     }
 
-    // =========================================================
-    // OBTENER CÁTEDRA
-    // =========================================================
+    // Nombre de la cátedra de una vacante
     obtenerNombreCatedra(vacante) {
         // Si el backend ya devuelve el nombre
         if (vacante.catedra_nombre) {
@@ -477,9 +496,7 @@ class VacantesComponent extends HTMLElement {
         return '-';
     }
 
-    // =========================================================
-    // PAGINACIÓN
-    // =========================================================
+    // Texto y botones de paginación
     actualizarPaginacion() {
         const total = this.vacantes.length;
         const totalPages = Math.max(1, Math.ceil(total / this.vacantesPerPage));
@@ -515,197 +532,44 @@ class VacantesComponent extends HTMLElement {
     }
 
     // =========================================================
-    // RECARGAR
+    // ACCIONES
     // =========================================================
-    async recargar() {
-        this.vacantesCurrentPage = 1;
+    // POST /api/vacantes/solicitudes
+    // El backend toma el usuario de la sesión, la fecha actual
+    // y deja la solicitud en estado PENDIENTE.
+    async postularse(vacante, boton) {
+        if (!vacante || !vacante.id) {
+            console.error('No se pudo identificar la vacante:', vacante);
 
-        await this.cargarVacantes();
-    }
-
-    // =========================================================
-    // DIALOG REQUISITOS
-    // =========================================================
-    mostrarRequisitos(vacante) {
-        this.cerrarDialogoRequisitos();
-
-        const dialog = this.crearDialogoBase();
-
-        dialog.classList.add('vac-requisitos-dialog');
-
-        dialog.innerHTML = `
-            <div class="dialog-header">
-                <h2>Requisitos de la vacante</h2>
-            </div>
-
-            <div class="dialog-content">${this.generarHtmlRequisitos(vacante.requisitos)}</div>
-
-            <div class="dialog-actions">
-                <button type="button" class="btn btn-secondary dialog-cancel">Cerrar</button>
-            </div>
-        `;
-
-        document.body.appendChild(dialog);
-
-        this.enlazarCierreDialogo(dialog);
-
-        dialog.showModal();
-    }
-
-    // =========================================================
-    // GENERAR HTML REQUISITOS
-    // =========================================================
-    generarHtmlRequisitos(requisitos) {
-        if (!requisitos) {
-            return `
-                <p class="requisitos-empty">No hay requisitos registrados.</p>
-            `;
+            return;
         }
 
-        let datos = requisitos;
-
-        // JSONB que puede llegar como string
-        if (typeof datos === 'string') {
-            try {
-                datos = JSON.parse(datos);
-            } catch (error) {
-                return `
-                    <p class="requisito-text">${this.escapeHtml(datos)}</p>
-                `;
-            }
+        // Evitar postulaciones duplicadas por doble click
+        if (boton) {
+            boton.disabled = true;
         }
 
-        // Texto simple
-        if (typeof datos !== 'object') {
-            return `
-                <p class="requisito-text">${this.escapeHtml(String(datos))}</p>
-            `;
-        }
-
-        // Array
-        if (Array.isArray(datos)) {
-            if (datos.length === 0) {
-                return `
-                    <p class="requisitos-empty">No hay requisitos registrados.</p>
-                `;
-            }
-
-            return `
-                <ul class="requisitos-list">
-                    ${datos.map(
-                        item => `
-                            <li>
-                                ${this.escapeHtml(
-                                    typeof item === 'object'
-                                        ? JSON.stringify(item)
-                                        : String(item)
-                                )}
-                            </li>
-                        `
-                    ).join('')}
-                </ul>
-            `;
-        }
-
-        // Objeto
-        const entries = Object.entries(datos);
-
-        if (entries.length === 0) {
-            return `
-                <p class="requisitos-empty">No hay requisitos registrados.</p>
-            `;
-        }
-
-        return entries
-            .map(
-                ([clave, valor]) => {
-                    return `
-                        <div class="requisito-group">
-                            <h3>${this.formatearClave(clave)}</h3>
-
-                            ${this.generarValorRequisito(valor)}
-                        </div>
-                    `;
+        try {
+            await ApiClient.post(
+                '/vacantes/solicitudes',
+                {
+                    id_vacante: Number(vacante.id)
                 }
-            )
-            .join('');
-    }
-
-    // =========================================================
-    // VALOR DE REQUISITO
-    // =========================================================
-    generarValorRequisito(valor) {
-        if (Array.isArray(valor)) {
-            if (valor.length === 0) {
-                return `
-                    <p class="requisito-text">-</p>
-                `;
-            }
-
-            return `
-                <ul class="requisitos-list">
-                    ${valor.map(
-                        item => `
-                            <li>
-                                ${this.escapeHtml(
-                                    typeof item === 'object'
-                                        ? JSON.stringify(item)
-                                        : String(item)
-                                )}
-                            </li>
-                        `
-                    ).join('')}
-                </ul>
-            `;
-        }
-
-        if (valor !== null && typeof valor === 'object') {
-            return `
-                <ul class="requisitos-list">
-                    ${Object.entries(valor)
-                        .map(
-                            ([clave, dato]) => `
-                                <li>
-                                    <strong>${this.formatearClave(clave)}:</strong>
-
-                                    ${this.escapeHtml(String(dato))}
-                                </li>
-                            `
-                        )
-                        .join('')}
-                </ul>
-            `;
-        }
-
-        return `
-            <p class="requisito-text">${this.escapeHtml(valor ?? '-')}</p>
-        `;
-    }
-
-    // =========================================================
-    // FORMATEAR CLAVE
-    // =========================================================
-    formatearClave(clave) {
-        return String(clave)
-            .replace(/_/g, ' ')
-            .replace(/([A-Z])/g, ' $1')
-            .trim()
-            .replace(/^./, letra =>
-                letra.toUpperCase()
             );
+
+            this.mostrarSnackbar('Te postulaste correctamente a la vacante.');
+        } catch (error) {
+            console.error('Error al postularse:', error);
+
+            this.mostrarSnackbar(error.message || 'No se pudo procesar la postulación.', 'error');
+        } finally {
+            if (boton) {
+                boton.disabled = false;
+            }
+        }
     }
 
-    // =========================================================
-    // ACCIÓN: PUBLICAR RESULTADOS
-    // =========================================================
-    publicarResultados(vacante) {
-
-        // Se implementará posteriormente.
-    }
-
-    // =========================================================
-    // ACCIÓN: VER POSTULADOS
-    // =========================================================
+    // GET /api/vacantes/solicitudes?id_vacante= y abre el dialog de postulados
     async verPostulados(vacante) {
         if (!vacante || !vacante.id) {
             console.error('No se pudo identificar la vacante:', vacante);
@@ -749,9 +613,83 @@ class VacantesComponent extends HTMLElement {
         }
     }
 
+    // Abre el listado de postulados para cargar sus resultados
+    publicarResultados(vacante) {
+
+        // Se implementará posteriormente.
+    }
+
+    // GET /api/vacantes/ordenes_merito?id_vacante=
+    async verResultadosGenerales(vacante) {
+        if (!vacante || !vacante.id) {
+            console.error('No se pudo identificar la vacante:', vacante);
+
+            return;
+        }
+
+        this.mostrarDialogoResultados([], vacante, false, true);
+
+        try {
+            const ordenes =
+                await ApiClient.get(
+                    `/vacantes/ordenes_merito?id_vacante=${encodeURIComponent(vacante.id)}`
+                );
+
+            // Si el usuario cerró el diálogo mientras cargaba, no reabrirlo
+            if (!document.querySelector('.resultados-dialog[open]')) {
+                return;
+            }
+
+            this.mostrarDialogoResultados(
+                Array.isArray(ordenes)
+                    ? ordenes
+                    : [],
+                vacante,
+                false,
+                false
+            );
+        } catch (error) {
+            console.error('Error cargando resultados generales:', error);
+
+            if (!document.querySelector('.resultados-dialog[open]')) {
+                return;
+            }
+
+            this.mostrarDialogoResultados([], vacante, true, false);
+        }
+    }
+
     // =========================================================
-    // DIALOG: POSTULADOS
+    // DIALOGS
     // =========================================================
+    // Dialog con los requisitos de la vacante
+    mostrarRequisitos(vacante) {
+        this.cerrarDialogoRequisitos();
+
+        const dialog = this.crearDialogoBase();
+
+        dialog.classList.add('vac-requisitos-dialog');
+
+        dialog.innerHTML = `
+            <div class="dialog-header">
+                <h2>Requisitos de la vacante</h2>
+            </div>
+
+            <div class="dialog-content">${this.generarHtmlRequisitos(vacante.requisitos)}</div>
+
+            <div class="dialog-actions">
+                <button type="button" class="btn btn-secondary dialog-cancel">Cerrar</button>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        this.enlazarCierreDialogo(dialog);
+
+        dialog.showModal();
+    }
+
+    // Dialog con los postulados de una vacante (CV y publicar resultado)
     mostrarDialogoPostulados(solicitudes, vacante, error = false, cargando = false) {
         // El diálogo se crea una sola vez: los cambios de estado
         // (cargando -> datos / error) solo actualizan el contenido.
@@ -1022,10 +960,7 @@ class VacantesComponent extends HTMLElement {
         );
     }
 
-    // =========================================================
-    // DIALOG: ORDEN DE MÉRITO
     // POST /api/vacantes/ordenes_merito
-    // =========================================================
     abrirDialogoOrdenMerito(solicitud, botonPublicar = null, onPublicado = null) {
         const nombreCompleto =
             [
@@ -1226,138 +1161,7 @@ class VacantesComponent extends HTMLElement {
         inputPuntaje.focus();
     }
 
-    // =========================================================
-    // SNACKBAR
-    // =========================================================
-    mostrarSnackbar(mensaje, tipo = 'success') {
-        const anterior = document.querySelector('.panel-snackbar');
-
-        if (anterior) {
-            anterior.remove();
-        }
-
-        const snackbar = document.createElement('div');
-
-        snackbar.className =
-            `app-snackbar panel-snackbar app-snackbar-${tipo}`;
-
-        snackbar.innerHTML = `
-            <i class="bi ${
-                tipo === 'success'
-                    ? 'bi-check-circle-fill'
-                    : 'bi-exclamation-circle-fill'
-            }"></i>
-
-            <span>${this.escapeHtml(mensaje)}</span>
-        `;
-
-        document.body.appendChild(snackbar);
-
-        // Los <dialog> modales viven en la "top layer": un popover
-        // manual permite mostrar el aviso por encima de ellos.
-        if (typeof snackbar.showPopover === 'function') {
-            snackbar.setAttribute('popover', 'manual');
-
-            snackbar.showPopover();
-        }
-
-        requestAnimationFrame(() => {
-            snackbar.classList.add('show');
-        });
-
-        setTimeout(() => {
-            snackbar.classList.remove('show');
-
-            setTimeout(() => {
-                snackbar.remove();
-            }, 300);
-        }, 3000);
-    }
-
-    // =========================================================
-    // ACCIÓN: POSTULARSE
-    // POST /api/vacantes/solicitudes
-    // El backend toma el usuario de la sesión, la fecha actual
-    // y deja la solicitud en estado PENDIENTE.
-    // =========================================================
-    async postularse(vacante, boton) {
-        if (!vacante || !vacante.id) {
-            console.error('No se pudo identificar la vacante:', vacante);
-
-            return;
-        }
-
-        // Evitar postulaciones duplicadas por doble click
-        if (boton) {
-            boton.disabled = true;
-        }
-
-        try {
-            await ApiClient.post(
-                '/vacantes/solicitudes',
-                {
-                    id_vacante: Number(vacante.id)
-                }
-            );
-
-            this.mostrarSnackbar('Te postulaste correctamente a la vacante.');
-        } catch (error) {
-            console.error('Error al postularse:', error);
-
-            this.mostrarSnackbar(error.message || 'No se pudo procesar la postulación.', 'error');
-        } finally {
-            if (boton) {
-                boton.disabled = false;
-            }
-        }
-    }
-
-    // =========================================================
-    // ACCIÓN: RESULTADOS GENERALES
-    // GET /api/vacantes/ordenes_merito?id_vacante=
-    // =========================================================
-    async verResultadosGenerales(vacante) {
-        if (!vacante || !vacante.id) {
-            console.error('No se pudo identificar la vacante:', vacante);
-
-            return;
-        }
-
-        this.mostrarDialogoResultados([], vacante, false, true);
-
-        try {
-            const ordenes =
-                await ApiClient.get(
-                    `/vacantes/ordenes_merito?id_vacante=${encodeURIComponent(vacante.id)}`
-                );
-
-            // Si el usuario cerró el diálogo mientras cargaba, no reabrirlo
-            if (!document.querySelector('.resultados-dialog[open]')) {
-                return;
-            }
-
-            this.mostrarDialogoResultados(
-                Array.isArray(ordenes)
-                    ? ordenes
-                    : [],
-                vacante,
-                false,
-                false
-            );
-        } catch (error) {
-            console.error('Error cargando resultados generales:', error);
-
-            if (!document.querySelector('.resultados-dialog[open]')) {
-                return;
-            }
-
-            this.mostrarDialogoResultados([], vacante, true, false);
-        }
-    }
-
-    // =========================================================
-    // DIALOG: RESULTADOS GENERALES
-    // =========================================================
+    // Dialog con la orden de mérito publicada de una vacante
     mostrarDialogoResultados(ordenes, vacante, error = false, cargando = false) {
         // El diálogo se crea una sola vez: los cambios de estado
         // (cargando -> datos / error) solo actualizan el contenido.
@@ -1451,19 +1255,191 @@ class VacantesComponent extends HTMLElement {
     }
 
     // =========================================================
-    // CERRAR DIALOG ACTUAL
+    // PERMISOS (rol + módulo)
     // =========================================================
-    cerrarDialogoRequisitos() {
-        const dialog = document.querySelector('.vac-requisitos-dialog');
+    // ¿El usuario logueado tiene alguno de los roles indicados?
+    // AuthService centraliza los roles: en modo invitado devuelve ['inv'].
+    tieneRol(rolesPermitidos) {
+        try {
+            return AuthService.getRoles().some(rol =>
+                rolesPermitidos.includes(rol)
+            );
+        } catch (error) {
+            console.error('Error obteniendo rol del usuario:', error);
 
-        if (dialog) {
-            dialog.close();
+            return false;
         }
     }
 
+    // Cada botón combina el rol (qué botón le corresponde a cada tipo de
+    // usuario) con el permiso del módulo configurado en la base
+    // (roles_modulos): si se le quita el permiso al rol, el botón desaparece.
+    // Ver el listado de postulados de una vacante (incluye ver el CV)
+    esJfc() {
+        return this.tieneRol(['jfc', 'admin', 'ra']) &&
+            AuthService.puede('postulaciones', 'leer');
+    }
+
+    // Cargar la orden de mérito de un postulante.
+    // `ra` ve los postulados y su CV, pero no evalúa.
+    puedePublicarResultado() {
+        return this.tieneRol(['admin', 'jfc']) &&
+            AuthService.puede('ordenes_merito', 'escribir');
+    }
+
+    // Postularse a una vacante abierta
+    puedePostularse() {
+        return this.tieneRol(['admin', 'pos']) &&
+            AuthService.puede('postulaciones', 'escribir');
+    }
+
+    // Ver la orden de mérito publicada
+    puedeVerResultados() {
+        return this.tieneRol(['admin', 'pos', 'ra']) &&
+            AuthService.puede('ordenes_merito', 'leer');
+    }
+
     // =========================================================
+    // UTILIDADES
+    // =========================================================
+    // HTML de la lista de requisitos (acepta texto, lista u objeto)
+    generarHtmlRequisitos(requisitos) {
+        if (!requisitos) {
+            return `
+                <p class="requisitos-empty">No hay requisitos registrados.</p>
+            `;
+        }
+
+        let datos = requisitos;
+
+        // JSONB que puede llegar como string
+        if (typeof datos === 'string') {
+            try {
+                datos = JSON.parse(datos);
+            } catch (error) {
+                return `
+                    <p class="requisito-text">${this.escapeHtml(datos)}</p>
+                `;
+            }
+        }
+
+        // Texto simple
+        if (typeof datos !== 'object') {
+            return `
+                <p class="requisito-text">${this.escapeHtml(String(datos))}</p>
+            `;
+        }
+
+        // Array
+        if (Array.isArray(datos)) {
+            if (datos.length === 0) {
+                return `
+                    <p class="requisitos-empty">No hay requisitos registrados.</p>
+                `;
+            }
+
+            return `
+                <ul class="requisitos-list">
+                    ${datos.map(
+                        item => `
+                            <li>
+                                ${this.escapeHtml(
+                                    typeof item === 'object'
+                                        ? JSON.stringify(item)
+                                        : String(item)
+                                )}
+                            </li>
+                        `
+                    ).join('')}
+                </ul>
+            `;
+        }
+
+        // Objeto
+        const entries = Object.entries(datos);
+
+        if (entries.length === 0) {
+            return `
+                <p class="requisitos-empty">No hay requisitos registrados.</p>
+            `;
+        }
+
+        return entries
+            .map(
+                ([clave, valor]) => {
+                    return `
+                        <div class="requisito-group">
+                            <h3>${this.formatearClave(clave)}</h3>
+
+                            ${this.generarValorRequisito(valor)}
+                        </div>
+                    `;
+                }
+            )
+            .join('');
+    }
+
+    // HTML del valor de un requisito
+    generarValorRequisito(valor) {
+        if (Array.isArray(valor)) {
+            if (valor.length === 0) {
+                return `
+                    <p class="requisito-text">-</p>
+                `;
+            }
+
+            return `
+                <ul class="requisitos-list">
+                    ${valor.map(
+                        item => `
+                            <li>
+                                ${this.escapeHtml(
+                                    typeof item === 'object'
+                                        ? JSON.stringify(item)
+                                        : String(item)
+                                )}
+                            </li>
+                        `
+                    ).join('')}
+                </ul>
+            `;
+        }
+
+        if (valor !== null && typeof valor === 'object') {
+            return `
+                <ul class="requisitos-list">
+                    ${Object.entries(valor)
+                        .map(
+                            ([clave, dato]) => `
+                                <li>
+                                    <strong>${this.formatearClave(clave)}:</strong>
+
+                                    ${this.escapeHtml(String(dato))}
+                                </li>
+                            `
+                        )
+                        .join('')}
+                </ul>
+            `;
+        }
+
+        return `
+            <p class="requisito-text">${this.escapeHtml(valor ?? '-')}</p>
+        `;
+    }
+
+    // 'experiencia_docente' -> 'Experiencia docente'
+    formatearClave(clave) {
+        return String(clave)
+            .replace(/_/g, ' ')
+            .replace(/([A-Z])/g, ' $1')
+            .trim()
+            .replace(/^./, letra =>
+                letra.toUpperCase()
+            );
+    }
+
     // DIALOG BASE (misma interfaz que gestión de vacantes)
-    // =========================================================
     crearDialogoBase() {
         const dialog = document.createElement('dialog');
 
@@ -1490,9 +1466,16 @@ class VacantesComponent extends HTMLElement {
         dialog.addEventListener('close', () => dialog.remove(), { once: true });
     }
 
-    // =========================================================
-    // FORMATEAR FECHA
-    // =========================================================
+    // Cierra el dialog abierto (si hay uno)
+    cerrarDialogoRequisitos() {
+        const dialog = document.querySelector('.vac-requisitos-dialog');
+
+        if (dialog) {
+            dialog.close();
+        }
+    }
+
+    // Fecha para mostrar ('dd/mm/aaaa' o '-')
     formatearFecha(fecha) {
         if (!fecha) {
             return '-';
@@ -1522,9 +1505,7 @@ class VacantesComponent extends HTMLElement {
         return date.toLocaleDateString('es-AR');
     }
 
-    // =========================================================
-    // ESCAPAR HTML
-    // =========================================================
+    // Evita que un texto se interprete como HTML
     escapeHtml(valor) {
         if (valor === null || valor === undefined) {
             return '';
@@ -1538,52 +1519,51 @@ class VacantesComponent extends HTMLElement {
             .replace(/'/g, '&#039;');
     }
 
-    // =========================================================
-    // VERIFICAR ROLES
-    // =========================================================
-    // ¿El usuario logueado tiene alguno de los roles indicados?
-    // AuthService centraliza los roles: en modo invitado devuelve ['inv'].
-    tieneRol(rolesPermitidos) {
-        try {
-            return AuthService.getRoles().some(rol =>
-                rolesPermitidos.includes(rol)
-            );
-        } catch (error) {
-            console.error('Error obteniendo rol del usuario:', error);
+    // Aviso temporal abajo de la pantalla ('success' | 'error')
+    mostrarSnackbar(mensaje, tipo = 'success') {
+        const anterior = document.querySelector('.panel-snackbar');
 
-            return false;
+        if (anterior) {
+            anterior.remove();
         }
-    }
 
-    // Cada botón combina el rol (qué botón le corresponde a cada tipo de
-    // usuario) con el permiso del módulo configurado en la base
-    // (roles_modulos): si se le quita el permiso al rol, el botón desaparece.
+        const snackbar = document.createElement('div');
 
-    // Ver el listado de postulados de una vacante (incluye ver el CV)
-    esJfc() {
-        return this.tieneRol(['jfc', 'admin', 'ra']) &&
-            AuthService.puede('postulaciones', 'leer');
-    }
+        snackbar.className =
+            `app-snackbar panel-snackbar app-snackbar-${tipo}`;
 
-    // Cargar la orden de mérito de un postulante.
-    // `ra` ve los postulados y su CV, pero no evalúa.
-    puedePublicarResultado() {
-        return this.tieneRol(['admin', 'jfc']) &&
-            AuthService.puede('ordenes_merito', 'escribir');
-    }
+        snackbar.innerHTML = `
+            <i class="bi ${
+                tipo === 'success'
+                    ? 'bi-check-circle-fill'
+                    : 'bi-exclamation-circle-fill'
+            }"></i>
 
-    puedePostularse() {
-        return this.tieneRol(['admin', 'pos']) &&
-            AuthService.puede('postulaciones', 'escribir');
-    }
+            <span>${this.escapeHtml(mensaje)}</span>
+        `;
 
-    puedeVerResultados() {
-        return this.tieneRol(['admin', 'pos', 'ra']) &&
-            AuthService.puede('ordenes_merito', 'leer');
+        document.body.appendChild(snackbar);
+
+        // Los <dialog> modales viven en la "top layer": un popover
+        // manual permite mostrar el aviso por encima de ellos.
+        if (typeof snackbar.showPopover === 'function') {
+            snackbar.setAttribute('popover', 'manual');
+
+            snackbar.showPopover();
+        }
+
+        requestAnimationFrame(() => {
+            snackbar.classList.add('show');
+        });
+
+        setTimeout(() => {
+            snackbar.classList.remove('show');
+
+            setTimeout(() => {
+                snackbar.remove();
+            }, 300);
+        }, 3000);
     }
 }
 
-// =============================================================
-// REGISTRAR COMPONENTE
-// =============================================================
 customElements.define('app-vacantes', VacantesComponent);

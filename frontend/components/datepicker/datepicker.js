@@ -1,5 +1,5 @@
 /*
-* SELECTOR DE FECHA
+* COMPONENTE <app-datepicker> (SELECTOR DE FECHA)
 * Reemplaza al <input type="date"> nativo (cuyo calendario no se
 * puede estilizar) con uno que sigue la estética de la plataforma.
 *
@@ -10,6 +10,10 @@
 * - Dispara 'change' al elegir o limpiar una fecha.
 */
 class DatePicker extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     static MESES = [
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -20,17 +24,21 @@ class DatePicker extends HTMLElement {
     constructor() {
         super();
 
-        this._value = '';
-        this._min = '';
-        this.popup = null;
+        this._value = '';    // fecha elegida 'YYYY-MM-DD'
+        this._min = '';      // fecha mínima permitida
+        this.popup = null;   // calendario abierto (null si está cerrado)
         this.vista = null;   // primer día del mes que se está mostrando
 
+        // Se usan como listeners del documento: necesitan `this` fijo
         this.alPresionarFuera = this.alPresionarFuera.bind(this);
         this.alPresionarTecla = this.alPresionarTecla.bind(this);
         this.posicionar = this.posicionar.bind(this);
         this.cerrar = this.cerrar.bind(this);
     }
 
+    // =========================================================
+    // CICLO DE VIDA: arma el botón que muestra la fecha
+    // =========================================================
     connectedCallback() {
         cargarEstilos('components/datepicker/datepicker.css');
 
@@ -52,6 +60,7 @@ class DatePicker extends HTMLElement {
         this.actualizarTexto();
     }
 
+    // Al sacarlo del DOM (ej. se cierra el dialog) se cierra el calendario
     disconnectedCallback() {
         this.cerrar();
     }

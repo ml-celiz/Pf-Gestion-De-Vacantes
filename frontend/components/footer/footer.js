@@ -1,8 +1,19 @@
+/*
+* COMPONENTE <app-footer>
+* Pie de página común a todas las vistas.
+*/
 class AppFooter extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML

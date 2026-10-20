@@ -1,5 +1,5 @@
 /*
-* MENÚ LATERAL
+* COMPONENTE <app-sidebar> (MENÚ LATERAL)
 * Una sola instancia para toda la aplicación (en index.html). Se abre
 * y se cierra con el botón ☰ del navbar (evento 'alternar-sidebar')
 * y aparece debajo del navbar, que sigue visible.
@@ -10,6 +10,11 @@
 * siempre refleja la sesión actual.
 */
 class AppSidebar extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
+    // Versión del componente
     static VERSION = '1.0.0';
 
     // Mismas secciones, nombres e íconos que el menú principal
@@ -42,6 +47,9 @@ class AppSidebar extends HTMLElement {
         this.alPresionarTecla = this.alPresionarTecla.bind(this);
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS
+    // =========================================================
     async connectedCallback() {
         try {
             const estilos = cargarEstilos('components/sidebar/sidebar.css');
@@ -85,6 +93,7 @@ class AppSidebar extends HTMLElement {
     // =========================================================
     // ABRIR / CERRAR
     // =========================================================
+    // Arma el contenido y muestra el menú
     abrir() {
         if (!this.panel) return;
 
@@ -101,6 +110,7 @@ class AppSidebar extends HTMLElement {
         this.panel.focus();
     }
 
+    // Oculta el menú
     cerrar() {
         if (!this.panel || !this.classList.contains('abierto')) return;
 
@@ -119,13 +129,15 @@ class AppSidebar extends HTMLElement {
         });
     }
 
+    // Esc cierra el menú
     alPresionarTecla(event) {
         if (event.key === 'Escape') this.cerrar();
     }
 
     // =========================================================
-    // CONTENIDO SEGÚN LA SESIÓN
+    // RENDER
     // =========================================================
+    // Secciones y opciones según los permisos de la sesión
     render() {
         const actual = typeof getRouteFromUrl === 'function' ? getRouteFromUrl() : 'menu';
 
@@ -160,6 +172,7 @@ class AppSidebar extends HTMLElement {
         this.querySelector('.sidebar-version').textContent = `Versión ${AppSidebar.VERSION}`;
     }
 
+    // Datos del usuario logueado (o aviso de invitado)
     renderUsuario() {
         const esInvitado = AuthService.esInvitado();
         const usuario = AuthService.getUser() || {};
@@ -188,6 +201,7 @@ class AppSidebar extends HTMLElement {
     // =========================================================
     // ACCIONES
     // =========================================================
+    // Cierra el menú y navega a la pantalla elegida
     navegar(ruta) {
         this.cerrar();
 
@@ -197,6 +211,7 @@ class AppSidebar extends HTMLElement {
         }));
     }
 
+    // Cierra la sesión
     async salir() {
         this.cerrar();
 

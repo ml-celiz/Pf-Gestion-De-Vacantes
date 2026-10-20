@@ -5,6 +5,7 @@ require_once __DIR__ . '/../services/auth_services.php';
 require_once __DIR__ . '/../utils/helpers.php';
 
 /*
+* RUTAS INSTITUCIONALES: /api/institucional/{departamentos|catedras|usuarios-jfc}[/{id}]
 * Departamentos y cátedras se administran desde "Gestión de vacantes".
 * Cada uno se controla con su módulo (`departamentos`, `catedras`) según
 * roles_modulos. El listado de cátedras admite consultas sin sesión:

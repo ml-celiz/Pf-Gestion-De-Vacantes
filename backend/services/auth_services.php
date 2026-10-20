@@ -4,6 +4,17 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Usuario.php';
 require_once __DIR__ . '/../models/Sesion.php';
 
+/*
+* SERVICIO DE AUTENTICACIÓN Y PERMISOS
+* Funciones que usan las rutas para proteger la API:
+*   - verificarAutenticacion / obtenerSesionOpcional: leen el token Bearer.
+*   - obtenerPermisosUsuario / tienePermiso / exigirPermiso: permisos por
+*     módulo según roles_modulos (y paneles según roles_paneles).
+*   - exigirPropioOPermiso / exigirSelfOAdmin / exigirAccesoCv: reglas
+*     sobre recursos de un usuario en particular.
+* Las funciones "exigir..." cortan el pedido con 401/403 si no se cumplen.
+*/
+
 /* Busca un usuario por email en la BD y retorna el objeto UsuarioModel */
 function obtenerUsuarioPorEmail(string $email): ?UsuarioModel {
     $db = Database::getConnection();
@@ -127,12 +138,14 @@ function obtenerPermisosUsuario(?int $idUsuario): array {
     ];
 }
 
+// ¿El usuario (o el invitado, si es null) puede hacer `$accion` sobre `$modulo`?
 function tienePermiso(?int $idUsuario, string $modulo, string $accion): bool {
     $modulos = (array)obtenerPermisosUsuario($idUsuario)['modulos'];
 
     return !empty($modulos[strtolower($modulo)][$accion]);
 }
 
+// Acción de permiso que corresponde a cada método HTTP
 function accionSegunMetodo(string $method): string {
     return match ($method) {
         'GET'           => 'leer',
@@ -292,6 +305,7 @@ function idJefeDeCatedraParaFiltrar(?array $sesion): ?int {
     return $idUsuario;
 }
 
+// Minutos que dura la sesión: la mayor duración entre los roles del usuario
 function obtenerDuracionTokenUsuario(int $idUsuario): int {
 
     $db = Database::getConnection();

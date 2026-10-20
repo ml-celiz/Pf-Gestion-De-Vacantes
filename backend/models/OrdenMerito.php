@@ -1,5 +1,13 @@
 <?php
 
+/*
+* Fila de `ordenes_merito`: resultado (puntaje y posición) de una postulación.
+* Se usa para leer y convertir los datos recibidos al publicar un resultado.
+*
+* MODELO: representa una fila de la base como objeto. El constructor
+* recibe el array de la consulta (o del pedido) y toArray() arma la
+* respuesta JSON con los nombres de campo que usa el frontend.
+*/
 class OrdenMerito {
     public ?int $id;
     public int $puntaje;

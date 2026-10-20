@@ -3,7 +3,8 @@
 require_once __DIR__ . '/../controllers/modulo_controller.php';
 require_once __DIR__ . '/../services/auth_services.php';
 
-// Los modulos se administran desde la pantalla de roles: módulo `roles`
+// RUTAS DE MÓDULOS: /api/modulos[/{id}]
+// Se administran desde la pantalla de roles: módulo `roles`
 function handleModuloRoutes(string $method, array $uriParts): void {
     exigirPermiso(verificarAutenticacion(), 'roles', accionSegunMetodo($method));
 

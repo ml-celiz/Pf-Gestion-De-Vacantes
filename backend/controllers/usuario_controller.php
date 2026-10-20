@@ -2,6 +2,12 @@
 
 require_once __DIR__ . '/../services/usuario_services.php';
 
+/*
+* CONTROLADOR DE USUARIOS
+* Lee el pedido HTTP (cuerpo JSON o archivo), llama a UsuarioService y
+* responde en JSON con el código HTTP correspondiente.
+* Los permisos ya se verificaron en routes/usuario_routes.php.
+*/
 class UsuarioController {
     private UsuarioService $usuarioService;
 
@@ -9,11 +15,12 @@ class UsuarioController {
         $this->usuarioService = new UsuarioService();
     }
 
+    // GET /api/usuarios
     public function listar(): void {
-        $usuarios = $this->usuarioService->obtenerTodos();
-        echo json_encode($usuarios);
+        echo json_encode($this->usuarioService->obtenerTodos());
     }
 
+    // GET /api/usuarios/{id}
     public function obtenerPorId(int $id): void {
         $usuario = $this->usuarioService->obtenerPorId($id);
 
@@ -25,32 +32,26 @@ class UsuarioController {
         }
     }
 
-    public function crear(): void
-    {
+    // POST /api/usuarios  (alta desde el panel de usuarios)
+    public function crear(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        $id = $this->usuarioService->crear($input);
-
-        if ($id !== false) {
-
-            http_response_code(201);
-
-            echo json_encode([
-                "message" => "Usuario creado exitosamente.",
-                "id" => $id
-            ]);
-
-        } else {
-
-            http_response_code(400);
-
-            echo json_encode([
-                "message" => "No se pudo crear el usuario. Verifique los datos enviados."
-            ]);
+        try {
+            $id = $this->usuarioService->crear($input);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
         }
+
+        http_response_code(201);
+        echo json_encode([
+            "message" => "Usuario creado exitosamente.",
+            "id"      => $id
+        ]);
     }
 
     /*
+    * PUT /api/usuarios/{id}
     * `$esPropio`: el usuario edita su propia cuenta (Mi perfil). En ese
     * caso, para cambiar la contraseña tiene que confirmar la actual.
     */
@@ -74,13 +75,31 @@ class UsuarioController {
                 return;
             }
         }
-        $exito = $this->usuarioService->actualizar($id, $input);
+
+        try {
+            $exito = $this->usuarioService->actualizar($id, $input);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
+        }
 
         if ($exito) {
             echo json_encode(["message" => "Usuario actualizado correctamente."]);
         } else {
             http_response_code(400);
             echo json_encode(["message" => "No se pudo actualizar el usuario. Verifique el ID o los datos enviados."]);
+        }
+    }
+
+    // DELETE /api/usuarios/{id}  (baja lógica)
+    public function eliminar(int $id): void {
+        $exito = $this->usuarioService->eliminar($id);
+
+        if ($exito) {
+            echo json_encode(["message" => "Usuario eliminado correctamente."]);
+        } else {
+            http_response_code(404);
+            echo json_encode(["message" => "Usuario no encontrado o ya eliminado."]);
         }
     }
 
@@ -92,8 +111,7 @@ class UsuarioController {
             $this->usuarioService->guardarCv($id, $_FILES['cv'] ?? null);
             echo json_encode(["message" => "CV guardado correctamente."]);
         } catch (RuntimeException $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode(["message" => $e->getMessage()]);
+            responderError($e);
         }
     }
 
@@ -132,17 +150,6 @@ class UsuarioController {
         } else {
             http_response_code(404);
             echo json_encode(["message" => "No hay un CV cargado para eliminar."]);
-        }
-    }
-
-    public function eliminar(int $id): void {
-        $exito = $this->usuarioService->eliminar($id);
-
-        if ($exito) {
-            echo json_encode(["message" => "Usuario eliminado correctamente."]);
-        } else {
-            http_response_code(404);
-            echo json_encode(["message" => "Usuario no encontrado o ya eliminado."]);
         }
     }
 }

@@ -2,6 +2,10 @@
 
 require_once __DIR__ . '/../config/database.php';
 
+/*
+* Acceso a la tabla `sesiones`: alta en el login, búsqueda de la sesión
+* activa de un token (en cada pedido autenticado) y cierre en el logout.
+*/
 class SesionModel {
 
     private PDO $db;
@@ -10,6 +14,7 @@ class SesionModel {
         $this->db = Database::getConnection();
     }
 
+    // Registra una sesión nueva que vence en `$tokenDuracion` minutos
     public function crearSesion(
         int $idUsuario,
         string $token,
@@ -40,6 +45,7 @@ class SesionModel {
         ]);
     }
 
+    // Sesión activa y no vencida del token, con datos del usuario (null si no hay)
     public function obtenerSesionActiva(string $token): ?array {
 
         $sql = "SELECT
@@ -71,6 +77,7 @@ class SesionModel {
         return $resultado ?: null;
     }
 
+    // Marca la sesión como inactiva (logout)
     public function cerrarSesion(string $token): bool {
 
         $sql = "UPDATE public.sesiones

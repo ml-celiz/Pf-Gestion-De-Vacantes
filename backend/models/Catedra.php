@@ -1,5 +1,12 @@
 <?php
 
+/*
+* Fila de `catedras`, con el nombre de su departamento y de su jefe (jfc).
+*
+* MODELO: representa una fila de la base como objeto. El constructor
+* recibe el array de la consulta (o del pedido) y toArray() arma la
+* respuesta JSON con los nombres de campo que usa el frontend.
+*/
 class Catedra {
 
     public ?int $id;

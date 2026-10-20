@@ -3,21 +3,29 @@
 require_once __DIR__ . '/../controllers/auth_controller.php';
 require_once __DIR__ . '/../services/auth_services.php';
 
+/*
+* RUTAS DE AUTENTICACIÓN: /api/auth/...
+*   POST login | logout | registro | recuperar | restablecer
+*   GET  me (usuario de la sesión) | permisos (de la sesión o del invitado)
+*/
 function handleAuthRoutes(string $method, array $routeParams): void {
     $authController = new AuthController();
     $action = $routeParams[2] ?? null;
 
+    // POST /api/auth/login
     if ($method === 'POST' && $action === 'login') {
         $authController->login();
         return;
     }
 
+    // POST /api/auth/logout (requiere sesión)
     if ($method === 'POST' && $action === 'logout') {
-        $sesionActual = verificarAutenticacion(); 
+        verificarAutenticacion();
         $authController->logout();
         return;
     }
 
+    // POST /api/auth/registro (pública)
     if ($method === 'POST' && $action === 'registro') {
         $authController->registro();
         return;
@@ -34,11 +42,11 @@ function handleAuthRoutes(string $method, array $routeParams): void {
         return;
     }
 
+    // GET /api/auth/me: datos frescos del usuario de la sesión (al recargar la página)
     if ($method === 'GET' && $action === 'me') {
         $sesionActual = verificarAutenticacion();
-        
-        // Asumiendo que $sesionActual contiene 'id_usuario' o 'id'
-        $userId = $sesionActual['id_usuario'] ?? $sesionActual['id'] ?? null;
+
+        $userId = $sesionActual['id_usuario'] ?? null;
 
         http_response_code(200);
         echo json_encode([

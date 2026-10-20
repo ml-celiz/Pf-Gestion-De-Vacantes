@@ -6,9 +6,15 @@ require_once __DIR__ . '/../models/Sesion.php';
 require_once __DIR__ . '/../services/correo_services.php';
 require_once __DIR__ . '/../services/recuperacion_services.php';
 
+/*
+* CONTROLADOR DE AUTENTICACIÓN
+* Login, logout, registro público y recuperación de contraseña
+* (rutas de /api/auth, ver routes/auth_routes.php).
+*/
 class AuthController {
 
     /*
+    * POST /api/auth/registro
     * Registro público: cualquiera puede crear su cuenta desde el login.
     * El rol lo fija el servicio (siempre `pos`), nunca el cuerpo del pedido.
     */
@@ -24,8 +30,7 @@ class AuthController {
 
         } catch (RuntimeException $e) {
 
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode(["message" => $e->getMessage()]);
+            responderError($e);
             return;
         }
 
@@ -53,8 +58,7 @@ class AuthController {
         try {
             (new RecuperacionService())->solicitar((string)($input['email'] ?? ''));
         } catch (RuntimeException $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode(["message" => $e->getMessage()]);
+            responderError($e);
             return;
         }
 
@@ -74,8 +78,7 @@ class AuthController {
                 (string)($input['contrasena'] ?? '')
             );
         } catch (RuntimeException $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode(["message" => $e->getMessage()]);
+            responderError($e);
             return;
         }
 
@@ -84,7 +87,11 @@ class AuthController {
         ]);
     }
 
-
+    /*
+    * POST /api/auth/login  { email, contrasenea }
+    * Verifica las credenciales, crea la sesión (token aleatorio con la
+    * duración del rol) y devuelve el token, el usuario y sus permisos.
+    */
     public function login(): void {
         $data = json_decode(file_get_contents("php://input"), true);
         
@@ -136,6 +143,7 @@ class AuthController {
         ]);
     }
 
+    // POST /api/auth/logout: desactiva la sesión del token recibido
     public function logout(): void {
         $headers = function_exists('getallheaders') ? getallheaders() : [];
         $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';

@@ -1,27 +1,30 @@
+/*
+* COMPONENTE <app-usuarios>
+* Panel de administración de usuarios: tabla paginada con alta, edición
+* (datos, contraseña y rol) y baja lógica. Los botones se muestran según
+* los permisos del módulo `usuarios`.
+*
+* Endpoints: GET/POST /api/usuarios, PUT/DELETE /api/usuarios/{id},
+*            GET /api/roles, POST/DELETE /api/roles/{id}/usuarios
+*/
 class UsuariosComponent extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
 
-        // =====================================================
-        // CONFIGURACIÓN
-        // =====================================================
-        this.usuariosPerPage = 10;
+        this.usuarios = [];            // filas de la tabla
+        this.roles = [];               // opciones del select de rol
 
-        // =====================================================
-        // DATOS
-        // =====================================================
-        this.usuarios = [];
-        this.roles = [];
-
-        // =====================================================
-        // PAGINACIÓN
-        // =====================================================
+        this.usuariosPerPage = 10;     // paginación
         this.usuariosCurrentPage = 1;
     }
 
-    // =====================================================
-    // INICIALIZACIÓN
-    // =====================================================
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS, luego los datos
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
@@ -46,56 +49,35 @@ class UsuariosComponent extends HTMLElement {
         }
     }
 
-    // =====================================================
+    // =========================================================
     // EVENTOS
-    // =====================================================
+    // =========================================================
     initEvents() {
-        // -------------------------------------------------
-        // REFRESCAR
-        // -------------------------------------------------
-
         const btnRefresh = this.querySelector('#btn-refresh');
+        const btnAddUsuario = this.querySelector('#btn-add-usuario');
+        const usuariosPrev = this.querySelector('#usuarios-prev');
+        const usuariosNext = this.querySelector('#usuarios-next');
 
+        // Refrescar la tabla
         if (btnRefresh) {
             btnRefresh.addEventListener('click', () => this.recargarUsuarios());
         }
 
-        // -------------------------------------------------
-        // AGREGAR USUARIO
-        // -------------------------------------------------
-
-        const btnAddUsuario = this.querySelector('#btn-add-usuario');
-
-
-        // Alta solo si el rol puede escribir en el módulo `usuarios` (roles_modulos)
-
-        if (btnAddUsuario) btnAddUsuario.hidden = !AuthService.puede('usuarios', 'escribir');
-
+        // Alta: solo si el rol puede escribir en el módulo `usuarios`
         if (btnAddUsuario) {
-            btnAddUsuario.addEventListener('click', () => this.abrirDialogoCrearUsuario());
+            btnAddUsuario.hidden = !AuthService.puede('usuarios', 'escribir');
+            btnAddUsuario.addEventListener('click', () => this.abrirDialogoUsuario());
         }
 
-        // -------------------------------------------------
-        // PAGINACIÓN ANTERIOR
-        // -------------------------------------------------
-
-        const usuariosPrev = this.querySelector('#usuarios-prev');
-
+        // Paginación
         if (usuariosPrev) {
             usuariosPrev.addEventListener('click', () => {
                 if (this.usuariosCurrentPage > 1) {
                     this.usuariosCurrentPage--;
-
                     this.renderUsuarios();
                 }
             });
         }
-
-        // -------------------------------------------------
-        // PAGINACIÓN SIGUIENTE
-        // -------------------------------------------------
-
-        const usuariosNext = this.querySelector('#usuarios-next');
 
         if (usuariosNext) {
             usuariosNext.addEventListener('click', () => {
@@ -103,31 +85,29 @@ class UsuariosComponent extends HTMLElement {
 
                 if (this.usuariosCurrentPage < totalPages) {
                     this.usuariosCurrentPage++;
-
                     this.renderUsuarios();
                 }
             });
         }
     }
 
-    // =====================================================
-    // RECARGAR
-    // =====================================================
+    // =========================================================
+    // DATOS (API)
+    // =========================================================
+
+    // Vuelve a la primera página y recarga
     async recargarUsuarios() {
         this.usuariosCurrentPage = 1;
 
         await this.cargarUsuarios();
     }
 
-    // =====================================================
     // GET /api/usuarios
-    // =====================================================
     async cargarUsuarios() {
         const tbody = this.querySelector('#tb-usuarios');
 
         if (!tbody) {
             console.error('No se encontró #tb-usuarios');
-
             return;
         }
 
@@ -138,33 +118,19 @@ class UsuariosComponent extends HTMLElement {
         `;
 
         try {
-            const usuarios = await ApiClient.get('/usuarios');
-
-            this.usuarios = usuarios || [];
-
+            this.usuarios = (await ApiClient.get('/usuarios')) || [];
             this.usuariosCurrentPage = 1;
-
-            // -------------------------------------------------
-            // SIN USUARIOS
-            // -------------------------------------------------
 
             if (this.usuarios.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center text-muted">
-                            No hay usuarios registrados.
-                        </td>
+                        <td colspan="8" class="text-center text-muted">No hay usuarios registrados.</td>
                     </tr>
                 `;
 
                 this.actualizarPaginacion();
-
                 return;
             }
-
-            // -------------------------------------------------
-            // RENDERIZAR
-            // -------------------------------------------------
 
             this.renderUsuarios();
         } catch (error) {
@@ -180,9 +146,18 @@ class UsuariosComponent extends HTMLElement {
         }
     }
 
-    // =====================================================
-    // RENDER USUARIOS
-    // =====================================================
+    // GET /api/roles (opciones del select de rol)
+    async cargarRoles() {
+        this.roles = (await ApiClient.get('/roles')) || [];
+
+        return this.roles;
+    }
+
+    // =========================================================
+    // RENDER
+    // =========================================================
+
+    // Filas de la página actual, con sus botones editar / eliminar
     renderUsuarios() {
         const tbody = this.querySelector('#tb-usuarios');
 
@@ -191,8 +166,8 @@ class UsuariosComponent extends HTMLElement {
         tbody.innerHTML = '';
 
         const start = (this.usuariosCurrentPage - 1) * this.usuariosPerPage;
-        const end = start + this.usuariosPerPage;
-        const usuariosPagina = this.usuarios.slice(start, end);
+        const usuariosPagina = this.usuarios.slice(start, start + this.usuariosPerPage);
+        const puedeEditar = AuthService.puede('usuarios', 'editar');
 
         usuariosPagina.forEach(usuario => {
             const tr = document.createElement('tr');
@@ -206,55 +181,30 @@ class UsuariosComponent extends HTMLElement {
                 <td>${this.escapeHtml(usuario.rol || 'Sin rol')}</td>
                 <td>${usuario.cantidad_sesiones ?? 0}</td>
                 <td>${this.formatearFecha(usuario.fecha_alta)}</td>
-
-                <td>
-                    ${
-                        usuario.fecha_baja
-                            ? this.formatearFecha(usuario.fecha_baja)
-                            : '-'
-                    }
-                </td>
+                <td>${usuario.fecha_baja ? this.formatearFecha(usuario.fecha_baja) : '-'}</td>
 
                 <td class="text-center">
                     <div class="action-btn-group">
-                        <button class="btn-action edit" title="Editar" type="button" ${AuthService.puede('usuarios', 'editar') ? '' : 'hidden'}>
+                        <button class="btn-action edit" title="Editar" type="button" ${puedeEditar ? '' : 'hidden'}>
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button class="btn-action delete" title="Eliminar" type="button" ${AuthService.puede('usuarios', 'editar') ? '' : 'hidden'}>
+                        <button class="btn-action delete" title="Eliminar" type="button" ${puedeEditar ? '' : 'hidden'}>
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
                 </td>
             `;
 
-            // -------------------------------------------------
-            // EDITAR
-            // -------------------------------------------------
+            tr.querySelector('.btn-action.edit').addEventListener('click', (event) => {
+                event.stopPropagation();
+                this.abrirDialogoUsuario(usuario);
+            });
 
-            const btnEdit = tr.querySelector('.btn-action.edit');
-
-            if (btnEdit) {
-                btnEdit.addEventListener('click', (event) => {
-                    event.stopPropagation();
-
-                    this.abrirDialogoEditarUsuario(usuario);
-                });
-            }
-
-            // -------------------------------------------------
-            // ELIMINAR
-            // -------------------------------------------------
-
-            const btnDelete = tr.querySelector('.btn-action.delete');
-
-            if (btnDelete) {
-                btnDelete.addEventListener('click', (event) => {
-                    event.stopPropagation();
-
-                    this.abrirDialogoEliminarUsuario(usuario);
-                });
-            }
+            tr.querySelector('.btn-action.delete').addEventListener('click', (event) => {
+                event.stopPropagation();
+                this.abrirDialogoEliminarUsuario(usuario);
+            });
 
             tbody.appendChild(tr);
         });
@@ -262,26 +212,7 @@ class UsuariosComponent extends HTMLElement {
         this.actualizarPaginacion();
     }
 
-    // =====================================================
-    // FORMATEAR FECHA
-    // =====================================================
-    formatearFecha(fecha) {
-        if (!fecha) {
-            return '-';
-        }
-
-        const date = new Date(fecha);
-
-        if (isNaN(date.getTime())) {
-            return fecha;
-        }
-
-        return date.toLocaleDateString('es-AR');
-    }
-
-    // =====================================================
-    // PAGINACIÓN
-    // =====================================================
+    // Texto "1 - 10 de 25", número de página y botones anterior / siguiente
     actualizarPaginacion() {
         const total = this.usuarios.length;
         const totalPages = Math.max(1, Math.ceil(total / this.usuariosPerPage));
@@ -291,334 +222,107 @@ class UsuariosComponent extends HTMLElement {
             this.usuariosCurrentPage = totalPages;
         }
 
-        const start =
-            total === 0
-                ? 0
-                : ((this.usuariosCurrentPage - 1) * this.usuariosPerPage) + 1;
-
+        const start = total === 0 ? 0 : ((this.usuariosCurrentPage - 1) * this.usuariosPerPage) + 1;
         const end = Math.min(this.usuariosCurrentPage * this.usuariosPerPage, total);
+
         const info = this.querySelector('#usuarios-page-info');
         const pageNumber = this.querySelector('#usuarios-page-number');
         const prev = this.querySelector('#usuarios-prev');
         const next = this.querySelector('#usuarios-next');
 
-        if (info) {
-            info.textContent =
-                `${start} - ${end} de ${total}`;
-        }
-
-        if (pageNumber) {
-            pageNumber.textContent =
-                `Página ${this.usuariosCurrentPage} de ${totalPages}`;
-        }
-
-        if (prev) {
-            prev.disabled = this.usuariosCurrentPage <= 1;
-        }
-
-        if (next) {
-            next.disabled = this.usuariosCurrentPage >= totalPages;
-        }
+        if (info) info.textContent = `${start} - ${end} de ${total}`;
+        if (pageNumber) pageNumber.textContent = `Página ${this.usuariosCurrentPage} de ${totalPages}`;
+        if (prev) prev.disabled = this.usuariosCurrentPage <= 1;
+        if (next) next.disabled = this.usuariosCurrentPage >= totalPages;
     }
 
-    // =====================================================
-    // CARGAR ROLES
-    // GET /api/roles
-    // =====================================================
-    async cargarRoles() {
+    // =========================================================
+    // DIALOG: CREAR / EDITAR USUARIO
+    // Sin `usuario` es un alta; con `usuario`, una edición
+    // (la contraseña se puede dejar vacía para conservarla).
+    // =========================================================
+    async abrirDialogoUsuario(usuario = null) {
+        const esEdicion = usuario !== null;
+        let roles = [];
+
         try {
-            const roles = await ApiClient.get('/roles');
-
-            this.roles = roles || [];
-
-            return this.roles;
+            roles = await this.cargarRoles();
         } catch (error) {
             console.error('Error cargando roles:', error);
-
-            throw error;
-        }
-    }
-
-    // =====================================================
-    // CREAR USUARIO
-    // =====================================================
-    async abrirDialogoCrearUsuario() {
-        let roles = [];
-
-        try {
-            roles = await this.cargarRoles();
-        } catch (error) {
             this.mostrarSnackbar('No se pudieron cargar los roles.', 'error');
-
             return;
         }
+
+        // GET /api/usuarios devuelve el nombre del rol: se busca su id
+        const rolActual = roles.find(rol =>
+            (rol.nombre || '').toLowerCase() === (usuario?.rol || '').toLowerCase()
+        );
+        const rolActualId = rolActual ? rolActual.id : '';
+
+        const valor = campo => this.escapeHtml(usuario?.[campo] ?? '');
 
         const dialog = this.crearDialogoBase();
 
         dialog.innerHTML = `
             <div class="dialog-header">
-                <h2>Agregar usuario</h2>
+                <h2>${esEdicion ? 'Editar usuario' : 'Agregar usuario'}</h2>
             </div>
 
-            <form class="dialog-form usuario-dialog-form">
+            <form class="dialog-form usuario-dialog-form" novalidate>
                 <div class="usuario-dialog-fields">
                     <div class="form-group">
                         <label for="usuario-email">Email</label>
-
-                        <input
-                            id="usuario-email"
-                            type="email"
-                            class="form-control"
-                            maxlength="150"
-                            autocomplete="off"
-                            required>
+                        <input id="usuario-email" type="email" class="form-control"
+                            maxlength="50" autocomplete="off" value="${valor('email')}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="usuario-nombre">Nombre</label>
-
-                        <input
-                            id="usuario-nombre"
-                            type="text"
-                            class="form-control"
-                            maxlength="100"
-                            autocomplete="off"
-                            required>
+                        <input id="usuario-nombre" type="text" class="form-control"
+                            maxlength="50" autocomplete="off" value="${valor('nombre')}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="usuario-apellido">Apellido</label>
-
-                        <input
-                            id="usuario-apellido"
-                            type="text"
-                            class="form-control"
-                            maxlength="100"
-                            autocomplete="off"
-                            required>
+                        <input id="usuario-apellido" type="text" class="form-control"
+                            maxlength="50" autocomplete="off" value="${valor('apellido')}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="usuario-contrasena">Contraseña</label>
-
-                        <input
-                            id="usuario-contrasena"
-                            type="password"
-                            class="form-control"
-                            maxlength="100"
-                            autocomplete="new-password"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="usuario-dni">DNI</label>
-
-                        <input
-                            id="usuario-dni"
-                            type="number"
-                            class="form-control"
-                            min="1"
-                            autocomplete="off"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="usuario-telefono">Teléfono</label>
-
-                        <input
-                            id="usuario-telefono"
-                            type="text"
-                            class="form-control"
-                            maxlength="50"
-                            autocomplete="off">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="usuario-rol">Rol</label>
-
-                        <select id="usuario-rol" class="form-control" required>
-                            <option value="">Seleccione un rol</option>
-
-                            ${roles.map(rol => `
-                                <option value="${rol.id}">
-                                    ${this.escapeHtml(rol.nombre || rol.rol || '-')}
-                                </option>
-                            `).join('')}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="dialog-actions">
-                    <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </div>
-            </form>
-        `;
-
-        this.configurarDialogoUsuario(dialog);
-
-        const form = dialog.querySelector('.usuario-dialog-form');
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            await this.guardarUsuario(dialog, null);
-        });
-
-        document.body.appendChild(dialog);
-
-        dialog.showModal();
-
-        dialog.querySelector('#usuario-email').focus();
-
-        dialog.addEventListener('close', () => dialog.remove(), { once: true });
-    }
-
-    // =====================================================
-    // EDITAR USUARIO
-    // =====================================================
-    async abrirDialogoEditarUsuario(usuario) {
-        let roles = [];
-
-        try {
-            roles = await this.cargarRoles();
-        } catch (error) {
-            this.mostrarSnackbar('No se pudieron cargar los roles.', 'error');
-
-            return;
-        }
-
-        /*
-         * Buscar el rol actual por nombre.
-         *
-         * GET /api/usuarios devuelve "rol"
-         * como nombre del rol.
-         */
-
-        let rolActualId = '';
-
-        if (usuario.rol) {
-            const rolActual =
-                roles.find(
-                    rol =>
-                        (rol.nombre || rol.rol || '').toLowerCase() ===
-                        usuario.rol.toLowerCase()
-                );
-
-            if (rolActual) {
-                rolActualId = rolActual.id;
-            }
-        }
-
-        const dialog = this.crearDialogoBase();
-
-        dialog.innerHTML = `
-            <div class="dialog-header">
-                <h2>Editar usuario</h2>
-            </div>
-
-            <form class="dialog-form usuario-dialog-form">
-                <div class="usuario-dialog-fields">
-                    <div class="form-group">
-                        <label for="usuario-email">Email</label>
-
-                        <input
-                            id="usuario-email"
-                            type="email"
-                            class="form-control"
-                            maxlength="150"
-                            autocomplete="off"
-                            value="${this.escapeHtml(usuario.email || '')}"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="usuario-nombre">Nombre</label>
-
-                        <input
-                            id="usuario-nombre"
-                            type="text"
-                            class="form-control"
-                            maxlength="100"
-                            autocomplete="off"
-                            value="${this.escapeHtml(usuario.nombre || '')}"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="usuario-apellido">Apellido</label>
-
-                        <input
-                            id="usuario-apellido"
-                            type="text"
-                            class="form-control"
-                            maxlength="100"
-                            autocomplete="off"
-                            value="${this.escapeHtml(usuario.apellido || '')}"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="usuario-contrasena">Contraseña</label>
-
-                        <input
-                            id="usuario-contrasena"
-                            type="password"
-                            class="form-control"
-                            maxlength="100"
-                            autocomplete="new-password">
+                        <input id="usuario-contrasena" type="password" class="form-control"
+                            maxlength="72" autocomplete="new-password" ${esEdicion ? '' : 'required'}>
                         <small class="usuario-field-help">
-                            Dejar vacío para mantener la contraseña actual.
+                            ${esEdicion ? 'Dejar vacío para mantener la contraseña actual. ' : ''}${Validaciones.AYUDA_CONTRASENA}
                         </small>
                     </div>
 
                     <div class="form-group">
                         <label for="usuario-dni">DNI</label>
-
-                        <input
-                            id="usuario-dni"
-                            type="number"
-                            class="form-control"
-                            min="1"
-                            autocomplete="off"
-                            value="${usuario.dni ?? ''}"
-                            required>
+                        <input id="usuario-dni" type="text" inputmode="numeric" class="form-control"
+                            maxlength="8" autocomplete="off" value="${valor('dni')}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="usuario-telefono">Teléfono</label>
-
-                        <input
-                            id="usuario-telefono"
-                            type="text"
-                            class="form-control"
-                            maxlength="50"
-                            autocomplete="off"
-                            value="${this.escapeHtml(usuario.telefono || '')}">
+                        <input id="usuario-telefono" type="text" class="form-control"
+                            maxlength="20" autocomplete="off" value="${valor('telefono')}">
                     </div>
 
                     <div class="form-group">
                         <label for="usuario-rol">Rol</label>
-
                         <select id="usuario-rol" class="form-control" required>
-                            <option value="">Sin rol</option>
-
+                            <option value="">Seleccione un rol</option>
                             ${roles.map(rol => `
-                                <option
-                                    value="${rol.id}"
-                                    ${
-                                        Number(rol.id) ===
-                                        Number(rolActualId)
-                                            ? 'selected'
-                                            : ''
-                                    }>
-
-                                    ${this.escapeHtml(rol.nombre || rol.rol || '-')}
+                                <option value="${rol.id}" ${Number(rol.id) === Number(rolActualId) ? 'selected' : ''}>
+                                    ${this.escapeHtml(rol.nombre || '-')}
                                 </option>
                             `).join('')}
                         </select>
                     </div>
                 </div>
+
+                <p class="app-dialog-error" role="alert" hidden></p>
 
                 <div class="dialog-actions">
                     <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
@@ -627,254 +331,146 @@ class UsuariosComponent extends HTMLElement {
             </form>
         `;
 
-        this.configurarDialogoUsuario(dialog);
+        agregarOjosContrasena(dialog);
 
-        const form = dialog.querySelector('.usuario-dialog-form');
+        dialog.querySelector('.dialog-cancel').addEventListener('click', () => dialog.close());
 
-        form.addEventListener('submit', async (event) => {
+        dialog.querySelector('.usuario-dialog-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-
             await this.guardarUsuario(dialog, usuario, rolActualId);
         });
 
-        document.body.appendChild(dialog);
-
-        dialog.showModal();
-
-        dialog.querySelector('#usuario-email').focus();
-
         dialog.addEventListener('close', () => dialog.remove(), { once: true });
+
+        document.body.appendChild(dialog);
+        dialog.showModal();
+        dialog.querySelector('#usuario-email').focus();
     }
 
-    // =====================================================
-    // CONFIGURAR DIALOG USUARIO
-    // =====================================================
-    configurarDialogoUsuario(dialog) {
-        const btnCancel = dialog.querySelector('.dialog-cancel');
-
-        if (btnCancel) {
-            btnCancel.addEventListener('click', () => dialog.close());
-        }
-    }
-
-    // =====================================================
-    // GUARDAR USUARIO
-    // =====================================================
+    /*
+    * Valida el formulario y guarda:
+    *   - alta:    POST /api/usuarios y luego POST /api/roles/{id}/usuarios
+    *              (si falla la asignación del rol, se deshace el alta).
+    *   - edición: PUT /api/usuarios/{id} y, si cambió el rol, se quita el
+    *              anterior y se asigna el nuevo.
+    */
     async guardarUsuario(dialog, usuario = null, rolActualId = '') {
-        const email = dialog.querySelector('#usuario-email').value.trim();
-        const nombre = dialog.querySelector('#usuario-nombre').value.trim();
-        const apellido = dialog.querySelector('#usuario-apellido').value.trim();
-        const contrasena = dialog.querySelector('#usuario-contrasena').value;
-        const dni = dialog.querySelector('#usuario-dni').value;
-        const telefono = dialog.querySelector('#usuario-telefono').value.trim();
-        const idRol = dialog.querySelector('#usuario-rol').value;
-
-        // -------------------------------------------------
-        // VALIDACIONES
-        // -------------------------------------------------
-
-        if (!email) {
-            dialog.querySelector('#usuario-email').focus();
-
-            return;
-        }
-
-        if (!nombre) {
-            dialog.querySelector('#usuario-nombre').focus();
-
-            return;
-        }
-
-        if (!apellido) {
-            dialog.querySelector('#usuario-apellido').focus();
-
-            return;
-        }
-
-        // Contraseña obligatoria únicamente al crear
-        if (!usuario && !contrasena) {
-            dialog.querySelector('#usuario-contrasena').focus();
-
-            return;
-        }
-
-        if (!dni) {
-            dialog.querySelector('#usuario-dni').focus();
-
-            return;
-        }
-
-        if (!idRol) {
-            dialog.querySelector('#usuario-rol').focus();
-
-            return;
-        }
-
         const esEdicion = usuario !== null;
+        const campo = id => dialog.querySelector(`#usuario-${id}`);
+        const mensajeError = dialog.querySelector('.app-dialog-error');
+
+        const email = campo('email').value.trim();
+        const nombre = campo('nombre').value.trim();
+        const apellido = campo('apellido').value.trim();
+        const contrasena = campo('contrasena').value;
+        const dni = campo('dni').value.trim();
+        const telefono = campo('telefono').value.trim();
+        const idRol = campo('rol').value;
+
+        // VALIDACIONES: pares [campo, error]; se muestra el primero que falle
+        const reglas = [
+            [campo('email'), Validaciones.email(email)],
+            [campo('nombre'), Validaciones.nombre(nombre, 'nombre')],
+            [campo('apellido'), Validaciones.nombre(apellido, 'apellido')],
+            // La contraseña es obligatoria solo al crear
+            [campo('contrasena'), (!esEdicion || contrasena) ? Validaciones.contrasena(contrasena) : null],
+            [campo('dni'), Validaciones.dni(dni, true)],
+            [campo('telefono'), Validaciones.telefono(telefono)],
+            [campo('rol'), !idRol ? 'Seleccioná un rol.' : null]
+        ];
+
+        const fallo = reglas.find(([, error]) => error !== null);
+
+        mensajeError.hidden = !fallo;
+
+        if (fallo) {
+            mensajeError.textContent = fallo[1];
+            fallo[0].focus();
+            return;
+        }
+
+        const datosUsuario = {
+            email,
+            nombre,
+            apellido,
+            dni: Number(dni),
+            telefono: telefono || null
+        };
+
+        // En la edición, la contraseña solo se envía si se escribió una
+        if (contrasena) {
+            datosUsuario.contrasena = contrasena;
+        }
 
         try {
-            // =================================================
-            // CREAR USUARIO
-            // =================================================
-            if (!esEdicion) {
-                const datosUsuario = {
-                    email: email,
-                    nombre: nombre,
-                    apellido: apellido,
-                    contrasena: contrasena,
-                    dni: Number(dni),
-                    telefono: telefono || null
-                };
-
-                // ---------------------------------------------
-                // 1. CREAR USUARIO
-                // ---------------------------------------------
-
-                const respuesta = await ApiClient.post('/usuarios', datosUsuario);
-                const idUsuario = respuesta?.id;
-
-                if (!idUsuario) {
-                    throw new Error('La API no devolvió el ID del usuario creado.');
-                }
-
-                // ---------------------------------------------
-                // 2. ASIGNAR ROL
-                // ---------------------------------------------
-
-                try {
-                    await ApiClient.post(
-                        `/roles/${idRol}/usuarios`,
-                        {
-                            id_usuario: Number(idUsuario)
-                        }
-                    );
-                } catch (errorRol) {
-                    /*
-                     * Si el usuario se creó pero falló
-                     * la asignación del rol, intentamos
-                     * eliminarlo para no dejar un usuario
-                     * creado sin la asociación solicitada.
-                     */
-
-                    try {
-                        await ApiClient.delete(
-                            `/usuarios/${idUsuario}`
-                        );
-                    } catch (errorRollback) {
-                        console.error('No se pudo revertir el usuario creado:', errorRollback);
-                    }
-
-                    throw errorRol;
-                }
-
-                // ---------------------------------------------
-                // FINALIZAR CREACIÓN
-                // ---------------------------------------------
-
-                dialog.close();
-
-                await this.recargarUsuarios();
-
-                this.mostrarSnackbar('Usuario creado correctamente.');
-
-                return;
+            if (esEdicion) {
+                await this.actualizarUsuario(usuario, datosUsuario, rolActualId, idRol);
+            } else {
+                await this.crearUsuario(datosUsuario, idRol);
             }
-
-            // =================================================
-            // EDITAR USUARIO
-            // =================================================
-            const datosUsuario = {
-                email: email,
-                nombre: nombre,
-                apellido: apellido,
-                dni: Number(dni),
-                telefono: telefono || null
-            };
-
-            // Solo enviar contraseña si se modificó
-            if (contrasena) {
-                datosUsuario.contrasena = contrasena;
-            }
-
-            // ---------------------------------------------
-            // 1. ACTUALIZAR DATOS
-            // ---------------------------------------------
-
-            await ApiClient.put(
-                `/usuarios/${usuario.id}`,
-                datosUsuario
-            );
-
-            // ---------------------------------------------
-            // 2. CAMBIAR ROL SI CORRESPONDE
-            // ---------------------------------------------
-
-            const rolAnterior =
-                rolActualId
-                    ? Number(rolActualId)
-                    : null;
-
-            const rolNuevo =
-                idRol
-                    ? Number(idRol)
-                    : null;
-
-            if (rolAnterior !== rolNuevo) {
-                // -----------------------------------------
-                // Quitar rol anterior
-                // -----------------------------------------
-
-                if (rolAnterior) {
-                    await ApiClient.delete(
-                        `/roles/${rolAnterior}/usuarios/${usuario.id}`
-                    );
-                }
-
-                // -----------------------------------------
-                // Asignar nuevo rol
-                // -----------------------------------------
-
-                if (rolNuevo) {
-                    await ApiClient.post(
-                        `/roles/${rolNuevo}/usuarios`,
-                        {
-                            id_usuario:
-                                Number(usuario.id)
-                        }
-                    );
-                }
-            }
-
-            // ---------------------------------------------
-            // FINALIZAR EDICIÓN
-            // ---------------------------------------------
 
             dialog.close();
 
             await this.recargarUsuarios();
 
-            this.mostrarSnackbar('Usuario actualizado correctamente.');
+            this.mostrarSnackbar(esEdicion ? 'Usuario actualizado correctamente.' : 'Usuario creado correctamente.');
         } catch (error) {
             console.error('Error guardando usuario:', error);
 
-            this.mostrarSnackbar(
-                esEdicion
-                    ? 'No se pudo actualizar el usuario. Verificá los datos e intentá nuevamente.'
-                    : 'No se pudo crear el usuario. Verificá los datos e intentá nuevamente.',
-                'error'
-            );
+            mensajeError.textContent = error.message ||
+                (esEdicion ? 'No se pudo actualizar el usuario.' : 'No se pudo crear el usuario.');
+            mensajeError.hidden = false;
         }
     }
 
-    // =====================================================
-    // ELIMINAR USUARIO
-    // =====================================================
+    // POST /api/usuarios + asignación del rol
+    async crearUsuario(datosUsuario, idRol) {
+        const respuesta = await ApiClient.post('/usuarios', datosUsuario);
+        const idUsuario = respuesta?.id;
+
+        if (!idUsuario) {
+            throw new Error('La API no devolvió el ID del usuario creado.');
+        }
+
+        try {
+            await ApiClient.post(`/roles/${idRol}/usuarios`, { id_usuario: Number(idUsuario) });
+        } catch (errorRol) {
+            // No dejar un usuario creado sin el rol pedido
+            try {
+                await ApiClient.delete(`/usuarios/${idUsuario}`);
+            } catch (errorRollback) {
+                console.error('No se pudo revertir el usuario creado:', errorRollback);
+            }
+
+            throw errorRol;
+        }
+    }
+
+    // PUT /api/usuarios/{id} + cambio de rol si corresponde
+    async actualizarUsuario(usuario, datosUsuario, rolActualId, idRol) {
+        await ApiClient.put(`/usuarios/${usuario.id}`, datosUsuario);
+
+        const rolAnterior = rolActualId ? Number(rolActualId) : null;
+        const rolNuevo = idRol ? Number(idRol) : null;
+
+        if (rolAnterior === rolNuevo) return;
+
+        if (rolAnterior) {
+            await ApiClient.delete(`/roles/${rolAnterior}/usuarios/${usuario.id}`);
+        }
+
+        if (rolNuevo) {
+            await ApiClient.post(`/roles/${rolNuevo}/usuarios`, { id_usuario: Number(usuario.id) });
+        }
+    }
+
+    // =========================================================
+    // DIALOG: ELIMINAR USUARIO
+    // DELETE /api/usuarios/{id} (baja lógica)
+    // =========================================================
     abrirDialogoEliminarUsuario(usuario) {
         const dialog = this.crearDialogoBase();
-
-        const nombreCompleto =
-            `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim();
-
+        const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim();
         const identificacion = nombreCompleto || usuario.email || 'este usuario';
 
         dialog.innerHTML = `
@@ -883,14 +479,10 @@ class UsuariosComponent extends HTMLElement {
             </div>
 
             <div class="dialog-content">
-                <p>
-                    ¿Desea eliminar el usuario
-
-                    <strong>
-                        ${this.escapeHtml(identificacion)}
-                    </strong>?
-                </p>
+                <p>¿Desea eliminar el usuario <strong>${this.escapeHtml(identificacion)}</strong>?</p>
             </div>
+
+            <p class="app-dialog-error" role="alert" hidden></p>
 
             <div class="dialog-actions">
                 <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
@@ -900,25 +492,11 @@ class UsuariosComponent extends HTMLElement {
 
         document.body.appendChild(dialog);
 
-        // -------------------------------------------------
-        // CANCELAR
-        // -------------------------------------------------
+        dialog.querySelector('.dialog-cancel').addEventListener('click', () => dialog.close());
 
-        const btnCancel = dialog.querySelector('.dialog-cancel');
-
-        btnCancel.addEventListener('click', () => dialog.close());
-
-        // -------------------------------------------------
-        // CONFIRMAR
-        // -------------------------------------------------
-
-        const btnDelete = dialog.querySelector('.dialog-confirm-delete');
-
-        btnDelete.addEventListener('click', async () => {
+        dialog.querySelector('.dialog-confirm-delete').addEventListener('click', async () => {
             try {
-                await ApiClient.delete(
-                    `/usuarios/${usuario.id}`
-                );
+                await ApiClient.delete(`/usuarios/${usuario.id}`);
 
                 dialog.close();
 
@@ -928,24 +506,23 @@ class UsuariosComponent extends HTMLElement {
             } catch (error) {
                 console.error('Error eliminando usuario:', error);
 
-                this.mostrarSnackbar('No se pudo eliminar el usuario.', 'error');
+                const mensajeError = dialog.querySelector('.app-dialog-error');
+
+                mensajeError.textContent = error.message || 'No se pudo eliminar el usuario.';
+                mensajeError.hidden = false;
             }
         });
 
-        dialog.addEventListener(
-            'close',
-            () => {
-                dialog.remove();
-            },
-            { once: true }
-        );
+        dialog.addEventListener('close', () => dialog.remove(), { once: true });
 
         dialog.showModal();
     }
 
-    // =====================================================
-    // CREAR DIALOG BASE
-    // =====================================================
+    // =========================================================
+    // UTILIDADES
+    // =========================================================
+
+    // <dialog> vacío con el estilo de los paneles
     crearDialogoBase() {
         const dialog = document.createElement('dialog');
 
@@ -954,9 +531,16 @@ class UsuariosComponent extends HTMLElement {
         return dialog;
     }
 
-    // =====================================================
-    // ESCAPAR HTML
-    // =====================================================
+    // 'dd/mm/aaaa' o '-'
+    formatearFecha(fecha) {
+        if (!fecha) return '-';
+
+        const date = new Date(fecha);
+
+        return isNaN(date.getTime()) ? fecha : date.toLocaleDateString('es-AR');
+    }
+
+    // Evita que un texto se interprete como HTML
     escapeHtml(text) {
         const div = document.createElement('div');
 
@@ -965,48 +549,29 @@ class UsuariosComponent extends HTMLElement {
         return div.innerHTML;
     }
 
-    // =====================================================
-    // SNACKBAR
-    // =====================================================
+    // Aviso temporal abajo de la pantalla ('success' | 'error')
     mostrarSnackbar(mensaje, tipo = 'success') {
         const anterior = document.querySelector('.app-snackbar');
 
-        if (anterior) {
-            anterior.remove();
-        }
+        if (anterior) anterior.remove();
 
         const snackbar = document.createElement('div');
 
-        snackbar.className =
-            `app-snackbar app-snackbar-${tipo}`;
-
+        snackbar.className = `app-snackbar app-snackbar-${tipo}`;
         snackbar.innerHTML = `
-            <i class="bi ${
-                tipo === 'success'
-                    ? 'bi-check-circle-fill'
-                    : 'bi-exclamation-circle-fill'
-            }"></i>
-
+            <i class="bi ${tipo === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}"></i>
             <span>${this.escapeHtml(mensaje)}</span>
         `;
 
         document.body.appendChild(snackbar);
 
-        requestAnimationFrame(() => {
-            snackbar.classList.add('show');
-        });
+        requestAnimationFrame(() => snackbar.classList.add('show'));
 
         setTimeout(() => {
             snackbar.classList.remove('show');
-
-            setTimeout(() => {
-                snackbar.remove();
-            }, 300);
+            setTimeout(() => snackbar.remove(), 300);
         }, 3000);
     }
 }
 
-// =====================================================
-// REGISTRAR COMPONENTE
-// =====================================================
 customElements.define('app-usuarios', UsuariosComponent);

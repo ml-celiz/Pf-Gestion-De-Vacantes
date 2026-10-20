@@ -1,5 +1,12 @@
 <?php
 
+/*
+* Fila de `usuarios`. toArray() nunca incluye la contraseña ni la ruta del CV.
+*
+* MODELO: representa una fila de la base como objeto. El constructor
+* recibe el array de la consulta (o del pedido) y toArray() arma la
+* respuesta JSON con los nombres de campo que usa el frontend.
+*/
 class UsuarioModel {
 
     public ?int $id;

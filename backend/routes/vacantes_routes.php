@@ -2,11 +2,19 @@
 
 require_once __DIR__ . '/../controllers/vacantes_controller.php';
 
+/*
+* RUTAS DE VACANTES: /api/vacantes/...
+*   estados | solicitudes (postulaciones) | ordenes_merito | vacantes
+* La sesión y los permisos se verifican en cada método del controlador,
+* porque el listado de vacantes también lo puede ver el invitado.
+*/
 function handleVacantesRoutes(string $method, array $uriParts): void {
     $controller = new VacantesController();
 
     $subResource = $uriParts[2] ?? null; // 'solicitudes', 'ordenes_merito' o ID de vacante (si es numérico)
 
+    // --- ESTADOS ---
+    // GET /api/vacantes/estados
     if ($subResource === 'estados') {
 
         if ($method === 'GET') {

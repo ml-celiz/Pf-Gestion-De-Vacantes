@@ -1,5 +1,13 @@
-// API_BASE_URL se define en services/config.js
-
+/*
+* CLIENTE DE LA API
+* Todas las llamadas al backend pasan por acá: agrega el token de sesión,
+* convierte la respuesta JSON y transforma los errores en `Error` con el
+* mensaje que envía el backend (para mostrarlo al usuario).
+* Si la sesión venció (401), limpia la sesión y avisa con 'auth-expired'.
+*
+* Uso: ApiClient.get('/vacantes'), ApiClient.post('/roles', datos), etc.
+* API_BASE_URL se define en services/config.js.
+*/
 class ApiClient {
     /*
     * Pedido base. Por defecto envía y espera JSON.

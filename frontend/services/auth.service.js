@@ -1,3 +1,11 @@
+/*
+* SERVICIO DE SESIÓN Y PERMISOS (frontend)
+* Login, logout, registro, recuperación de contraseña y modo invitado.
+* Guarda en localStorage el token, el usuario y sus permisos, y responde
+* qué puede ver o hacer el usuario: puedeAcceder(pantalla), puede(módulo, acción).
+* Los permisos los decide el backend; acá solo se usan para mostrar u
+* ocultar pantallas y botones.
+*/
 class AuthService {
     // Marca de "modo invitado": navegación sin cuenta ni token.
     static GUEST_KEY = 'guest_mode';
@@ -45,7 +53,7 @@ class AuthService {
         return localStorage.getItem(this.GUEST_KEY) === 'true';
     }
 
-    // LOGIN
+    // LOGIN: guarda token, usuario y permisos
     static async login(email, contrasenea) {
         const response = await ApiClient.post(
             '/auth/login',

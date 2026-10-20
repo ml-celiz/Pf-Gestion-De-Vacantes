@@ -2,6 +2,11 @@
 
 require_once __DIR__ . '/../services/panel_services.php';
 
+/*
+* CONTROLADOR DE PANELES
+* Recibe los pedidos de /api/paneles, llama a PanelService y responde en JSON.
+* Los permisos (módulo `roles`) ya se verificaron en routes/panel_routes.php.
+*/
 class PanelController {
     private PanelService $panelService;
 
@@ -9,14 +14,21 @@ class PanelController {
         $this->panelService = new PanelService();
     }
 
+    // GET /api/paneles
     public function listar(): void {
-        $paneles = $this->panelService->obtenerTodos();
-        echo json_encode($paneles);
+        echo json_encode($this->panelService->obtenerTodos());
     }
 
+    // POST /api/paneles  { nombre }
     public function crear(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        $exito = $this->panelService->crear($input);
+
+        try {
+            $exito = $this->panelService->crear($input);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
+        }
 
         if ($exito) {
             http_response_code(201);
@@ -27,9 +39,16 @@ class PanelController {
         }
     }
 
+    // PUT /api/paneles/{id}  { nombre }
     public function actualizar(int $id): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
-        $exito = $this->panelService->actualizar($id, $input);
+
+        try {
+            $exito = $this->panelService->actualizar($id, $input);
+        } catch (RuntimeException $e) {
+            responderError($e);
+            return;
+        }
 
         if ($exito) {
             echo json_encode(["message" => "Panel actualizado correctamente."]);
@@ -39,10 +58,9 @@ class PanelController {
         }
     }
 
+    // DELETE /api/paneles/{id}
     public function eliminar(int $id): void {
-        $exito = $this->panelService->eliminar($id);
-
-        if ($exito) {
+        if ($this->panelService->eliminar($id)) {
             echo json_encode(["message" => "Panel eliminado correctamente."]);
         } else {
             http_response_code(404);

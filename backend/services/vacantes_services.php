@@ -5,10 +5,20 @@ require_once __DIR__ . '/../models/Vacante.php';
 require_once __DIR__ . '/../models/SolicitudVacante.php';
 require_once __DIR__ . '/../models/OrdenMerito.php';
 require_once __DIR__ . '/../utils/Mailer.php';
+require_once __DIR__ . '/../utils/validaciones.php';
 
+/*
+* SERVICIO DE VACANTES
+* Lógica de las tres partes del circuito de una convocatoria:
+*   1. Vacantes: ABM (las crea/edita quien tiene el módulo `vacantes`).
+*   2. Solicitudes: postulaciones de los usuarios a una vacante.
+*   3. Órdenes de mérito: resultado de cada postulación (puntaje y posición).
+* Ante un dato inválido se lanza RuntimeException (mensaje + HTTP status).
+*/
 class VacanteService {
     // Ids de public.estados
     public const ESTADO_VACANTE_ABIERTA    = 1;
+    public const ESTADO_VACANTE_CERRADA    = 2;
     public const ESTADO_VACANTE_EVALUADA   = 3;
     public const ESTADO_SOLICITUD_PENDIENTE = 4;
     public const ESTADO_SOLICITUD_ACEPTADA  = 5;
@@ -75,6 +85,7 @@ class VacanteService {
         );
     }
 
+    // Una vacante por id, con el nombre de su estado y su cátedra
     public function obtenerVacantePorId(int $id): ?array {
 
         $sql = "SELECT
@@ -118,6 +129,7 @@ class VacanteService {
             : null;
     }
 
+    // Alta de una vacante. El creador (`$idUsuario`) sale de la sesión
     public function crearVacante(
         array $data,
         int $idUsuario
@@ -125,13 +137,7 @@ class VacanteService {
 
         $vacante = new Vacante($data);
 
-        if (
-            empty($vacante->titulo) ||
-            !$vacante->idEstado ||
-            !$vacante->idCatedra
-        ) {
-            return false;
-        }
+        $this->validarVacante($data);
 
         try {
 
@@ -203,6 +209,7 @@ class VacanteService {
         }
     }
 
+    // Modificación de una vacante (los campos que no llegan se conservan)
     public function actualizarVacante(
         int $id,
         array $data
@@ -215,6 +222,9 @@ class VacanteService {
         if (!$existente) {
             return false;
         }
+
+        // Se valida el resultado final: lo recibido sobre lo que ya estaba
+        $this->validarVacante(array_merge($existente, $data));
 
         try {
 
@@ -282,16 +292,62 @@ class VacanteService {
         }
     }
 
+    // Baja física de una vacante
     public function eliminarVacante(int $id): bool {
         $stmt = $this->db->prepare("DELETE FROM public.vacantes WHERE id = :id");
         $stmt->execute(['id' => $id]);
         return $stmt->rowCount() > 0;
     }
 
+    /*
+    * Reglas de una vacante (las mismas que el formulario de "Gestión de vacantes"):
+    * título y descripción obligatorios (hasta 50 caracteres), cátedra existente,
+    * estado de vacante (abierta, cerrada o evaluada) y fechas válidas, con el
+    * fin igual o posterior al inicio.
+    */
+    private function validarVacante(array $data): void {
+        $error =
+            validarTextoObligatorio($data['titulo'] ?? '', 'título')
+            ?? validarTextoObligatorio($data['descripcion'] ?? '', 'descripción');
+
+        if ($error !== null) {
+            throw new RuntimeException($error, 400);
+        }
+
+        $idCatedra = filter_var($data['id_catedra'] ?? null, FILTER_VALIDATE_INT);
+        $stmt = $this->db->prepare("SELECT 1 FROM public.catedras WHERE id = :id");
+        $stmt->execute(['id' => $idCatedra ?: 0]);
+
+        if ($stmt->fetchColumn() === false) {
+            throw new RuntimeException("Seleccioná una cátedra válida.", 400);
+        }
+
+        $idEstado = filter_var($data['id_estado'] ?? null, FILTER_VALIDATE_INT);
+
+        if (!in_array($idEstado, [self::ESTADO_VACANTE_ABIERTA, self::ESTADO_VACANTE_CERRADA, self::ESTADO_VACANTE_EVALUADA], true)) {
+            throw new RuntimeException("Seleccioná un estado válido para la vacante.", 400);
+        }
+
+        $inicio = !empty($data['inicio']) ? strtotime((string)$data['inicio']) : null;
+        $fin    = !empty($data['fin'])    ? strtotime((string)$data['fin'])    : null;
+
+        if ($inicio === false || $fin === false) {
+            throw new RuntimeException("Las fechas de la vacante no son válidas.", 400);
+        }
+
+        if ($inicio !== null && $fin !== null && $fin < $inicio) {
+            throw new RuntimeException("La fecha de fin no puede ser anterior a la de inicio.", 400);
+        }
+    }
+
     // ==========================================
     // 2. SOLICITUDES / POSTULACIONES
     // ==========================================
 
+    /**
+     * Postulaciones activas con datos del postulante y su resultado.
+     * Filtros opcionales: por vacante, por usuario o por jefe de cátedra.
+     */
     public function obtenerSolicitudes(?int $idVacante = null, ?int $idUsuario = null, ?int $idJefe = null): array
     {
         $sql = "SELECT
@@ -377,6 +433,7 @@ class VacanteService {
         );
     }
 
+    // Una postulación activa por id (null si no existe o fue dada de baja)
     public function obtenerSolicitudPorId(int $id): ?array {
         $sql = "SELECT s.*, (u.cv_path IS NOT NULL) AS tiene_cv, e.nombre as estado_nombre, v.titulo as vacante_titulo
                 FROM public.solicitudes_vacantes s
@@ -530,6 +587,7 @@ class VacanteService {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // ¿La postulación ya tiene orden de mérito publicada?
     public function existeOrdenMeritoDeSolicitud(int $idSolicitud): bool {
         $stmt = $this->db->prepare(
             "SELECT 1 FROM public.ordenes_merito WHERE id_solicitud = :id_solicitud LIMIT 1"
@@ -726,7 +784,11 @@ class VacanteService {
         }
     }
 
-    // --- HELPERS ---
+    // ==========================================
+    // 4. ESTADOS
+    // ==========================================
+
+    // Estados que puede tener una vacante (abierta, cerrada, evaluada)
     public function obtenerEstados(): array {
 
         $sql = "SELECT

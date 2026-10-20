@@ -1,10 +1,26 @@
+/*
+* COMPONENTE <app-navbar>
+* Barra superior. Hay una por vista (login, menú y cada panel):
+*   - data-public="true" (login): sin opciones de cuenta.
+*   - con sesión: botón ☰ del menú lateral, "Mi cuenta" (perfil, preguntas
+*     frecuentes, cerrar sesión) y accesos según el rol.
+*   - invitado: botones para crear cuenta o iniciar sesión.
+*/
 class AppNavbar extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
+    // Cantidad de navbars creados (para ids únicos en cada uno)
     static instancias = 0;
 
     constructor() {
         super();
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
@@ -37,6 +53,10 @@ class AppNavbar extends HTMLElement {
         }
     }
 
+    // =========================================================
+    // EVENTOS
+    // =========================================================
+    // Botones del navbar: ☰, menú de la cuenta, perfil, preguntas frecuentes, salir
     initEvents() {
         // =====================================================
         // DETECTAR SI EL NAVBAR ESTÁ EN EL LOGIN
@@ -155,12 +175,12 @@ class AppNavbar extends HTMLElement {
         }
     }
 
-    // =====================================================
-    // OPCIONES SEGÚN LA SESIÓN
+    // =========================================================
+    // RENDER
+    // =========================================================
     // Hay un navbar por vista y se construyen en distintos
     // momentos, así que esto se vuelve a aplicar cada vez que
     // se muestra una vista (ver menu.js).
-    // =====================================================
     aplicarPermisos() {
         const esInvitado = AuthService.esInvitado();
 
@@ -201,7 +221,9 @@ class AppNavbar extends HTMLElement {
         }
     }
 
-    // DIALOGS DE LA CUENTA
+    // =========================================================
+    // ACCIONES
+    // =========================================================
     // <app-perfil> y <app-faq> se muestran al conectarse
     // al documento y se eliminan solos al cerrarse.
     abrirDialogo(nombre) {
@@ -215,7 +237,7 @@ class AppNavbar extends HTMLElement {
         document.body.appendChild(document.createElement(tag));
     }
 
-    // NAVEGACIÓN
+    // Pide a navegacion.js que muestre otra pantalla
     navigateTo(route) {
 
         this.dispatchEvent(
@@ -228,7 +250,7 @@ class AppNavbar extends HTMLElement {
         );
     }
 
-    // CERRAR SESIÓN
+    // Cierra la sesión (en el servidor y localmente) y vuelve al login
     async logout() {
 
         try {

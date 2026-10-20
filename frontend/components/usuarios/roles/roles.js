@@ -1,7 +1,22 @@
+/*
+* COMPONENTE <app-roles>
+* Panel de roles y permisos. Muestra tres tablas:
+*   - Roles: al elegir uno se ven sus módulos y paneles; se crean, editan y eliminan
+*     desde un dialog que también asigna permisos por módulo y paneles.
+*   - Módulos y paneles: ABM de los recursos del sistema.
+* Todo se controla con el módulo `roles`.
+*
+* Endpoints: /api/roles[/{id}[/modulos|/paneles]], /api/modulos[/{id}], /api/paneles[/{id}]
+*/
 class RolesComponent extends HTMLElement {
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
     constructor() {
         super();
 
+        // Rol elegido en la tabla
         this.selectedRolId = null;
 
         // Cantidad máxima de elementos por página
@@ -20,6 +35,9 @@ class RolesComponent extends HTMLElement {
         this.panelesCurrentPage = 1;
     }
 
+    // =========================================================
+    // CICLO DE VIDA: carga el HTML y el CSS, luego los datos
+    // =========================================================
     async connectedCallback() {
         try {
             // El CSS se descarga en paralelo y se espera antes de mostrar el HTML
@@ -44,7 +62,10 @@ class RolesComponent extends HTMLElement {
         }
     }
 
+    // =========================================================
     // EVENTOS
+    // =========================================================
+    // Botones de la pantalla: refrescar, agregar y paginación de las tres tablas
     initEvents() {
         // REFRESCAR
         const btnRefresh = this.querySelector('#btn-refresh');
@@ -155,12 +176,14 @@ class RolesComponent extends HTMLElement {
         }
     }
 
-    // RECARGAR TODO
+    // =========================================================
+    // DATOS (API)
+    // =========================================================
+    // Recarga la tabla de roles
     async recargarTodo() {
         await this.cargarRoles();
     }
 
-    // ROLES
     // GET /api/roles
     async cargarRoles() {
         const tbody = this.querySelector('#tb-roles');
@@ -239,7 +262,80 @@ class RolesComponent extends HTMLElement {
         }
     }
 
-    // RENDER ROLES
+    // GET /api/modulos
+    async cargarModulosRol() {
+        const tbody = this.querySelector('#tb-modulos');
+
+        if (!tbody) return;
+
+        tbody.innerHTML = `
+            <tr>
+                <td class="text-center">Cargando...</td>
+            </tr>
+        `;
+
+        try {
+            const modulos = await ApiClient.get('/modulos');
+
+            this.modulos = modulos || [];
+
+            const totalPages = Math.max(1, Math.ceil(this.modulos.length / this.modulosPerPage));
+
+            if (this.modulosCurrentPage > totalPages) {
+                this.modulosCurrentPage = totalPages;
+            }
+
+            this.renderModulos();
+        } catch (error) {
+            console.error('Error obteniendo módulos:', error);
+
+            tbody.innerHTML = `
+                <tr>
+                    <td class="text-center text-danger">Error al obtener módulos.</td>
+                </tr>
+            `;
+        }
+    }
+
+    // GET /api/paneles
+    async cargarPanelesRol() {
+        const tbody = this.querySelector('#tb-paneles');
+
+        if (!tbody) return;
+
+        tbody.innerHTML = `
+            <tr>
+                <td class="text-center">Cargando...</td>
+            </tr>
+        `;
+
+        try {
+            const paneles = await ApiClient.get('/paneles');
+
+            this.paneles = paneles || [];
+
+            const totalPages = Math.max(1, Math.ceil(this.paneles.length / this.panelesPerPage));
+
+            if (this.panelesCurrentPage > totalPages) {
+                this.panelesCurrentPage = totalPages;
+            }
+
+            this.renderPaneles();
+        } catch (error) {
+            console.error('Error obteniendo paneles:', error);
+
+            tbody.innerHTML = `
+                <tr>
+                    <td class="text-center text-danger">Error al obtener paneles.</td>
+                </tr>
+            `;
+        }
+    }
+
+    // =========================================================
+    // RENDER
+    // =========================================================
+    // Filas de roles de la página actual, con sus botones ver / editar / eliminar
     renderRoles() {
         const tbody = this.querySelector('#tb-roles');
 
@@ -327,9 +423,7 @@ class RolesComponent extends HTMLElement {
         }
     }
 
-    // =====================================================
-    // PAGINACIÓN ROLES
-    // =====================================================
+    // Texto y botones de paginación de la tabla de roles
     actualizarPaginacionRoles() {
         const total = this.roles.length;
         const totalPages = Math.max(1, Math.ceil(total / this.rolesPerPage));
@@ -364,9 +458,7 @@ class RolesComponent extends HTMLElement {
         }
     }
 
-    // =====================================================
-    // SELECCIONAR ROL
-    // =====================================================
+    // Marca la fila del rol elegido
     seleccionarRol(rolId, elementRow) {
         this.selectedRolId = rolId;
 
@@ -382,47 +474,7 @@ class RolesComponent extends HTMLElement {
         this.cargarPanelesRol();
     }
 
-    // =====================================================
-    // MÓDULOS
-    // GET /api/modulos
-    // =====================================================
-    async cargarModulosRol() {
-        const tbody = this.querySelector('#tb-modulos');
-
-        if (!tbody) return;
-
-        tbody.innerHTML = `
-            <tr>
-                <td class="text-center">Cargando...</td>
-            </tr>
-        `;
-
-        try {
-            const modulos = await ApiClient.get('/modulos');
-
-            this.modulos = modulos || [];
-
-            const totalPages = Math.max(1, Math.ceil(this.modulos.length / this.modulosPerPage));
-
-            if (this.modulosCurrentPage > totalPages) {
-                this.modulosCurrentPage = totalPages;
-            }
-
-            this.renderModulos();
-        } catch (error) {
-            console.error('Error obteniendo módulos:', error);
-
-            tbody.innerHTML = `
-                <tr>
-                    <td class="text-center text-danger">Error al obtener módulos.</td>
-                </tr>
-            `;
-        }
-    }
-
-    // =====================================================
-    // RENDER MÓDULOS
-    // =====================================================
+    // Filas de módulos de la página actual
     renderModulos() {
         const tbody = this.querySelector('#tb-modulos');
 
@@ -483,9 +535,7 @@ class RolesComponent extends HTMLElement {
         this.actualizarPaginacionModulos();
     }
 
-    // =====================================================
-    // PAGINACIÓN MÓDULOS
-    // =====================================================
+    // Paginación de la tabla de módulos
     actualizarPaginacionModulos() {
         const total = this.modulos.length;
         const totalPages = Math.max(1, Math.ceil(total / this.modulosPerPage));
@@ -520,47 +570,7 @@ class RolesComponent extends HTMLElement {
         }
     }
 
-    // =====================================================
-    // PANELES
-    // GET /api/paneles
-    // =====================================================
-    async cargarPanelesRol() {
-        const tbody = this.querySelector('#tb-paneles');
-
-        if (!tbody) return;
-
-        tbody.innerHTML = `
-            <tr>
-                <td class="text-center">Cargando...</td>
-            </tr>
-        `;
-
-        try {
-            const paneles = await ApiClient.get('/paneles');
-
-            this.paneles = paneles || [];
-
-            const totalPages = Math.max(1, Math.ceil(this.paneles.length / this.panelesPerPage));
-
-            if (this.panelesCurrentPage > totalPages) {
-                this.panelesCurrentPage = totalPages;
-            }
-
-            this.renderPaneles();
-        } catch (error) {
-            console.error('Error obteniendo paneles:', error);
-
-            tbody.innerHTML = `
-                <tr>
-                    <td class="text-center text-danger">Error al obtener paneles.</td>
-                </tr>
-            `;
-        }
-    }
-
-    // =====================================================
-    // RENDER PANELES
-    // =====================================================
+    // Filas de paneles de la página actual
     renderPaneles() {
         const tbody = this.querySelector('#tb-paneles');
 
@@ -621,9 +631,7 @@ class RolesComponent extends HTMLElement {
         this.actualizarPaginacionPaneles();
     }
 
-    // =====================================================
-    // PAGINACIÓN PANELES
-    // =====================================================
+    // Paginación de la tabla de paneles
     actualizarPaginacionPaneles() {
         const total = this.paneles.length;
         const totalPages = Math.max(1, Math.ceil(total / this.panelesPerPage));
@@ -659,8 +667,9 @@ class RolesComponent extends HTMLElement {
     }
 
     // =========================================================
-    // CREAR MÓDULO / PANEL
+    // DIALOGS: MÓDULOS Y PANELES
     // =========================================================
+    // Alta de un módulo o panel (tipo: 'modulo' | 'panel')
     abrirDialogoCrear(tipo) {
         const esModulo = tipo === 'modulo';
         const titulo = esModulo ? 'Agregar módulo' : 'Agregar panel';
@@ -671,7 +680,7 @@ class RolesComponent extends HTMLElement {
                 <h2>${titulo}</h2>
             </div>
 
-            <form class="dialog-form">
+            <form class="dialog-form" novalidate>
                 <div class="form-group">
                     <label for="dialog-nombre">Nombre</label>
                     <input
@@ -682,6 +691,9 @@ class RolesComponent extends HTMLElement {
                         autocomplete="off"
                         required>
                 </div>
+
+                <p class="app-dialog-error" role="alert" hidden></p>
+
 
                 <div class="dialog-actions">
                     <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
@@ -701,8 +713,10 @@ class RolesComponent extends HTMLElement {
 
             const nombre = input.value.trim();
 
-            if (!nombre) {
-                input.focus();
+            const error = Validaciones.textoObligatorio(nombre, 'nombre');
+
+            if (error) {
+                this.mostrarErrorDialogo(dialog, error, input);
                 return;
             }
 
@@ -733,10 +747,7 @@ class RolesComponent extends HTMLElement {
                     error
                 );
 
-                this.mostrarSnackbar(
-                    `No se pudo crear el ${esModulo ? 'módulo' : 'panel'}.`,
-                    'error'
-                );
+                this.mostrarErrorDialogo(dialog, error.message || `No se pudo crear el ${esModulo ? 'módulo' : 'panel'}.`);
             }
         });
 
@@ -747,9 +758,7 @@ class RolesComponent extends HTMLElement {
         dialog.addEventListener('close', () => dialog.remove(), { once: true });
     }
 
-    // =========================================================
-    // EDITAR MÓDULO / PANEL
-    // =========================================================
+    // Cambio de nombre de un módulo o panel
     abrirDialogoEditar(tipo, elemento) {
         const esModulo = tipo === 'modulo';
         const titulo = esModulo ? 'Editar módulo' : 'Editar panel';
@@ -760,7 +769,7 @@ class RolesComponent extends HTMLElement {
                 <h2>${titulo}</h2>
             </div>
 
-            <form class="dialog-form">
+            <form class="dialog-form" novalidate>
                 <div class="form-group">
                     <label for="dialog-nombre">Nombre</label>
                     <input
@@ -772,6 +781,9 @@ class RolesComponent extends HTMLElement {
                         value="${this.escapeHtml(elemento.nombre || '')}"
                         required>
                 </div>
+
+                <p class="app-dialog-error" role="alert" hidden></p>
+
 
                 <div class="dialog-actions">
                     <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
@@ -791,8 +803,10 @@ class RolesComponent extends HTMLElement {
 
             const nombre = input.value.trim();
 
-            if (!nombre) {
-                input.focus();
+            const error = Validaciones.textoObligatorio(nombre, 'nombre');
+
+            if (error) {
+                this.mostrarErrorDialogo(dialog, error, input);
                 return;
             }
 
@@ -823,10 +837,7 @@ class RolesComponent extends HTMLElement {
                     error
                 );
 
-                this.mostrarSnackbar(
-                    `No se pudo editar el ${esModulo ? 'módulo' : 'panel'}.`,
-                    'error'
-                );
+                this.mostrarErrorDialogo(dialog, error.message || `No se pudo editar el ${esModulo ? 'módulo' : 'panel'}.`);
             }
         });
 
@@ -837,9 +848,7 @@ class RolesComponent extends HTMLElement {
         dialog.addEventListener('close', () => dialog.remove(), { once: true });
     }
 
-    // =========================================================
-    // ELIMINAR MÓDULO / PANEL
-    // =========================================================
+    // Confirmación y baja de un módulo o panel
     abrirDialogoEliminar(tipo, elemento) {
         const esModulo = tipo === 'modulo';
         const nombreTipo = esModulo ? 'módulo' : 'panel';
@@ -856,6 +865,9 @@ class RolesComponent extends HTMLElement {
                     <strong>${this.escapeHtml(elemento.nombre)}</strong>?
                 </p>
             </div>
+
+            <p class="app-dialog-error" role="alert" hidden></p>
+
 
             <div class="dialog-actions">
                 <button type="button" class="btn btn-secondary dialog-cancel">Cancelar</button>
@@ -891,10 +903,7 @@ class RolesComponent extends HTMLElement {
                     error
                 );
 
-                this.mostrarSnackbar(
-                    `No se pudo eliminar el ${nombreTipo}.`,
-                    'error'
-                );
+                this.mostrarErrorDialogo(dialog, error.message || `No se pudo eliminar el ${nombreTipo}.`);
             }
         });
 
@@ -904,7 +913,10 @@ class RolesComponent extends HTMLElement {
         dialog.addEventListener('close', () => dialog.remove(), { once: true });
     }
 
-    // CREAR/ EDITAR ROL
+    // =========================================================
+    // DIALOGS: ROLES
+    // =========================================================
+    // Atajos al dialog principal: crear, editar o solo ver
     async abrirDialogoCrearRol() {
         await this.abrirDialogoRol();
     }
@@ -917,7 +929,7 @@ class RolesComponent extends HTMLElement {
         await this.abrirDialogoRol(rol, true);
     }
 
-    // DIALOG PRINCIPAL DE ROL
+    // Dialog del rol: nombre, duración del token, permisos por módulo y paneles
     async abrirDialogoRol(rol = null, soloLectura = false) {
         const esEdicion = rol !== null;
         let modulos = [];
@@ -951,7 +963,7 @@ class RolesComponent extends HTMLElement {
         } catch (error) {
             console.error('Error cargando datos del rol:', error);
 
-            alert('No se pudieron cargar los módulos y paneles.');
+            this.mostrarSnackbar('No se pudieron cargar los módulos y paneles.', 'error');
 
             return;
         }
@@ -1054,7 +1066,7 @@ class RolesComponent extends HTMLElement {
                 <h2>${titulo}</h2>
             </div>
 
-            <form class="dialog-form role-dialog-form">
+            <form class="dialog-form role-dialog-form" novalidate>
                 <div class="role-dialog-scroll">
                     <!-- DATOS DEL ROL -->
 
@@ -1066,13 +1078,13 @@ class RolesComponent extends HTMLElement {
                             id="rol-nombre"
                             class="form-control"
                             value="${this.escapeHtml(nombreInicial)}"
-                            maxlength="100"
+                            maxlength="50"
                             ${soloLectura ? 'disabled' : 'required'}
                         >
                     </div>
 
                     <div class="form-group">
-                        <label for="rol-token">Duración del token</label>
+                        <label for="rol-token">Duración de la sesión (minutos)</label>
 
                         <input
                             type="number"
@@ -1080,6 +1092,7 @@ class RolesComponent extends HTMLElement {
                             class="form-control"
                             value="${duracionInicial}"
                             min="1"
+                            max="1440"
                             ${soloLectura ? 'disabled' : 'required'}
                         >
                     </div>
@@ -1148,6 +1161,8 @@ class RolesComponent extends HTMLElement {
                     </div>
                 </div>
 
+                <p class="app-dialog-error" role="alert" hidden></p>
+
                 <!-- BOTONES -->
                 <div class="dialog-actions">
                     <button
@@ -1192,18 +1207,28 @@ class RolesComponent extends HTMLElement {
         dialog.showModal();
     }
 
-    // GUARDAR ROL
+    // Valida y guarda el rol y sincroniza sus módulos y paneles con lo marcado
     async guardarRol(dialog, rol) {
-        const nombre = dialog.querySelector('#rol-nombre').value.trim();
-        const duracionToken = Number(dialog.querySelector('#rol-token').value);
+        const inputNombre = dialog.querySelector('#rol-nombre');
+        const inputToken = dialog.querySelector('#rol-token');
+        const mensajeError = dialog.querySelector('.app-dialog-error');
+        const nombre = inputNombre.value.trim();
+        const duracionToken = Number(inputToken.value);
 
-        if (!nombre) {
-            alert('Debe ingresar el nombre del rol.');
+        const mostrarError = (mensaje, campo = null) => this.mostrarErrorDialogo(dialog, mensaje, campo);
+
+        mensajeError.hidden = true;
+
+        // VALIDACIONES (las mismas que el backend)
+        const errorNombre = Validaciones.textoObligatorio(nombre, 'nombre');
+
+        if (errorNombre) {
+            mostrarError(errorNombre, inputNombre);
             return;
         }
 
-        if (!duracionToken || duracionToken <= 0) {
-            alert('Debe ingresar una duración de token válida.');
+        if (!Number.isInteger(duracionToken) || duracionToken < 1 || duracionToken > 1440) {
+            mostrarError('La duración del token debe ser un número entero de minutos entre 1 y 1440.', inputToken);
             return;
         }
 
@@ -1353,16 +1378,11 @@ class RolesComponent extends HTMLElement {
         } catch (error) {
             console.error('Error guardando rol:', error);
 
-            this.mostrarSnackbar(
-                'No se pudo guardar el rol. Verificá los datos e intentá nuevamente.',
-                'error'
-            );
+            mostrarError(error.message || 'No se pudo guardar el rol. Verificá los datos e intentá nuevamente.');
         }
     }
 
-    // =========================================================
-    // ELIMINAR ROL
-    // =========================================================
+    // Confirmación y baja de un rol
     async abrirDialogoEliminarRol(rol) {
         const dialog = this.crearDialogoBase();
 
@@ -1377,6 +1397,9 @@ class RolesComponent extends HTMLElement {
                     <strong>${this.escapeHtml(rol.nombre)}</strong>?
                 </p>
             </div>
+
+            <p class="app-dialog-error" role="alert" hidden></p>
+
 
             <div class="dialog-actions">
                 <button
@@ -1423,7 +1446,7 @@ class RolesComponent extends HTMLElement {
             } catch (error) {
                 console.error('Error eliminando rol:', error);
 
-                this.mostrarSnackbar('No se pudo eliminar el rol.', 'error');
+                this.mostrarErrorDialogo(dialog, error.message || 'No se pudo eliminar el rol.');
             }
         });
 
@@ -1439,26 +1462,33 @@ class RolesComponent extends HTMLElement {
     }
 
     // =========================================================
-    // CREAR DIALOG BASE
+    // UTILIDADES
     // =========================================================
+    // Muestra un error dentro del dialog abierto y enfoca el campo (si se indica)
+    mostrarErrorDialogo(dialog, mensaje, campo = null) {
+        const mensajeError = dialog.querySelector('.app-dialog-error');
+
+        mensajeError.textContent = mensaje;
+        mensajeError.hidden = false;
+
+        if (campo) campo.focus();
+    }
+
+    // <dialog> vacío con el estilo de los paneles
     crearDialogoBase() {
         const dialog = document.createElement('dialog');
         dialog.classList.add('custom-dialog');
         return dialog;
     }
 
-    // =========================================================
-    // ESCAPAR HTML
-    // =========================================================
+    // Evita que un texto se interprete como HTML
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
-    // =========================================================
-    // SNACKBAR
-    // =========================================================
+    // Aviso temporal abajo de la pantalla ('success' | 'error')
     mostrarSnackbar(mensaje, tipo = 'success') {
         const anterior = document.querySelector('.app-snackbar');
 
@@ -1497,7 +1527,4 @@ class RolesComponent extends HTMLElement {
     }
 }
 
-// =========================================================
-// REGISTRAR COMPONENTE
-// =========================================================
 customElements.define('app-roles', RolesComponent);

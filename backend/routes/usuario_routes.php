@@ -4,6 +4,7 @@ require_once __DIR__ . '/../controllers/usuario_controller.php';
 require_once __DIR__ . '/../services/auth_services.php';
 
 /*
+* RUTAS DE USUARIOS: /api/usuarios[/{id}[/cv]]
 * Todas las rutas de usuarios exigen sesión.
 * Administrar cuentas ajenas requiere el módulo `usuarios` (roles_modulos);
 * sobre la propia cuenta (pantalla "Mi perfil") cada usuario puede leer,
