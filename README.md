@@ -2,13 +2,13 @@
 
 Sistema web para publicar vacantes docentes de la UTN Facultad Regional Rosario, recibir postulaciones de los interesados (con su CV) y publicar las órdenes de mérito. Cuando un postulante es aceptado se le notifica por correo electrónico.
 
-**URL de producción:** _(completar)_
+**URL de producción:** https://gestion-vacantes-frro.alwaysdata.net
 
-**Repositorio:** _(completar)_
+**Repositorio:** https://github.com/ml-celiz/Pf-Gestion-De-Vacantes
 
 ## Integrantes
 
-- _(completar)_
+- Maria Luz Celiz - Legajo: 44772
 
 ## Tecnologías
 
@@ -16,37 +16,27 @@ Sistema web para publicar vacantes docentes de la UTN Facultad Regional Rosario,
 - **Backend:** PHP 8 (API REST, sin frameworks).
 - **Base de datos:** PostgreSQL.
 - **Correo:** SMTP (Gmail).
+- **Hosting:** alwaysdata (Apache, PHP 8 y PostgreSQL), con HTTPS.
 
 ## Roles y usuarios de prueba
 
 | Rol | Qué puede hacer | Usuario | Contraseña |
 |---|---|---|---|
 | Invitado (INV) | Solo ver las vacantes abiertas, sin iniciar sesión. | Botón **"Acceder como invitado"** del login | — |
-| Postulante (POS) | Postularse a vacantes y seguir sus postulaciones. | pos@gmail.com | _(completar)_ |
-| Responsable Administrativo (RA) | Abrir y cerrar vacantes. | ra@gmail.com | _(completar)_ |
-| Jefe de cátedra (JFC) | Ver vacantes y publicar órdenes de mérito. | jfc@gmail.com | _(completar)_ |
-| Administrador (ADMIN) | Manejar los usuarios y sus permisos. | admin@gmail.com | _(completar)_ |
+| Postulante (POS) | Postularse a vacantes, cargar su CV y seguir sus postulaciones. | pos@gmail.com | 123 |
+| Responsable Administrativo (RA) | Administrar vacantes, cátedras y departamentos; ver postulados y sus CV. | ra@gmail.com | 123 |
+| Jefe de cátedra (JFC) | Ver los postulados de sus cátedras, descargar sus CV y publicar órdenes de mérito. | jfc@gmail.com | 123 |
+| Administrador (ADMIN) | Manejar los usuarios, los roles y sus permisos. | admin@gmail.com | 123 |
 
-También se puede crear una cuenta nueva desde **"Creá una"** en el login (queda con rol Postulante).
+Los mismos usuarios funcionan en producción y en la instalación local.
 
-## Instalación local
+También se puede crear una cuenta nueva desde **"Creá una"** en el login (queda con rol Postulante). Las contraseñas nuevas deben tener al menos 8 caracteres, con una mayúscula, una minúscula, un número y un carácter especial (por ejemplo `Prueba123!`). Los usuarios de prueba conservan la contraseña `123` porque se crearon antes de esa regla; la regla se aplica al crear o cambiar una contraseña, no al iniciar sesión.
 
-1. Crear la base en PostgreSQL ejecutando, en orden, los scripts de `database/`.
-2. Copiar `backend/.env.example` como `backend/.env` y completar los datos de la base y del correo.
-3. Levantar el backend:
-   ```
-   cd backend
-   C:\xampp\php\php.exe -S localhost:8000 main.php
-   ```
-4. Levantar el frontend:
-   ```
-   cd frontend
-   C:\xampp\php\php.exe -S localhost:5500
-   ```
-5. Abrir http://localhost:5500
+## Estructura del proyecto
 
-## Despliegue
-
-- Subir las carpetas `frontend/` y `backend/` al hosting (Apache con PHP 8 y PostgreSQL).
-- El frontend llama a la API en `/backend/api` del mismo dominio (ver `frontend/services/config.js`).
-- En `backend/.env` de producción, `APP_URL` debe ser la URL pública del frontend (se usa en los links de los correos).
+```
+backend/    API REST en PHP: routes → controllers → services → models
+frontend/   Páginas, componentes (Web Components) y servicios en JavaScript
+database/   Scripts SQL de la base de datos
+checklist/  Listas de verificación de usabilidad y accesibilidad
+```
