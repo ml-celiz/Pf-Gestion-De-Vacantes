@@ -802,3 +802,18 @@ app-usuarios {
     color: var(--color-accent);
 }
 
+
+/* =========================================================
+   SCROLL EN TODOS LOS DIALOGS
+   En pantallas chicas el dialog no puede ser más alto que la
+   ventana: si el contenido no entra, aparece la barra de
+   desplazamiento en lugar de cortarse. Se usa !important
+   porque cada componente define overflow: hidden en su CSS.
+   ========================================================= */
+dialog.custom-dialog,
+dialog.app-dialog {
+    max-height: calc(100vh - 32px) !important;
+    max-height: calc(100dvh - 32px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}

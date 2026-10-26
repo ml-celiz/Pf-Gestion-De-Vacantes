@@ -20,6 +20,9 @@ class VacantesComponent extends HTMLElement {
         // CONFIGURACIÓN
         this.vacantesPerPage = 10;
 
+        // ESTADO DE UNA VACANTE que admite postulaciones (ids de la tabla estados)
+        this.ESTADO_VACANTE_ABIERTA = 1;
+
         // ESTADOS DE UNA POSTULACIÓN (ids de la tabla estados)
         this.ESTADO_PENDIENTE = 4;
         this.ESTADO_ACEPTADA = 5;
@@ -377,8 +380,8 @@ class VacantesComponent extends HTMLElement {
                                 </button>
                             ` : ''}
 
-                            <!-- POSTULARSE (admin, pos) -->
-                            ${this.puedePostularse() ? `
+                            <!-- POSTULARSE (admin, pos; solo vacantes abiertas) -->
+                            ${this.puedePostularse() && Number(vacante.id_estado) === this.ESTADO_VACANTE_ABIERTA ? `
                                 <button
                                     class="btn-action postularse"
                                     type="button"
@@ -388,7 +391,7 @@ class VacantesComponent extends HTMLElement {
                                 </button>
                             ` : ''}
 
-                            <!-- VER RESULTADOS GENERALES (admin, pos, ra) -->
+                            <!-- VER RESULTADOS GENERALES (admin, pos, ra, jfc) -->
                             ${this.puedeVerResultados() ? `
                                 <button
                                     class="btn-action resultados"
@@ -1295,7 +1298,7 @@ class VacantesComponent extends HTMLElement {
 
     // Ver la orden de mérito publicada
     puedeVerResultados() {
-        return this.tieneRol(['admin', 'pos', 'ra']) &&
+        return this.tieneRol(['admin', 'pos', 'ra', 'jfc']) &&
             AuthService.puede('ordenes_merito', 'leer');
     }
 

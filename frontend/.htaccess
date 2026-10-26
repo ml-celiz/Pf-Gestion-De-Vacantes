@@ -4,3 +4,13 @@
 # si el frontend se publica en una subcarpeta, agregarla adelante
 # (por ejemplo: ErrorDocument 404 /vacantes/404.html).
 ErrorDocument 404 /404.html
+
+# El navegador debe consultar al servidor si los HTML, CSS y JS cambiaron
+# antes de usar la copia guardada. Si no cambiaron, el servidor responde
+# "304 sin cambios" (no reenvía el archivo). Así una corrección subida al
+# hosting se ve enseguida, sin tener que borrar la caché del navegador.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|css|js)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

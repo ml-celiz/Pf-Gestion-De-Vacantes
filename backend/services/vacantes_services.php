@@ -35,8 +35,9 @@ class VacanteService {
     // ==========================================
 
     /**
-     * Vacantes abiertas y cerradas. Con `$idJefe`, solo las de las
-     * cátedras de ese jefe de cátedra (catedras.id_usuario).
+     * Vacantes abiertas, cerradas y evaluadas (de estas últimas se ven los
+     * resultados). Con `$idJefe`, solo las de las cátedras de ese jefe de
+     * cátedra (catedras.id_usuario).
      */
     public function obtenerVacantes(?int $idJefe = null): array
     {
@@ -62,9 +63,13 @@ class VacanteService {
                 JOIN public.catedras c
                     ON v.id_catedra = c.id
 
-                WHERE v.id_estado IN (1, 2)";
+                WHERE v.id_estado IN (:abierta, :cerrada, :evaluada)";
 
-        $params = [];
+        $params = [
+            'abierta'  => self::ESTADO_VACANTE_ABIERTA,
+            'cerrada'  => self::ESTADO_VACANTE_CERRADA,
+            'evaluada' => self::ESTADO_VACANTE_EVALUADA
+        ];
 
         if ($idJefe !== null) {
             $sql .= " AND c.id_usuario = :id_jefe";
@@ -468,6 +473,19 @@ class VacanteService {
 
         if ((int)$vacante['id_estado'] !== self::ESTADO_VACANTE_ABIERTA) {
             throw new RuntimeException("La vacante no está abierta para postulaciones.", 409);
+        }
+
+        // Sin CV no hay nada que evaluar: tiene que cargarlo antes en "Mi perfil"
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM public.usuarios WHERE id = :id AND cv_path IS NOT NULL"
+        );
+        $stmt->execute(['id' => $idUsuario]);
+
+        if ($stmt->fetchColumn() === false) {
+            throw new RuntimeException(
+                "Para postularte primero tenés que cargar tu CV (en PDF) desde Mi cuenta → Mi perfil.",
+                409
+            );
         }
 
         $stmt = $this->db->prepare(
