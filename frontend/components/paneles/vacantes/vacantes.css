@@ -178,6 +178,22 @@
     color: var(--color-success);
 }
 
+/* Reemplaza a "Postularse" cuando el usuario ya se postuló */
+.btn-ya-postulado {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.55rem;
+    background: var(--color-success-soft);
+    border: 1px solid var(--color-success);
+    border-radius: 999px;
+    color: var(--color-success);
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: default;
+}
+
 /* =========================================================
    REQUISITOS
    ========================================================= */

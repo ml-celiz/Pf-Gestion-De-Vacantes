@@ -19,6 +19,8 @@ class PerfilComponent extends HTMLElement {
 
         this.usuario = null;   // datos del usuario (GET /api/usuarios/{id})
         this.dialog = null;    // <dialog> principal del perfil
+        this.cvSubido = null;  // { nombre, fecha } del CV cargado mientras el dialog está abierto
+        this.avisoCv = false;  // mostrar "CV cargado correctamente." en el próximo render
     }
 
     // =========================================================
@@ -146,16 +148,21 @@ class PerfilComponent extends HTMLElement {
             this.configurarCv();
         }
 
+        // El aviso verde del CV se muestra una sola vez, justo después de cargarlo
+        this.avisoCv = false;
+
         const acciones = this.setAcciones(`
             <button type="button" class="app-btn app-btn-danger-outline" id="btn-perfil-eliminar">
-                <i class="bi bi-trash-fill"></i>
                 Eliminar mi cuenta
             </button>
 
             <span class="app-dialog-spacer"></span>
 
+            <button type="button" class="app-btn app-btn-secondary" id="btn-perfil-contrasena">
+                Cambiar contraseña
+            </button>
+
             <button type="button" class="app-btn app-btn-primary" id="btn-perfil-editar">
-                <i class="bi bi-pencil-fill"></i>
                 Editar mis datos
             </button>
         `);
@@ -163,6 +170,10 @@ class PerfilComponent extends HTMLElement {
         acciones
             .querySelector('#btn-perfil-editar')
             .addEventListener('click', () => this.renderEditar());
+
+        acciones
+            .querySelector('#btn-perfil-contrasena')
+            .addEventListener('click', () => this.renderCambiarContrasena());
 
         acciones
             .querySelector('#btn-perfil-eliminar')
@@ -197,52 +208,84 @@ class PerfilComponent extends HTMLElement {
     // Un único PDF por usuario; "Ver CV" lo descarga.
     // =========================================================
 
-    // Bloque del CV: estado y botones según si ya tiene uno cargado
+    // Bloque del CV: tarjeta del archivo (si ya tiene uno) o estado vacío
     renderCv() {
         const tieneCv = Boolean(this.usuario.tiene_cv);
 
+        // El backend no guarda el nombre ni la fecha del archivo: si se cargó
+        // con el dialog abierto se muestran esos datos; si no, un nombre armado
+        // (el mismo con el que se descarga)
+        const nombreArchivo = this.cvSubido?.nombre || this.nombreArchivoCv();
+        const guardado = this.cvSubido
+            ? `Guardado el ${this.cvSubido.fecha.toLocaleDateString('es-AR')} a las ${
+                this.cvSubido.fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`
+            : 'Guardado en tu perfil';
+
         return `
-            <div class="perfil-cv">
-                <div class="perfil-cv-info">
-                    <span class="perfil-cv-icono ${tieneCv ? 'cargado' : ''}">
-                        <i class="bi ${tieneCv ? 'bi-file-earmark-pdf-fill' : 'bi-file-earmark-arrow-up'}"></i>
-                    </span>
+            <section class="perfil-cv">
+                <span class="perfil-dato-label">Curriculum vitae</span>
+                <p class="perfil-cv-ayuda">
+                    El CV se guarda automáticamente al seleccionarlo. No hace falta presionar otro botón.
+                </p>
 
-                    <div>
-                        <span class="perfil-dato-label">Curriculum vitae</span>
-                        <p class="perfil-cv-estado">
-                            ${tieneCv
-                                ? 'Tu CV está cargado.'
-                                : 'Todavía no cargaste tu CV. Es un único PDF de hasta 5 MB.'}
-                        </p>
+                ${tieneCv ? `
+                    <div class="perfil-cv-archivo">
+                        <span class="perfil-cv-pdf">PDF</span>
+
+                        <div class="perfil-cv-detalle">
+                            <span class="perfil-cv-nombre">${this.escapeHtml(nombreArchivo)}</span>
+                            <span class="perfil-cv-guardado">
+                                <i class="bi bi-check-lg"></i>
+                                ${this.escapeHtml(guardado)}
+                            </span>
+                        </div>
+
+                        <div class="perfil-cv-acciones">
+                            <button type="button" class="app-btn app-btn-secondary" data-cv="ver">
+                                Ver
+                            </button>
+                            <button type="button" class="app-btn app-btn-outline-primary" data-cv="cargar">
+                                Reemplazar
+                            </button>
+                            <button type="button" class="app-btn app-btn-danger-outline perfil-cv-eliminar"
+                                data-cv="eliminar" title="Eliminar CV" aria-label="Eliminar CV">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                <div class="perfil-cv-acciones">
-                    ${tieneCv ? `
-                        <button type="button" class="app-btn app-btn-secondary" data-cv="ver">
-                            <i class="bi bi-download"></i>
-                            Ver CV
-                        </button>
-                        <button type="button" class="app-btn app-btn-secondary" data-cv="cargar">
-                            <i class="bi bi-arrow-repeat"></i>
-                            Reemplazar
-                        </button>
-                        <button type="button" class="app-btn app-btn-danger-outline" data-cv="eliminar"
-                            title="Eliminar CV" aria-label="Eliminar CV">
-                            <i class="bi bi-trash-fill"></i>
-                        </button>
-                    ` : `
+                ` : `
+                    <div class="perfil-cv-vacio">
+                        <span class="perfil-cv-vacio-icono">
+                            <i class="bi bi-file-earmark-arrow-up"></i>
+                        </span>
+                        <strong>Todavía no cargaste tu CV</strong>
+                        <p>Lo necesitás para poder postularte a las vacantes.</p>
                         <button type="button" class="app-btn app-btn-primary" data-cv="cargar">
-                            <i class="bi bi-upload"></i>
-                            Cargar CV
+                            Subir CV
                         </button>
-                    `}
-                </div>
+                        <small>Formato PDF · hasta 5 MB</small>
+                    </div>
+                `}
 
                 <input type="file" id="perfil-cv-archivo" accept="application/pdf,.pdf" hidden>
-            </div>
+            </section>
+
+            ${this.avisoCv ? `
+                <div class="perfil-cv-ok" role="status">
+                    <i class="bi bi-check-circle"></i>
+                    CV cargado correctamente.
+                </div>
+            ` : ''}
         `;
+    }
+
+    // 'CV_Nombre_Apellido.pdf' (sin espacios ni símbolos raros)
+    nombreArchivoCv() {
+        const partes = [this.usuario.nombre, this.usuario.apellido]
+            .filter(Boolean)
+            .map(parte => String(parte).trim().replace(/\s+/g, '_').replace(/[^\p{L}\p{N}_-]/gu, ''));
+
+        return ['CV', ...partes].join('_') + '.pdf';
     }
 
     // Eventos de los botones del CV y del selector de archivo
@@ -290,7 +333,6 @@ class PerfilComponent extends HTMLElement {
             return;
         }
 
-        const reemplaza = Boolean(this.usuario.tiene_cv);
         const botones = this.querySelectorAll('.perfil-cv [data-cv]');
         botones.forEach(boton => (boton.disabled = true));
 
@@ -300,8 +342,11 @@ class PerfilComponent extends HTMLElement {
 
             await ApiClient.upload(`/usuarios/${this.usuario.id}/cv`, datos);
 
+            // Al volver a dibujar se muestran el nombre, la hora y el aviso verde
+            this.cvSubido = { nombre: archivo.name, fecha: new Date() };
+            this.avisoCv = true;
+
             await this.cargarPerfil();
-            this.mostrarSnackbar(reemplaza ? 'Tu CV se reemplazó correctamente.' : 'Tu CV se cargó correctamente.');
         } catch (error) {
             console.error('Error subiendo el CV:', error);
             this.mostrarSnackbar(error.message || 'No se pudo cargar el CV.', 'error');
@@ -314,7 +359,10 @@ class PerfilComponent extends HTMLElement {
         boton.disabled = true;
 
         try {
-            await ApiClient.download(`/usuarios/${this.usuario.id}/cv`, 'CV.pdf');
+            await ApiClient.download(
+                `/usuarios/${this.usuario.id}/cv`,
+                this.cvSubido?.nombre || this.nombreArchivoCv()
+            );
         } catch (error) {
             console.error('Error descargando el CV:', error);
             this.mostrarSnackbar(error.message || 'No se pudo descargar el CV.', 'error');
@@ -365,6 +413,7 @@ class PerfilComponent extends HTMLElement {
                 await ApiClient.delete(`/usuarios/${this.usuario.id}/cv`);
 
                 dialog.close();
+                this.cvSubido = null;
                 await this.cargarPerfil();
                 this.mostrarSnackbar('Tu CV se eliminó correctamente.');
             } catch (error) {
@@ -389,6 +438,9 @@ class PerfilComponent extends HTMLElement {
     // =========================================================
     renderEditar() {
         const usuario = this.usuario;
+
+        // El DNI no se edita una vez cargado; si todavía no tiene, puede completarlo
+        const dniFijo = usuario.dni !== null && usuario.dni !== undefined && String(usuario.dni).trim() !== '';
 
         this.setTitulo('Editar mis datos');
 
@@ -418,27 +470,16 @@ class PerfilComponent extends HTMLElement {
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="perfil-email">Correo electrónico</label>
-
-                    <input
-                        type="email"
-                        id="perfil-email"
-                        class="form-control"
-                        value="${this.escapeHtml(usuario.email || '')}"
-                        required>
-                </div>
-
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="perfil-dni">DNI</label>
+                        <label for="perfil-email">Correo electrónico</label>
 
                         <input
-                            type="text"
-                            inputmode="numeric"
-                            id="perfil-dni"
+                            type="email"
+                            id="perfil-email"
                             class="form-control"
-                            value="${this.escapeHtml(usuario.dni ?? '')}">
+                            value="${this.escapeHtml(usuario.email || '')}"
+                            required>
                     </div>
 
                     <div class="form-group">
@@ -454,21 +495,25 @@ class PerfilComponent extends HTMLElement {
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="perfil-contrasena-actual">Contraseña actual</label>
-                        <input type="password" id="perfil-contrasena-actual" class="form-control"
-                            autocomplete="current-password" placeholder="••••••••">
-                    </div>
+                        <label for="perfil-dni">DNI${dniFijo ? ' (no editable)' : ''}</label>
 
-                    <div class="form-group">
-                        <label for="perfil-contrasena">Nueva contraseña</label>
-                        <input type="password" id="perfil-contrasena" class="form-control"
-                            autocomplete="new-password" placeholder="••••••••">
+                        <input
+                            type="text"
+                            inputmode="numeric"
+                            id="perfil-dni"
+                            class="form-control"
+                            value="${this.escapeHtml(usuario.dni ?? '')}"
+                            ${dniFijo ? 'readonly' : ''}>
                     </div>
                 </div>
-                <small class="form-help perfil-form-ayuda">
-                    Para cambiar la contraseña completá los dos campos. Si los dejás vacíos,
-                    se conserva la actual. ${Validaciones.AYUDA_CONTRASENA}
-                </small>
+
+                <div class="perfil-form-info">
+                    <i class="bi bi-info-circle"></i>
+                    <span>
+                        Acá solo se editan tus datos personales. Para cambiar la contraseña
+                        usá el botón <strong>"Cambiar contraseña"</strong> en Mi perfil.
+                    </span>
+                </div>
 
                 <p class="app-dialog-error" role="alert" hidden></p>
             </form>
@@ -484,13 +529,11 @@ class PerfilComponent extends HTMLElement {
                 form="perfil-form"
                 class="app-btn app-btn-primary"
                 id="btn-perfil-guardar">
-                Guardar
+                Guardar cambios
             </button>
         `);
 
         const form = this.querySelector('#perfil-form');
-
-        agregarOjosContrasena(form);
 
         const mensajeError = form.querySelector('.app-dialog-error');
         const btnCancelar = acciones.querySelector('#btn-perfil-cancelar');
@@ -513,23 +556,14 @@ class PerfilComponent extends HTMLElement {
             const email = form.querySelector('#perfil-email');
             const dni = form.querySelector('#perfil-dni');
             const telefono = form.querySelector('#perfil-telefono');
-            const contrasena = form.querySelector('#perfil-contrasena');
-            const contrasenaActual = form.querySelector('#perfil-contrasena-actual');
 
             // VALIDACIONES: pares [campo, error]; se muestra el primero que falle
-            const cambiaContrasena = Boolean(contrasena.value || contrasenaActual.value);
-
             const reglas = [
                 [nombre, Validaciones.nombre(nombre.value, 'nombre')],
                 [apellido, Validaciones.nombre(apellido.value, 'apellido')],
                 [email, Validaciones.email(email.value)],
-                [dni, Validaciones.dni(dni.value)],
                 [telefono, Validaciones.telefono(telefono.value)],
-                [contrasenaActual, cambiaContrasena && !contrasenaActual.value
-                    ? 'Ingresá tu contraseña actual para cambiarla.' : null],
-                [contrasena, cambiaContrasena ? Validaciones.contrasena(contrasena.value) : null],
-                [contrasena, cambiaContrasena && contrasena.value === contrasenaActual.value
-                    ? 'La nueva contraseña tiene que ser distinta de la actual.' : null]
+                [dni, Validaciones.dni(dni.value)]
             ];
 
             const fallo = reglas.find(([, error]) => error !== null);
@@ -552,12 +586,6 @@ class PerfilComponent extends HTMLElement {
                     telefono: telefono.value.trim() || null
                 };
 
-                // Solo se envía si se quiere cambiar
-                if (contrasena.value) {
-                    datos.contrasena = contrasena.value;
-                    datos.contrasena_actual = contrasenaActual.value;
-                }
-
                 await ApiClient.put(
                     `/usuarios/${this.usuario.id}`,
                     datos
@@ -577,6 +605,128 @@ class PerfilComponent extends HTMLElement {
         });
 
         form.querySelector('#perfil-nombre').focus();
+    }
+
+    // =========================================================
+    // RENDER: VISTA CAMBIAR CONTRASEÑA
+    // PUT /api/usuarios/{id} (mismo endpoint que editar)
+    // Se reenvían los datos actuales sin cambios, más la
+    // contraseña nueva y la actual (el backend la verifica).
+    // =========================================================
+    renderCambiarContrasena() {
+        const usuario = this.usuario;
+
+        this.setTitulo('Cambiar contraseña');
+
+        this.setContenido(`
+            <form id="perfil-form-contrasena" class="perfil-form perfil-form-angosto" novalidate>
+                <div class="form-group">
+                    <label for="perfil-contrasena-actual">Contraseña actual</label>
+                    <input type="password" id="perfil-contrasena-actual" class="form-control"
+                        autocomplete="current-password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="perfil-contrasena">Nueva contraseña</label>
+                    <input type="password" id="perfil-contrasena" class="form-control"
+                        autocomplete="new-password" required>
+                    <small class="form-help">${Validaciones.AYUDA_CONTRASENA}</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="perfil-contrasena-repetir">Repetir nueva contraseña</label>
+                    <input type="password" id="perfil-contrasena-repetir" class="form-control"
+                        autocomplete="new-password" required>
+                </div>
+
+                <p class="app-dialog-error" role="alert" hidden></p>
+            </form>
+        `);
+
+        const acciones = this.setAcciones(`
+            <button type="button" class="app-btn app-btn-secondary" id="btn-perfil-cancelar">
+                Cancelar
+            </button>
+
+            <button
+                type="submit"
+                form="perfil-form-contrasena"
+                class="app-btn app-btn-primary"
+                id="btn-perfil-guardar">
+                Actualizar contraseña
+            </button>
+        `);
+
+        const form = this.querySelector('#perfil-form-contrasena');
+
+        agregarOjosContrasena(form);
+
+        const mensajeError = form.querySelector('.app-dialog-error');
+        const btnCancelar = acciones.querySelector('#btn-perfil-cancelar');
+        const btnGuardar = acciones.querySelector('#btn-perfil-guardar');
+
+        const mostrarError = mensaje => {
+            mensajeError.textContent = mensaje;
+            mensajeError.hidden = false;
+        };
+
+        btnCancelar.addEventListener('click', () => this.renderDatos());
+
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+
+            mensajeError.hidden = true;
+
+            const actual = form.querySelector('#perfil-contrasena-actual');
+            const nueva = form.querySelector('#perfil-contrasena');
+            const repetir = form.querySelector('#perfil-contrasena-repetir');
+
+            // VALIDACIONES: pares [campo, error]; se muestra el primero que falle
+            const reglas = [
+                [actual, actual.value ? null : 'Ingresá tu contraseña actual.'],
+                [nueva, Validaciones.contrasena(nueva.value)],
+                [nueva, nueva.value === actual.value
+                    ? 'La nueva contraseña tiene que ser distinta de la actual.' : null],
+                [repetir, repetir.value === nueva.value
+                    ? null : 'Las contraseñas nuevas no coinciden.']
+            ];
+
+            const fallo = reglas.find(([, error]) => error !== null);
+
+            if (fallo) {
+                mostrarError(fallo[1]);
+                fallo[0].focus();
+                return;
+            }
+
+            btnGuardar.disabled = true;
+            btnCancelar.disabled = true;
+
+            try {
+                await ApiClient.put(`/usuarios/${usuario.id}`, {
+                    nombre: usuario.nombre || '',
+                    apellido: usuario.apellido || '',
+                    email: usuario.email || '',
+                    dni: usuario.dni ?? null,
+                    telefono: usuario.telefono || null,
+                    contrasena: nueva.value,
+                    contrasena_actual: actual.value
+                });
+
+                await this.cargarPerfil();
+
+                this.mostrarSnackbar('Tu contraseña se actualizó correctamente.');
+            } catch (error) {
+                console.error('Error cambiando la contraseña:', error);
+
+                mostrarError(error.message || 'No se pudo cambiar la contraseña.');
+
+                btnGuardar.disabled = false;
+                btnCancelar.disabled = false;
+            }
+        });
+
+        form.querySelector('#perfil-contrasena-actual').focus();
     }
 
     // =========================================================

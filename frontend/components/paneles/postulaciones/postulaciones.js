@@ -108,13 +108,35 @@ class PostulacionesComponent extends HTMLElement {
         if (!tbody) return;
 
         if (this.postulaciones.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center text-muted py-4">
-                        No se encontraron postulaciones.
-                    </td>
-                </tr>
-            `;
+            const roles = AuthService.getRoles();
+            const veTodas = roles.includes('admin') || roles.includes('ra');
+
+            // El postulante ve un mensaje con acceso directo al panel de vacantes
+            tbody.innerHTML = veTodas
+                ? `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No se encontraron postulaciones.
+                        </td>
+                    </tr>
+                `
+                : `
+                    <tr>
+                        <td colspan="4">
+                            <div class="postulaciones-vacio">
+                                <i class="bi bi-inbox"></i>
+                                <p>Todavía no te postulaste a ninguna vacante</p>
+                                <button type="button" class="app-btn app-btn-primary" id="btn-ver-vacantes">
+                                    Ver vacantes
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+            tbody.querySelector('#btn-ver-vacantes')
+                ?.addEventListener('click', () => navegar('vacantes'));
+
             this.actualizarPaginacion();
             return;
         }

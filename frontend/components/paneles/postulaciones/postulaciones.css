@@ -5,6 +5,32 @@
    ========================================================= */
 
 /* =========================================================
+   SIN POSTULACIONES (postulante)
+   ========================================================= */
+
+.postulaciones-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 2rem 1rem;
+    color: var(--color-gray-500);
+    text-align: center;
+}
+
+.postulaciones-vacio i {
+    color: var(--color-gray-400);
+    font-size: 2rem;
+}
+
+.postulaciones-vacio p {
+    margin: 0 0 0.4rem;
+    color: var(--color-gray-600);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* =========================================================
    DIALOG: RESULTADO DE LA POSTULACIÓN
    La base (.app-dialog, .app-btn) está en global.css.
    ========================================================= */

@@ -37,6 +37,12 @@ class VacantesComponent extends HTMLElement {
         this.vacantes = [];
         this.catedras = [];
 
+        // ids de vacantes a las que el usuario ya se postuló
+        this.vacantesPostuladas = new Set();
+
+        // ids de vacantes con resultados publicados (null = no se pudo saber)
+        this.vacantesConResultados = null;
+
         // PAGINACIÓN
         this.vacantesCurrentPage = 1;
     }
@@ -169,6 +175,11 @@ class VacantesComponent extends HTMLElement {
                 }
             }
 
+            await Promise.all([
+                this.cargarPostulacionesPropias(),
+                this.cargarVacantesConResultados()
+            ]);
+
             this.vacantesCurrentPage = 1;
 
             // -------------------------------------------------
@@ -189,6 +200,53 @@ class VacantesComponent extends HTMLElement {
 
             this.actualizarPaginacion();
         }
+    }
+
+    // GET /api/vacantes/solicitudes?id_usuario=
+    // Para marcar "Ya postulado" en las vacantes donde ya se postuló
+    async cargarPostulacionesPropias() {
+        this.vacantesPostuladas = new Set();
+
+        const usuario = AuthService.getUser();
+
+        if (!this.puedePostularse() || !usuario?.id) return;
+
+        try {
+            const solicitudes = await ApiClient.get(
+                `/vacantes/solicitudes?id_usuario=${encodeURIComponent(usuario.id)}`
+            );
+
+            (Array.isArray(solicitudes) ? solicitudes : [])
+                .filter(solicitud => Number(solicitud.id_usuario) === Number(usuario.id))
+                .forEach(solicitud => this.vacantesPostuladas.add(Number(solicitud.id_vacante)));
+        } catch (error) {
+            console.warn('No se pudieron cargar tus postulaciones:', error);
+        }
+    }
+
+    // GET /api/vacantes/ordenes_merito (todas)
+    // Para habilitar "Ver resultados" solo donde hay resultados publicados
+    async cargarVacantesConResultados() {
+        this.vacantesConResultados = null;
+
+        if (!this.puedeVerResultados()) return;
+
+        try {
+            const ordenes = await ApiClient.get('/vacantes/ordenes_merito');
+
+            this.vacantesConResultados = new Set(
+                (Array.isArray(ordenes) ? ordenes : []).map(orden => Number(orden.id_vacante))
+            );
+        } catch (error) {
+            // Si falla, el botón queda habilitado y el dialog avisa si no hay resultados
+            console.warn('No se pudieron cargar los resultados publicados:', error);
+        }
+    }
+
+    // ¿La vacante tiene resultados publicados? (si no se pudo saber, se asume que sí)
+    tieneResultados(vacante) {
+        return this.vacantesConResultados === null ||
+            this.vacantesConResultados.has(Number(vacante.id));
     }
 
     // Vuelve a la primera página y recarga
@@ -380,24 +438,23 @@ class VacantesComponent extends HTMLElement {
                                 </button>
                             ` : ''}
 
-                            <!-- POSTULARSE (admin, pos; solo vacantes abiertas) -->
-                            ${this.puedePostularse() && Number(vacante.id_estado) === this.ESTADO_VACANTE_ABIERTA ? `
-                                <button
-                                    class="btn-action postularse"
-                                    type="button"
-                                    title="Postularse"
-                                    data-action="postularse">
-                                    <i class="bi bi-check-square-fill"></i>
-                                </button>
-                            ` : ''}
+                            <!-- POSTULARSE (admin, pos; solo vacantes abiertas).
+                                 Si ya se postuló, queda "Ya postulado" deshabilitado -->
+                            ${this.puedePostularse() && Number(vacante.id_estado) === this.ESTADO_VACANTE_ABIERTA
+                                ? this.renderBotonPostularse(vacante)
+                                : ''}
 
-                            <!-- VER RESULTADOS GENERALES (admin, pos, ra, jfc) -->
+                            <!-- VER RESULTADOS GENERALES (admin, pos, ra, jfc).
+                                 Habilitado solo si hay resultados publicados -->
                             ${this.puedeVerResultados() ? `
                                 <button
                                     class="btn-action resultados"
                                     type="button"
-                                    title="Ver resultados generales"
-                                    data-action="resultados">
+                                    title="${this.tieneResultados(vacante)
+                                        ? 'Ver resultados generales'
+                                        : 'Todavía no hay resultados publicados'}"
+                                    data-action="resultados"
+                                    ${this.tieneResultados(vacante) ? '' : 'disabled'}>
                                     <i class="bi bi-file-earmark-text-fill"></i>
                                 </button>
                             ` : ''}
@@ -465,6 +522,32 @@ class VacantesComponent extends HTMLElement {
         );
 
         this.actualizarPaginacion();
+    }
+
+    // Botón "Postularse" o, si ya se postuló, "✔ Ya postulado" deshabilitado
+    renderBotonPostularse(vacante) {
+        if (this.vacantesPostuladas.has(Number(vacante.id))) {
+            return `
+                <button
+                    class="btn-ya-postulado"
+                    type="button"
+                    title="Ya te postulaste a esta vacante. Seguila desde Mis postulaciones."
+                    disabled>
+                    <i class="bi bi-check-lg"></i>
+                    Ya postulado
+                </button>
+            `;
+        }
+
+        return `
+            <button
+                class="btn-action postularse"
+                type="button"
+                title="Postularse"
+                data-action="postularse">
+                <i class="bi bi-check-square-fill"></i>
+            </button>
+        `;
     }
 
     // Nombre de la cátedra de una vacante
@@ -560,12 +643,20 @@ class VacantesComponent extends HTMLElement {
                 }
             );
 
-            this.mostrarSnackbar('Te postulaste correctamente a la vacante.');
+            // El botón pasa a "✔ Ya postulado" (se vuelve a dibujar la página actual)
+            this.vacantesPostuladas.add(Number(vacante.id));
+            this.renderVacantes();
+
+            this.mostrarSnackbar(
+                'Te postulaste correctamente. Podés seguirla desde Mis postulaciones.',
+                'success',
+                5000
+            );
         } catch (error) {
             console.error('Error al postularse:', error);
 
             this.mostrarSnackbar(error.message || 'No se pudo procesar la postulación.', 'error');
-        } finally {
+
             if (boton) {
                 boton.disabled = false;
             }
@@ -954,6 +1045,10 @@ class VacantesComponent extends HTMLElement {
                                 // EVALUADA: refrescar el listado de fondo
                                 if (estado.id === this.ESTADO_ACEPTADA) {
                                     this.cargarVacantes();
+                                } else if (this.vacantesConResultados) {
+                                    // Ya hay un resultado publicado: habilitar "Ver resultados"
+                                    this.vacantesConResultados.add(Number(vacante.id));
+                                    this.renderVacantes();
                                 }
                             }
                         );
@@ -1523,7 +1618,7 @@ class VacantesComponent extends HTMLElement {
     }
 
     // Aviso temporal abajo de la pantalla ('success' | 'error')
-    mostrarSnackbar(mensaje, tipo = 'success') {
+    mostrarSnackbar(mensaje, tipo = 'success', duracion = 3000) {
         const anterior = document.querySelector('.panel-snackbar');
 
         if (anterior) {
@@ -1565,7 +1660,7 @@ class VacantesComponent extends HTMLElement {
             setTimeout(() => {
                 snackbar.remove();
             }, 300);
-        }, 3000);
+        }, duracion);
     }
 }
 
